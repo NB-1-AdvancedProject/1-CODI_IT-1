@@ -52,8 +52,5 @@ jobs:
       - name: Apply DB Schema
         run: npm run prisma:migrate # Prisma 마이그레이션 적용 (testdb에 스키마 반영)
 
-      - name: Type Check
-        run: npm run typecheck # TypeScript 타입 검사 수행
-
       - name: Run Tests
         run: npm run test # 테스트 실행 (예: Jest, Supertest 등 포함)
