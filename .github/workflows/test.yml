@@ -7,7 +7,8 @@ name: Test
 on:
   pull_request:
     branches:
-      - develop # develop 브랜치로 향하는 Pull Request가 생성 또는 업데이트될 때 실행
+      - main # main 브랜치로 향하는 Pull Request가 생성 또는 업데이트될 때 실행
+      - develop
 
 jobs:
   test:
