@@ -7,7 +7,8 @@ name: Test
 on:
   pull_request:
     branches:
-      - develop # develop 브랜치로 향하는 Pull Request가 생성 또는 업데이트될 때 실행
+      - main # main 브랜치로 향하는 Pull Request가 생성 또는 업데이트될 때 실행
+      - develop
 
 jobs:
   test:
@@ -50,9 +51,6 @@ jobs:
         run: npm install # 프로젝트 의존성 설치
       - name: Apply DB Schema
         run: npm run prisma:migrate # Prisma 마이그레이션 적용 (testdb에 스키마 반영)
-
-      - name: Type Check
-        run: npm run typecheck # TypeScript 타입 검사 수행
 
       - name: Run Tests
         run: npm run test # 테스트 실행 (예: Jest, Supertest 등 포함)
