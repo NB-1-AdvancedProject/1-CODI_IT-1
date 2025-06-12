@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: AdvancedProject API
+  version: 1.0.0
+  description: AdvancedProject 설명
+paths:
+  /health:
+    get:
+      tags:
+        - App
+      summary: 헬스 체크
+      responses:
+        "200":
+          description: 서버 정상 동작
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok

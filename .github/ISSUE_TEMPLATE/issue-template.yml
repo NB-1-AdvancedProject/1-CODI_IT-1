@@ -1,0 +1,11 @@
+---
+name: New features
+description: '새로운 기능 추가'
+title: '[이름 | 날짜] 제목'
+type: 'Feature'
+body:
+  - type: textarea
+    attributes:
+      label: Name
+---
+
