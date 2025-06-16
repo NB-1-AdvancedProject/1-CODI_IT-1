@@ -16,7 +16,8 @@
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "superstruct": "^2.0.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
