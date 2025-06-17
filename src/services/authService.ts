@@ -2,17 +2,16 @@ import bcrypt from "bcrypt";
 import userRepository from "../repositories/userRepository";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
-import { JWT_SECRET } from "../lib/constants";
+import { JWT_SECRET, REDIS_URL } from "../lib/constants";
 import jwt from "jsonwebtoken";
 import UnauthError from "../lib/errors/UnauthError";
 import Redis from "ioredis";
 import { Token, TokenType } from "../types/user";
 
-if (!process.env.REDIS_URL) {
-  throw new Error("REDIS_URL 환경변수가 설정되지 않았습니다.");
-}
-
-const redis = new Redis(process.env.REDIS_URL);
+const redis =
+  process.env.NODE_ENV !== "test" && REDIS_URL
+    ? new Redis(REDIS_URL)
+    : undefined;
 
 async function verifyPassword(inputPassword: string, password: string) {
   const isMatch = await bcrypt.compare(inputPassword, password);
@@ -31,7 +30,8 @@ async function createToken(user: Token, type: TokenType) {
 }
 
 async function saveToken(userId: string, refreshToken: string) {
-  return await redis.set(
+  if (!redis) return;
+  await redis.set(
     `refresh:user:${userId}`,
     refreshToken,
     "EX",
@@ -45,7 +45,7 @@ async function reissueTokens(userId: string, clientToken: string) {
     throw new UnauthError();
   }
 
-  const storedToken = await redis.get(`refresh:user:${user.id}`);
+  const storedToken = await redis?.get(`refresh:user:${user.id}`);
 
   if (!storedToken || storedToken !== clientToken) {
     throw new UnauthError();
@@ -60,7 +60,7 @@ async function reissueTokens(userId: string, clientToken: string) {
 }
 
 async function logout(id: string) {
-  return await redis.del(`refresh:user:${id}`);
+  return await redis?.del(`refresh:user:${id}`);
 }
 
 export default {
