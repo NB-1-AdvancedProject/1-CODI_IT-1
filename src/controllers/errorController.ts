@@ -2,6 +2,7 @@ import { StructError } from "superstruct";
 import NotFoundError from "../lib/errors/NotFoundError";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import UnauthError from "../lib/errors/UnauthError";
+import ForbiddenError from "../lib/errors/ForbiddenError";
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
@@ -62,6 +63,8 @@ export function globalErrorHandler(
     err instanceof NotFoundError
   ) {
     res.status(404).send({ message: err.message });
+  } else if (err instanceof ForbiddenError) {
+    res.status(403).send({ message: err.message });
   } else if (
     /** Prisma contraint error */
     err instanceof PrismaClientKnownRequestError &&
