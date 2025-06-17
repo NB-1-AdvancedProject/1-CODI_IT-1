@@ -34,10 +34,12 @@ describe("로그인 테스트", () => {
   describe("POST/api/auth", () => {
     test("로그인", async () => {
       const email = "test@test.com";
+      const name = "김이박";
       const user = await prisma.user.create({
         data: {
           email,
           password: passwordHashed,
+          name,
         },
       });
 

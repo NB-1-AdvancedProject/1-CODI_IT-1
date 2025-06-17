@@ -3,6 +3,7 @@ import { Grade, UserType } from "@prisma/client";
 export interface User {
   id: string;
   email: string;
+  name: string;
   password: string;
   type: UserType;
   point: Number;
@@ -18,6 +19,7 @@ export interface User {
 export type Token = {
   id: string;
   email: string;
+  name: string;
   type: UserType;
   point: Number;
   grade?: Grade | null;
