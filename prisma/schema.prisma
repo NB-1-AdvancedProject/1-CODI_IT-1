@@ -55,6 +55,8 @@ model User {
   favoriteStores FavoriteStore[]
   alarms         Alarm[]
   replies        Reply[]
+  store          Store?          @relation(fields: [storeId], references: [id])
+  storeId        String?
 }
 
 model Grade {
@@ -66,16 +68,20 @@ model Grade {
 }
 
 model Store {
-  id        String    @id @default(cuid())
-  storeName String
-  address   String
-  phone     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  phoneNumber String
+  userId      String    @unique
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
   products Product[]
   likedBy  FavoriteStore[]
+
+  User User[]
 }
 
 model Product {
