@@ -59,4 +59,14 @@ async function reissueTokens(userId: string, clientToken: string) {
   return { accessToken, refreshToken: newRefreshToken };
 }
 
-export default { verifyPassword, createToken, reissueTokens, saveToken };
+async function logout(id: string) {
+  return await redis.del(`refresh:user:${id}`);
+}
+
+export default {
+  verifyPassword,
+  createToken,
+  reissueTokens,
+  saveToken,
+  logout,
+};
