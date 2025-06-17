@@ -49,6 +49,7 @@ export interface SizeMock {
 export interface UserMock {
   id: string;
   email: string;
+  name: string;
   password: string;
   type: UserType;
   point: number;
@@ -67,6 +68,7 @@ export interface StoreMock {
   address: string;
   phoneNumber: string;
   image?: string | null;
+  content: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null; // Prisma schema에서 optional이므로
@@ -235,6 +237,7 @@ export const SizeMocks: SizeMock[] = [
 export const UserMocks: UserMock[] = [
   {
     id: "cum9sqi2o80rpi4lb7utemly4",
+    name: "홍길동",
     email: "markpalmer@king-jacobs.biz",
     password: "6BW#2LkvJa",
     type: UserType.SELLER,
@@ -248,6 +251,7 @@ export const UserMocks: UserMock[] = [
   {
     id: "cgd5958bqeac4ctokkomgbe9o",
     email: "derek74@yahoo.com",
+    name: "유관순",
     password: "+#4WuLBy5#",
     type: UserType.BUYER,
     point: 601,
@@ -260,6 +264,7 @@ export const UserMocks: UserMock[] = [
   {
     id: "ceaiuox6cyg3aprebyid2tdni",
     email: "kim74@gmail.com",
+    name: "세종대왕",
     password: "YmDmbYYk)9",
     type: UserType.SELLER,
     point: 674,
@@ -278,6 +283,7 @@ export const StoreMocks: StoreMock[] = [
     name: "Mejia, Williams and Lee",
     address: "PSC 3321, Box 8340\nAPO AA 03995",
     phoneNumber: "001-926-775-4388x2724",
+    content: "New store",
     createdAt: new Date("2025-02-17T00:33:31Z"),
     updatedAt: new Date("2025-06-17T00:49:36.838574Z"),
   },
@@ -287,6 +293,7 @@ export const StoreMocks: StoreMock[] = [
     userId: "ceaiuox6cyg3aprebyid2tdni",
     address: "989 Vasquez Trace\nLake Jamesview, OR 38966",
     phoneNumber: "404.273.7881",
+    content: "My new store",
     createdAt: new Date("2024-09-16T23:16:03Z"),
     updatedAt: new Date("2025-06-17T00:49:36.839080Z"),
   },
