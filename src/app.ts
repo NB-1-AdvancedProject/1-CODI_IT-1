@@ -14,6 +14,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/products");
+app.use("/api/inquiries");
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
