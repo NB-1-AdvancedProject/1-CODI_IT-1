@@ -1,7 +1,7 @@
 import { Request } from "express";
 
 export interface AuthenticatedUser {
-  id: number;
+  id: string;
 }
 
 export interface AuthenticatedUserRequest extends Request {

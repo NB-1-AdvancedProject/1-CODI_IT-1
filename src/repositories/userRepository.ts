@@ -1,4 +1,3 @@
-import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
 
 async function getById(id: string) {
@@ -6,11 +5,23 @@ async function getById(id: string) {
     where: { id },
   });
 
-  if (!user) {
-    throw new NotFoundError("user", id);
-  }
-
-  return;
+  return user;
 }
 
-export default{ getById };
+async function findByEmail(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  return user;
+}
+
+async function findById(id: string) {
+  const user = await prisma.user.findUnique({
+    where: { id },
+  });
+
+  return user;
+}
+
+export default { getById, findByEmail, findById };

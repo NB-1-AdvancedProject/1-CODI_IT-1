@@ -1,20 +1,18 @@
 import jwt from "jsonwebtoken";
-
-const ACCESS_SECRET = process.env.JWT_SECRET || "access_secret";
-const REFESH_SECREST = process.env.JWT_REFESH_SECRET || "refresh_secret";
+import { JWT_SECRET, JWT_REFRESH_SECRET } from "../lib/constants";
 
 export const createAccessToken = (userId: string): string => {
-  return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 };
 
 export const createRefreshToken = (userId: string): string => {
-  return jwt.sign({ userId }, REFESH_SECREST, { expiresIn: "7d" });
+  return jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: "14d" });
 };
 
 export const verifyAccressToken = (token: string): { userId: string } => {
-  return jwt.verify(token, ACCESS_SECRET) as { userId: string };
+  return jwt.verify(token, JWT_SECRET) as { userId: string };
 };
 
 export const verifyRefreshToken = (token: string): { userId: string } => {
-  return jwt.verify(token, REFESH_SECREST) as { userId: string };
+  return jwt.verify(token, JWT_REFRESH_SECRET) as { userId: string };
 };
