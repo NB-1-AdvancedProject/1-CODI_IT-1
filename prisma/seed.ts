@@ -16,8 +16,7 @@ import {
   ReplyMocks,
   ReviewMocks,
   FavoriteStoreMocks,
-  AlarmMocks,
-} from "./mockData.js";
+} from "./mock";
 
 async function main() {
   await prisma.grade.createMany({ data: GradeMocks });

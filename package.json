@@ -39,6 +39,6 @@
     "yamljs": "^0.3.0"
   },
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "ts-node prisma/seed.ts"
   }
 }
