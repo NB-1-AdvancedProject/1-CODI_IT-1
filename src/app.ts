@@ -5,6 +5,7 @@ import {
   defaultNotFoundHandler,
   globalErrorHandler,
 } from "./controllers/errorController";
+import authRouter from "./routers/userRouter";
 
 const app = express();
 app.use(express.json());
@@ -14,6 +15,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/products");
+app.use("/api/auth", authRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
