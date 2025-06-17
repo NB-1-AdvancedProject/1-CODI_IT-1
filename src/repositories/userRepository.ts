@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma";
 
-async function getById(id: string) {
+async function findById(id: string) {
   const user = await prisma.user.findUnique({
     where: { id },
   });
@@ -16,12 +16,5 @@ async function findByEmail(email: string) {
   return user;
 }
 
-async function findById(id: string) {
-  const user = await prisma.user.findUnique({
-    where: { id },
-  });
 
-  return user;
-}
-
-export default { getById, findByEmail, findById };
+export default { findById, findByEmail };

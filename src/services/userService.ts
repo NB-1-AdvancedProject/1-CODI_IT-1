@@ -14,7 +14,22 @@ function filterSensitiveUserData(user: User) {
 }
 
 async function getById(id: string) {
-  return await userRepository.getById(id);
+  const user = await userRepository.findById(id);
+
+  if (!user) {
+    throw new NotFoundError("User", id);
+  }
+
+  return filterSensitiveUserData(user);
+}
+async function getByEmail(email: string) {
+  const user = await userRepository.findByEmail(email);
+
+  if (!user) {
+    throw new NotFoundError("User", email);
+  }
+
+  return filterSensitiveUserData(user);
 }
 
 async function getUser(email: string, password: string) {
@@ -28,4 +43,4 @@ async function getUser(email: string, password: string) {
   return filterSensitiveUserData(user);
 }
 
-export default { getUser, getById };
+export default { getUser, getById, getByEmail };

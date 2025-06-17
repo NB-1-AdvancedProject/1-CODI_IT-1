@@ -1,8 +1,8 @@
 import { Response, NextFunction } from "express";
 import { AuthenticatedUserRequest } from "../types/express";
 import { verifyAccressToken } from "../utils/jwt";
-import userRepository from "../repositories/userRepository";
 import UnauthError from "../lib/errors/UnauthError";
+import userService from "../services/userService";
 
 export const authMiddleware = async (
   req: AuthenticatedUserRequest,
@@ -19,13 +19,13 @@ export const authMiddleware = async (
 
   try {
     const decoded = verifyAccressToken(token) as { userId: string };
-    const user = await userRepository.getById(decoded.userId);
+    const user = await userService.getById(decoded.userId);
 
-    req.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    };
+    if (!user) {
+      throw new UnauthError();
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     throw new UnauthError();
