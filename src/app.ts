@@ -13,6 +13,8 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use("/api/products");
+
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
 // swagger
