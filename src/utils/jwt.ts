@@ -12,9 +12,9 @@ export const createRefreshToken = (userId: string): string => {
 };
 
 export const verifyAccressToken = (token: string): { userId: string } => {
-  return jwt.verify(token, ACCESS_SECRET) as { userId: number };
+  return jwt.verify(token, ACCESS_SECRET) as { userId: string };
 };
 
 export const verifyRefreshToken = (token: string): { userId: string } => {
-  return jwt.verify(token, REFESH_SECREST) as { userId: number };
+  return jwt.verify(token, REFESH_SECREST) as { userId: string };
 };
