@@ -6,6 +6,7 @@ import { JWT_SECRET } from "../lib/constants";
 import jwt from "jsonwebtoken";
 import UnauthError from "../lib/errors/UnauthError";
 import Redis from "ioredis";
+import { Token, TokenType } from "../types/user";
 
 if (!process.env.REDIS_URL) {
   throw new Error("REDIS_URL 환경변수가 설정되지 않았습니다.");
@@ -13,21 +14,12 @@ if (!process.env.REDIS_URL) {
 
 const redis = new Redis(process.env.REDIS_URL);
 
-async function hashingPassword(password: string) {
-  return bcrypt.hash(password, 10);
-}
-
-function filterSensitiveUserData(user: UserDTO) {
-  const { password, ...rest } = user;
-  return rest;
-}
-
 async function verifyPassword(inputPassword: string, password: string) {
   const isMatch = await bcrypt.compare(inputPassword, password);
   if (!isMatch) {
     throw new ForbiddenError();
   }
-};
+}
 
 async function createToken(user: Token, type: TokenType) {
   const payload = { id: user.id };
@@ -38,7 +30,7 @@ async function createToken(user: Token, type: TokenType) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
-async function saveToken(userId: string, refreshToken: TokenType) {
+async function saveToken(userId: string, refreshToken: string) {
   return await redis.set(
     `refresh:user:${userId}`,
     refreshToken,
@@ -59,8 +51,8 @@ async function reissueTokens(userId: string, clientToken: string) {
     throw new UnauthError();
   }
 
-  const accessToken = createToken(user, "access");
-  const newRefreshToken = createToken(user, "refresh");
+  const accessToken = await createToken(user, "access");
+  const newRefreshToken = await createToken(user, "refresh");
 
   await saveToken(user.id, newRefreshToken);
 

@@ -12,8 +12,8 @@ export const login: RequestHandler = async (req, res) => {
     throw new UnauthError();
   }
 
-  const accessToken = authService.createToken(user, "access");
-  const refreshToken = authService.createToken(user, "refresh");
+  const accessToken = await authService.createToken(user, "access");
+  const refreshToken = await authService.createToken(user, "refresh");
 
   await authService.saveToken(user.id, refreshToken);
 
@@ -21,9 +21,8 @@ export const login: RequestHandler = async (req, res) => {
     user: {
       id: user.id,
       email: user.email,
-      name: user.name,
       type: user.type,
-      points: user.points,
+      points: user.point,
     },
     accessToken: accessToken,
   });
