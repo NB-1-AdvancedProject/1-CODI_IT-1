@@ -67,7 +67,7 @@ model Grade {
 
 model Store {
   id        String    @id @default(cuid())
-  name      String
+  storeName String
   address   String
   phone     String
   createdAt DateTime  @default(now())
@@ -80,7 +80,7 @@ model Store {
 
 model Product {
   id                String    @id @default(cuid())
-  storeName         String
+  name              String
   price             Int
   image             String
   content           String

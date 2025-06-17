@@ -62,7 +62,7 @@ export interface UserMock {
 
 export interface StoreMock {
   id: string;
-  name: string;
+  storeName: string;
   address: string;
   phone: string;
   createdAt: Date;
@@ -72,7 +72,7 @@ export interface StoreMock {
 
 export interface ProductMock {
   id: string;
-  storeName: string;
+  name: string;
   price: number;
   image: string;
   content: string;
@@ -272,7 +272,7 @@ export const UserMocks: UserMock[] = [
 export const StoreMocks: StoreMock[] = [
   {
     id: "c94p4uqnvcrw22qccfn6rt8sj",
-    name: "Mejia, Williams and Lee",
+    storeName: "Mejia, Williams and Lee",
     address: "PSC 3321, Box 8340\nAPO AA 03995",
     phone: "001-926-775-4388x2724",
     createdAt: new Date("2025-02-17T00:33:31Z"),
@@ -280,7 +280,7 @@ export const StoreMocks: StoreMock[] = [
   },
   {
     id: "c00ybxn0zrghstc93bzxiya4q",
-    name: "Jackson Group",
+    storeName: "Jackson Group",
     address: "989 Vasquez Trace\nLake Jamesview, OR 38966",
     phone: "404.273.7881",
     createdAt: new Date("2024-09-16T23:16:03Z"),
@@ -288,7 +288,7 @@ export const StoreMocks: StoreMock[] = [
   },
   {
     id: "chq8di43f95qasscrp0vs0v97",
-    name: "Walton, Ramirez and Lutz",
+    storeName: "Walton, Ramirez and Lutz",
     address: "739 Pitts Greens\nCarlamouth, NJ 07074",
     phone: "(205)918-0690x7576",
     createdAt: new Date("2025-02-21T06:54:28Z"),
@@ -299,7 +299,7 @@ export const StoreMocks: StoreMock[] = [
 export const ProductMocks: ProductMock[] = [
   {
     id: "crw2csg78q4tbrb9oieihe8fk",
-    storeName: "Hart, Shepherd and Sutton",
+    name: "Hart, Shepherd and Sutton",
     price: 78090,
     image: "https://placekitten.com/220/902",
     content:
@@ -316,7 +316,7 @@ export const ProductMocks: ProductMock[] = [
   },
   {
     id: "cmwzmdmvlt0ruc3cxv57k9o3j",
-    storeName: "Anderson, Anderson and Holmes",
+    name: "Anderson, Anderson and Holmes",
     price: 1000,
     image: "https://placeimg.com/590/480/any",
     content:
@@ -333,7 +333,7 @@ export const ProductMocks: ProductMock[] = [
   },
   {
     id: "c9od5fczfo8xva5zolk9uu95t",
-    storeName: "Martin, Lewis and Reeves",
+    name: "Martin, Lewis and Reeves",
     price: 11890,
     image: "https://placeimg.com/357/507/any",
     content:
