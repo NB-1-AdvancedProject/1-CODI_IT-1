@@ -62,9 +62,11 @@ export interface UserMock {
 
 export interface StoreMock {
   id: string;
-  storeName: string;
+  name: string;
+  userId: string;
   address: string;
-  phone: string;
+  phoneNumber: string;
+  image?: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null; // Prisma schema에서 optional이므로
@@ -272,27 +274,21 @@ export const UserMocks: UserMock[] = [
 export const StoreMocks: StoreMock[] = [
   {
     id: "c94p4uqnvcrw22qccfn6rt8sj",
-    storeName: "Mejia, Williams and Lee",
+    userId: "cum9sqi2o80rpi4lb7utemly4",
+    name: "Mejia, Williams and Lee",
     address: "PSC 3321, Box 8340\nAPO AA 03995",
-    phone: "001-926-775-4388x2724",
+    phoneNumber: "001-926-775-4388x2724",
     createdAt: new Date("2025-02-17T00:33:31Z"),
     updatedAt: new Date("2025-06-17T00:49:36.838574Z"),
   },
   {
     id: "c00ybxn0zrghstc93bzxiya4q",
-    storeName: "Jackson Group",
+    name: "Jackson Group",
+    userId: "ceaiuox6cyg3aprebyid2tdni",
     address: "989 Vasquez Trace\nLake Jamesview, OR 38966",
-    phone: "404.273.7881",
+    phoneNumber: "404.273.7881",
     createdAt: new Date("2024-09-16T23:16:03Z"),
     updatedAt: new Date("2025-06-17T00:49:36.839080Z"),
-  },
-  {
-    id: "chq8di43f95qasscrp0vs0v97",
-    storeName: "Walton, Ramirez and Lutz",
-    address: "739 Pitts Greens\nCarlamouth, NJ 07074",
-    phone: "(205)918-0690x7576",
-    createdAt: new Date("2025-02-21T06:54:28Z"),
-    updatedAt: new Date("2025-06-17T00:49:36.840110Z"),
   },
 ];
 
@@ -305,7 +301,7 @@ export const ProductMocks: ProductMock[] = [
     content:
       "Contain news especially less mean per. Everybody break form once ok air third. Player travel know tax special player.",
     categoryId: "cy7ho4p9r0dj2itnpgwkyqg1s",
-    storeId: "chq8di43f95qasscrp0vs0v97",
+    storeId: "c00ybxn0zrghstc93bzxiya4q",
     discountRate: 31,
     discountStartTime: new Date("2025-05-06T18:05:18Z"),
     discountEndTime: new Date("2025-06-17T00:49:36.841276Z"),
@@ -593,14 +589,10 @@ export const ReviewMocks: ReviewMock[] = [
 export const FavoriteStoreMocks: FavoriteStoreMock[] = [
   {
     userId: "ceaiuox6cyg3aprebyid2tdni",
-    storeId: "chq8di43f95qasscrp0vs0v97",
-  },
-  {
-    userId: "ceaiuox6cyg3aprebyid2tdni",
-    storeId: "c94p4uqnvcrw22qccfn6rt8sj",
+    storeId: "c00ybxn0zrghstc93bzxiya4q",
   },
   {
     userId: "cum9sqi2o80rpi4lb7utemly4",
-    storeId: "c94p4uqnvcrw22qccfn6rt8sj",
+    storeId: "c00ybxn0zrghstc93bzxiya4q",
   },
 ];
