@@ -30,7 +30,6 @@ export async function disconnectTestDB() {
   await prisma.$disconnect();
 }
 
-// hash 작업을 포함해서 user를 test DB 에 생성해줌
 export async function createTestUser(userData: Omit<User, "id">) {
   const plainPassword = userData.password;
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
@@ -44,18 +43,6 @@ export async function createTestUser(userData: Omit<User, "id">) {
     },
   });
 }
-
-// export async function createTestStore(storeData: any, userId: string) {
-//   return prisma.store.create({
-//     data: {
-//       name: storeData.name,
-//       address: storeData.address,
-//       phoneNumber: storeData.phoneNumber,
-//       content: storeData.content,
-//       user: { connect: { id: userId } },
-//     },
-//   });
-// }
 
 export async function createTestSize(data: { id: string; size: string }[]) {
   return prisma.size.createMany({
@@ -80,6 +67,130 @@ export async function createTestFavoriteStore(storeId: string, userId: string) {
   return prisma.favoriteStore.create({
     data: { userId, storeId },
   });
+}
+
+export async function createTestCategory(data: {
+  id?: string;
+  name: string;
+  description?: string;
+}) {
+  return prisma.category.create({ data });
+}
+
+export async function createTestProduct(data: {
+  name: string;
+  price: number;
+  image: string;
+  content: string;
+  categoryId: string;
+  storeId: string;
+  discountRate?: number;
+  discountStartTime?: Date;
+  discountEndTime?: Date;
+  sizeId?: string;
+}) {
+  return prisma.product.create({ data });
+}
+
+export async function createTestStock(data: {
+  productId: string;
+  sizeId: string;
+  quantity: number;
+}) {
+  return prisma.stock.create({ data });
+}
+
+export async function createTestGrade(data: {
+  name: string;
+  pointRate: number;
+  minAmount: number;
+}) {
+  return prisma.grade.create({ data });
+}
+
+export async function createTestOrder(data: {
+  userId: string;
+  address: string;
+  phone: string;
+  status:
+    | "PENDING"
+    | "PAID"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "CANCELLED"
+    | "REFUNDED";
+  usePoint: number;
+  subtotal: number;
+}) {
+  return prisma.order.create({ data });
+}
+
+export async function createTestOrderItem(data: {
+  orderId: string;
+  productId: string;
+  sizeId: string;
+  quantity: number;
+  price: number;
+}) {
+  return prisma.orderItem.create({ data });
+}
+
+export async function createTestPayment(data: {
+  orderId: string;
+  status: "INITIATED" | "SUCCESS" | "FAIL" | "REFUNDED";
+  totalPrice: number;
+}) {
+  return prisma.payment.create({ data });
+}
+
+export async function createTestCart(userId: string) {
+  return prisma.cart.create({ data: { userId } });
+}
+
+export async function createTestCartItem(data: {
+  cartId: string;
+  productId: string;
+  sizeId: string;
+  quantity: number;
+}) {
+  return prisma.cartItem.create({ data });
+}
+
+export async function createTestInquiry(data: {
+  productId: string;
+  userId: string;
+  title: string;
+  content: string;
+  isSecret: boolean;
+  status: "completedAnswer" | "noAnswer";
+}) {
+  return prisma.inquiry.create({ data });
+}
+
+export async function createTestReply(data: {
+  inquiryId: string;
+  userId: string;
+  content: string;
+  isChecked: boolean;
+}) {
+  return prisma.reply.create({ data });
+}
+
+export async function createTestReview(data: {
+  productId: string;
+  userId: string;
+  content: string;
+  rating: number;
+}) {
+  return prisma.review.create({ data });
+}
+
+export async function createTestAlarm(data: {
+  userId: string;
+  content: string;
+  isChecked?: boolean;
+}) {
+  return prisma.alarm.create({ data });
 }
 
 // agent 와 유사하게 header를 자동 세팅해주는 함수
