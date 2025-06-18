@@ -32,9 +32,6 @@ export async function countData(params: inquiryType, userId: string) {
   return prisma.inquiry.count({
     where: {
       userId,
-      ...(params.status && { status: params.status as InquiryStatus }),
     },
-    skip: (params.page - 1) * params.pageSize,
-    take: params.pageSize,
   });
 }

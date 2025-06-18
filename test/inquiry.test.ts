@@ -2,30 +2,17 @@ import request from "supertest";
 import app from "../src/app";
 import prisma from "../src/lib/prisma";
 import { User, Product, InquiryStatus } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { clearDatabase, createTestUser, getAuthenticatedReq } from "./testUtil";
+import { buyerUser as buyer1 } from "./inquiryDummy";
 
 describe("문의 API 테스트", () => {
-  let user: User;
+  let buyerUser: User;
   let product: Product;
   let token: string;
   beforeAll(async () => {
-    await prisma.inquiry.deleteMany({});
-    await prisma.product.deleteMany({});
-    await prisma.store.deleteMany({});
-    await prisma.user.deleteMany({});
-    await prisma.category.deleteMany({});
+    await clearDatabase();
 
-    let hashed = await bcrypt.hash("password123", 10);
-    user = await prisma.user.create({
-      data: {
-        email: "user1@example.com",
-        name: "김코딩",
-        password: hashed,
-        image: "image File",
-        type: "SELLER",
-      },
-    });
+    buyerUser = await createTestUser(buyer1);
 
     const store = await prisma.store.create({
       data: {
@@ -33,7 +20,7 @@ describe("문의 API 테스트", () => {
         address: "서울시 강남구 테헤란로 123",
         phoneNumber: "010-1234-5678",
         content: "테스트 상점 설명",
-        userId: user.id,
+        userId: buyerUser.id,
       },
     });
 
@@ -61,49 +48,30 @@ describe("문의 API 테스트", () => {
     });
 
     for (let i = 0; i < 20; i++) {
-      if (i % 2 === 0) {
-        await prisma.inquiry.create({
-          data: {
-            title: ` 상품 문의합니다.${i}`,
-            content: `문의 내용입니다.${i}`,
-            isSecret: false,
-            status: InquiryStatus.noAnswer,
-            user: {
-              connect: { id: user.id },
-            },
-            product: {
-              connect: { id: product.id },
-            },
+      await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.${i}`,
+          content: `문의 내용입니다.${i}`,
+          isSecret: false,
+          status:
+            i % 2 === 0
+              ? InquiryStatus.noAnswer
+              : InquiryStatus.completedAnswer,
+          user: {
+            connect: { id: buyerUser.id },
           },
-        });
-      }
-
-      if (i % 2 === 1) {
-        await prisma.inquiry.create({
-          data: {
-            title: ` 상품 문의합니다.${i}`,
-            content: `문의 내용입니다.${i}`,
-            isSecret: false,
-            status: InquiryStatus.completedAnswer,
-            user: {
-              connect: { id: user.id },
-            },
-            product: {
-              connect: { id: product.id },
-            },
+          product: {
+            connect: { id: product.id },
           },
-        });
-      }
+        },
+      });
     }
     const loginRes = await request(app).post("/api/auth/login").send({
-      email: "user1@example.com",
-      password: "password123",
+      email: buyer1.email,
+      password: buyer1.password,
     });
 
     token = loginRes.body.accessToken;
-
-    console.log("로그인 user id:", user.id);
-    console.log("token payload user id:", jwt.decode(token));
   });
 
   afterAll(async () => {
@@ -111,13 +79,63 @@ describe("문의 API 테스트", () => {
   });
 
   describe("GET api/inquiries", () => {
-    test("내가 작성한 모든 문의를 조회할 수 있다.", async () => {
-      console.log("token:", token);
-      const response = await request(app)
-        .get("/api/inquiries")
-        .set("Authorization", `Bearer ${token}`);
-      console.log("응답 결과:", response.body);
+    test("내가 작성한 모든 문의를 조회할 수 있다.(페이지네이션 x)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get("/api/inquiries");
+
       expect(response.body.totalCount).toBe(20);
+      expect(response.body.list.length).toBe(10);
+      expect(response.body.list[0]).toMatchObject({
+        title: `상품 문의합니다.0`,
+        content: `문의 내용입니다.0`,
+        isSecret: false,
+        status: "noAnswer",
+      });
+    });
+
+    test("내가 작성한 모든 문의를 조회할 수 있다.(page)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get("/api/inquiries?page=2");
+      expect(response.body.list.length).toBe(10);
+      expect(response.body.list[0]).toMatchObject({
+        title: `상품 문의합니다.10`,
+        content: `문의 내용입니다.10`,
+        isSecret: false,
+        status: "noAnswer",
+      });
+    });
+
+    test("내가 작성한 모든 문의를 조회할 수 있다.(pageSize)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get("/api/inquiries?pageSize=5");
+      expect(response.body.list.length).toBe(5);
+      expect(response.body.list[4]).toMatchObject({
+        title: `상품 문의합니다.4`,
+        content: `문의 내용입니다.4`,
+        isSecret: false,
+        status: "noAnswer",
+      });
+      expect(response.body.list[5]).toBeUndefined();
+    });
+
+    test("내가 작성한 모든 문의를 조회할 수 있다.(status)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(
+        "/api/inquiries?status=completedAnswer"
+      );
+      expect(response.body.list.length).toBe(10);
+      expect(response.body.list[0]).toMatchObject({
+        title: `상품 문의합니다.1`,
+        content: `문의 내용입니다.1`,
+        isSecret: false,
+        status: "completedAnswer",
+      });
+      expect(response.body.list[9]).toMatchObject({
+        title: `상품 문의합니다.19`,
+        content: `문의 내용입니다.19`,
+        isSecret: false,
+        status: "completedAnswer",
+      });
     });
   });
 });
