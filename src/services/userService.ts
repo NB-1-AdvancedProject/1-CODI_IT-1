@@ -3,6 +3,8 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
+import { CreateUserDTO } from "../lib/dto/userDTO";
+import AlreadyExstError from "../lib/errors/AlreadyExstError";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -43,4 +45,20 @@ async function getUser(email: string, password: string) {
   return filterSensitiveUserData(user);
 }
 
-export default { getUser, getById, getByEmail };
+async function createUser(data: CreateUserDTO) {
+  const email = await userRepository.findByEmail(data.email);
+
+  if (email) {
+    throw new AlreadyExstError(`${email}`);
+  }
+
+  const hashedPassword = await hashingPassword(data.password);
+  const createdUser = await userRepository.save({
+    ...data,
+    password: hashedPassword,
+  });
+
+  return filterSensitiveUserData(createdUser);
+}
+
+export default { getUser, getById, getByEmail, createUser };

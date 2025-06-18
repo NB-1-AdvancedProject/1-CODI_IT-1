@@ -5,8 +5,9 @@ import {
   defaultNotFoundHandler,
   globalErrorHandler,
 } from "./controllers/errorController";
-import authRouter from "./routers/userRouter";
+import authRouter from "./routers/authRouter";
 import inquiryRouter from "./routers/inquiryRouter";
+
 import { storeRouter } from "./routers/storeRouter";
 
 const app = express();
