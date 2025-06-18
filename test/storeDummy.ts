@@ -3,7 +3,7 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { UserType } from "@prisma/client";
 
-export const buyerUser= {
+export const buyerUser = {
   id: "user_buyer_001",
   email: "buyer@example.com",
   name: "파는사람",
