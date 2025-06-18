@@ -3,6 +3,7 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 import {
   clearDatabase,
+  createTestStore,
   createTestUser,
   disconnectTestDB,
   getAuthenticatedReq,
@@ -11,8 +12,9 @@ import {
   buyerUser as buyer1,
   sellerUser as seller1,
   sellerUser2 as seller2,
+  store1,
 } from "./storeDummy";
-import { User } from "@prisma/client";
+import { Store, User } from "@prisma/client";
 
 describe("POST /api/stores", () => {
   let buyerUser: User;
@@ -76,8 +78,14 @@ describe("POST /api/stores", () => {
 });
 
 describe("GET /api/stores/:id", () => {
+  let buyerUser: User;
+  let sellerUser: User;
+  let store: Store;
   beforeAll(async () => {
     await clearDatabase();
+    buyerUser = await createTestUser(buyer1);
+    sellerUser = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerUser.id);
   });
   afterAll(async () => {
     await disconnectTestDB();
