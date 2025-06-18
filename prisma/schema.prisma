@@ -44,7 +44,7 @@ model User {
   grade       Grade?    @relation(fields: [gradeId], references: [id])
   gradeId     String?
   image       String?
-  totalAmount Int       @default(0)
+  totalAmount Decimal   @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
@@ -61,10 +61,10 @@ model User {
 }
 
 model Grade {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   name      String
   pointRate Int
-  minAmount Int
+  minAmount Decimal
   users     User[]
 }
 
@@ -89,7 +89,7 @@ model Store {
 model Product {
   id                String    @id @default(cuid())
   name              String
-  price             Int
+  price             Decimal
   image             String
   content           String
   categoryId        String
@@ -149,7 +149,7 @@ model Order {
   phone     String
   status    OrderStatus
   usePoint  Int
-  subtotal  Int
+  subtotal  Decimal
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -159,12 +159,12 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   orderId   String
   productId String
   sizeId    String
   quantity  Int
-  price     Int // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
+  price     Decimal // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -175,7 +175,7 @@ model Payment {
   id         String        @id @default(cuid())
   orderId    String        @unique
   status     PaymentStatus
-  totalPrice Int
+  totalPrice Decimal
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
