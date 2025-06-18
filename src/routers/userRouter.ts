@@ -1,11 +1,9 @@
 import { Router } from "express";
-import { login, logout, refreshToken } from "../controllers/authController";
-import { authMiddleware } from "../middleware/authMiddleware";
+import { asyncHandler } from "../middleware/asyncHandler";
+import { createUser } from "../controllers/userController";
 
-const authRouter = Router();
+const userRouter = Router();
 
-authRouter.post("/login", login);
-authRouter.post("/logout", authMiddleware, logout);
-authRouter.post("/refresh", refreshToken);
+userRouter.post("/", asyncHandler(createUser));
 
-export default authRouter;
+export default userRouter;
