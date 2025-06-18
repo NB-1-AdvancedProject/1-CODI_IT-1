@@ -33,3 +33,12 @@ export async function getStoreInfo(
   );
   return new StoreWithFavoriteCountDTO(store, favoriteCount);
 }
+export async function getStoreByUserId( // 현태 : 살려주세요
+  userId: string
+): Promise<StoreResDTO | null> {
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    return null;
+  }
+  return new StoreResDTO(store);
+}

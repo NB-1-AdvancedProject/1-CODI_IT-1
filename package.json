@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/main.js",
-    "test": "jest --i",
+    "test": "dotenv -e .env.test -- npm run prisma:migrate && dotenv -e .env.test -- jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy"
@@ -27,11 +27,12 @@
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.13",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
-    "@types/jsonwebtoken": "^9.0.10",
+    "dotenv-cli": "^8.0.0",
     "jest": "^30.0.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.9.0",
