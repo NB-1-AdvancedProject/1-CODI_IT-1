@@ -56,8 +56,8 @@ model User {
   favoriteStores FavoriteStore[]
   alarms         Alarm[]
   replies        Reply[]
-  store          Store?          @relation(fields: [storeId], references: [id])
   storeId        String?
+  Store          Store?
 }
 
 model Grade {
@@ -82,8 +82,7 @@ model Store {
 
   products Product[]
   likedBy  FavoriteStore[]
-
-  User User[]
+  user     User            @relation(fields: [userId], references: [id])
 }
 
 model Product {
