@@ -1,11 +1,10 @@
-import { Response, NextFunction } from "express";
-import { AuthenticatedUserRequest } from "../types/express";
-import { verifyAccressToken } from "../utils/jwt";
+import { Request, Response, NextFunction } from "express";
+import { verifyAccessToken } from "../utils/jwt";
 import UnauthError from "../lib/errors/UnauthError";
 import userService from "../services/userService";
 
 export const authMiddleware = async (
-  req: AuthenticatedUserRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -18,7 +17,7 @@ export const authMiddleware = async (
   const token = authHeader?.split(" ")[1];
 
   try {
-    const decoded = verifyAccressToken(token) as { userId: string };
+    const decoded = verifyAccessToken(token) as { userId: string };
     const user = await userService.getById(decoded.userId);
 
     if (!user) {
