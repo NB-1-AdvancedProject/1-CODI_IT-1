@@ -33,7 +33,7 @@ export function globalErrorHandler(
     res.status(err.status).send({ message: err.message });
   } else if (err instanceof StructError || err instanceof BadRequestError) {
     /** From superstruct or application error */
-    res.status(400).send({ message: "err.message" });
+    res.status(400).send({ message: err.message });
   } else if (
     /** From express.json middleware, bad prisma data */
     (err instanceof SyntaxError &&
