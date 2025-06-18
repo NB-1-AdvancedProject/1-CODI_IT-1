@@ -9,7 +9,7 @@ export const createRefreshToken = (userId: string): string => {
   return jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: "14d" });
 };
 
-export const verifyAccressToken = (token: string): { userId: string } => {
+export const verifyAccessToken = (token: string): { userId: string } => {
   return jwt.verify(token, JWT_SECRET) as { userId: string };
 };
 
