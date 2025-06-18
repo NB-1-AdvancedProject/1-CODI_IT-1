@@ -1,5 +1,6 @@
 // User
 
+import { Decimal } from "@prisma/client/runtime/library";
 import { UserType } from "@prisma/client";
 
 export const buyerUser = {
@@ -9,7 +10,7 @@ export const buyerUser = {
   password: "password1234",
   type: UserType.BUYER,
   point: 0,
-  totalAmount: 0,
+  totalAmount: new Decimal(0),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -21,7 +22,7 @@ export const sellerUser = {
   password: "password1234",
   type: UserType.SELLER,
   point: 0,
-  totalAmount: 0,
+  totalAmount: new Decimal(0),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -32,7 +33,7 @@ export const sellerUser2 = {
   password: "password1234",
   type: UserType.SELLER,
   point: 0,
-  totalAmount: 0,
+  totalAmount: new Decimal(0),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
