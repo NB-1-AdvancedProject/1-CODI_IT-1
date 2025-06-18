@@ -61,4 +61,12 @@ async function createUser(data: CreateUserDTO) {
   return new UserResDTO(createdUser);
 }
 
-export default { getUser, getById, getByEmail, createUser };
+async function getMydata(userId: string) {
+  const data = await userRepository.findById(userId);
+
+  if (!data) {
+    throw new NotFoundError("User", userId);
+  }
+  return new UserResDTO(data);
+}
+export default { getUser, getById, getByEmail, createUser, getMydata };
