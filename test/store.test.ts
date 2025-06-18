@@ -3,6 +3,7 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 import {
   clearDatabase,
+  createTestFavoriteStore,
   createTestStore,
   createTestUser,
   disconnectTestDB,
@@ -86,54 +87,28 @@ describe("GET /api/stores/:id", () => {
     buyerUser = await createTestUser(buyer1);
     sellerUser = await createTestUser(seller1);
     store = await createTestStore(store1, sellerUser.id);
+    await createTestFavoriteStore(store.id, buyerUser.id);
   });
   afterAll(async () => {
     await disconnectTestDB();
   });
   describe("성공", () => {
     test("기본동작: 해당 id의 store 정보와 favoriteCount 를 반환함", async () => {
-      const newStore = {
-        name: "newStore",
-        address: "newAddress",
-        phoneNumber: "010-0000-0000",
-        content: "newStoreForYou",
-      };
-      const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.post("/api/stores").send(newStore);
-      expect(response.status).toBe(201);
-      expect(response.body).toMatchObject(newStore);
+      const response = await request(app).get(`/api/stores/${store.id}`);
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(store.id);
+      expect(response.body.favoriteCount).toBe(1);
     });
   });
   describe("오류", () => {
-    test("buyer 로 로그인 시 UnauthError(401) 발생", async () => {
-      const newStore = {
-        name: "newStore",
-        address: "newAddress",
-        phoneNumber: "010-0000-0000",
-        content: "newStoreForYou",
-      };
-      const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.post("/api/stores").send(newStore);
-      expect(response.status).toBe(401);
-    });
-    test("이미 스토어를 가지고 있을 시 BadRequestError(400) 발생", async () => {
-      const anotherStore = {
-        name: "anotherStore",
-        address: "anotherAddress",
-        phoneNumber: "010-0000-0000",
-        content: "anotherStoreForYou",
-      };
-      const authReq = getAuthenticatedReq(sellerUser.id); // 앞서 이미 newStore 가지고 있음
-      const response = await authReq.post("/api/stores").send(anotherStore);
+    test("CUID 형태가 아닌 스토어 아이디로 찾을 시 BadRequestError(400) 발생", async () => {
+      const response = await request(app).get("/api/stores/1234");
       expect(response.status).toBe(400);
     });
-    test("입력값이 맞지 않을 시 BadRequestError(400) 발생", async () => {
-      const wrongStore = {
-        name: "wrongStore",
-      };
-      const authReq = getAuthenticatedReq(sellerUser2.id);
-      const response = await authReq.post("/api/stores").send(wrongStore);
-      expect(response.status).toBe(400);
+    test("CUID 형태이나 존재하지 않는 스토어 요청 시 NotFoundError(404) 발생", async () => {
+      const nonExistingCUID = "c00000000000000000000000";
+      const response = await request(app).get(`/api/stores/${nonExistingCUID}`);
+      expect(response.status).toBe(404);
     });
   });
 });

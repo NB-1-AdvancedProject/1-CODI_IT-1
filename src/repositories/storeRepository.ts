@@ -14,6 +14,7 @@ export async function getStoreById(id: string): Promise<Store> {
   return await prisma.store.findUniqueOrThrow({ where: { id } });
 }
 
+// FavoriteStore 관련
 export async function countFavoriteStoreByStoreId(
   storeId: string
 ): Promise<number> {

@@ -57,9 +57,15 @@ export async function createTestStore(
   });
 }
 
-export // agent 와 유사하게 header를 자동 세팅해주는 함수
+export async function createTestFavoriteStore(storeId: string, userId: string) {
+  return prisma.favoriteStore.create({
+    data: { userId, storeId },
+  });
+}
+
+// agent 와 유사하게 header를 자동 세팅해주는 함수
 // 사용법은 store.test.ts 를 참고하세요~
-function getAuthenticatedReq(userId: string) {
+export function getAuthenticatedReq(userId: string) {
   const accessToken = createAccessToken(userId);
   const agent = request(app);
 
