@@ -1,4 +1,8 @@
-import { CreateStoreDTO, StoreResDTO } from "../lib/dto/storeDTO";
+import {
+  CreateStoreDTO,
+  StoreResDTO,
+  StoreWithFavoriteCountDTO,
+} from "../lib/dto/storeDTO";
 
 import * as storeRepository from "../repositories/storeRepository";
 import UnauthError from "../lib/errors/UnauthError";
@@ -17,5 +21,24 @@ export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   }
 
   const store: Store = await storeRepository.createStore(storeData);
+  return new StoreResDTO(store);
+}
+
+export async function getStoreInfo(
+  storeId: string
+): Promise<StoreWithFavoriteCountDTO> {
+  const store = await storeRepository.getStoreById(storeId);
+  const favoriteCount = await storeRepository.countFavoriteStoreByStoreId(
+    storeId
+  );
+  return new StoreWithFavoriteCountDTO(store, favoriteCount);
+}
+export async function getStoreByUserId( // 현태 : 살려주세요
+  userId: string
+): Promise<StoreResDTO | null> {
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    return null;
+  }
   return new StoreResDTO(store);
 }

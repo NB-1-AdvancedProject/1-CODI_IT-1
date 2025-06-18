@@ -109,8 +109,6 @@ model Product {
   cartItems  CartItem[]
   reviews    Review[]
   inquiries  Inquiry[]
-  Size       Size?       @relation(fields: [sizeId], references: [id])
-  sizeId     String?
 }
 
 model Stock {
@@ -130,7 +128,6 @@ model Size {
   stocks     Stock[]
   cartItems  CartItem[]
   orderItems OrderItem[]
-  products   Product[]
 }
 
 model Category {
@@ -249,8 +246,9 @@ model Review {
 }
 
 model FavoriteStore {
-  userId  String
-  storeId String
+  userId    String
+  storeId   String
+  createdAt DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id])
   store Store @relation(fields: [storeId], references: [id])

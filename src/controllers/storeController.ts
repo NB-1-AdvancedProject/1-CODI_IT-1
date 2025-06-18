@@ -1,9 +1,14 @@
 import { RequestHandler } from "express";
 import * as storeService from "../services/storeService";
-import { CreateStoreDTO, StoreResDTO } from "../lib/dto/storeDTO";
+import {
+  CreateStoreDTO,
+  StoreResDTO,
+  StoreWithFavoriteCountDTO,
+} from "../lib/dto/storeDTO";
 
 import { assert, create } from "superstruct";
 import { createStoreBodyStruct } from "../structs/storeStructs";
+import { IdParamsStruct } from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, createStoreBodyStruct);
@@ -14,4 +19,12 @@ export const createStore: RequestHandler = async (req, res) => {
   };
   const result: StoreResDTO = await storeService.createStore(dto);
   res.status(201).json(result);
+};
+
+export const getStoreInfo: RequestHandler = async (req, res) => {
+  const { id: storeId } = create(req.params, IdParamsStruct);
+  const result: StoreWithFavoriteCountDTO = await storeService.getStoreInfo(
+    storeId
+  );
+  res.status(200).json(result);
 };

@@ -1,25 +1,17 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
 
-async function create(data: {
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-}) {
-  const { name, description, price, categoryId } = data;
-
-  const product = await prisma.product.create({
-    data: {
-      name,
-      content,
-      price,
-      discountRate,
-      discountStartTime,
-      discountEndTime,
+async function create(data: Prisma.ProductCreateInput) {
+  return await prisma.product.create({
+    data: data,
+    include: {
+      category: true,
+      store: true,
+      stocks: true,
+      reviews: true,
+      inquiries: true,
     },
   });
-
-  return product;
 }
 
 export default {

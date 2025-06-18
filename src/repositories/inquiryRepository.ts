@@ -1,6 +1,6 @@
 import { InquiryStatus } from "@prisma/client";
 import prisma from "../lib/prisma";
-import { inquiryType } from "../structs/inquiryStructs";
+import { inquiryType, updateInquiryType } from "../structs/inquiryStructs";
 
 export async function listData(params: inquiryType, userId: string) {
   return prisma.inquiry.findMany({
@@ -28,10 +28,19 @@ export async function listData(params: inquiryType, userId: string) {
   });
 }
 
-export async function countData(params: inquiryType, userId: string) {
+export async function countData(userId: string) {
   return prisma.inquiry.count({
     where: {
       userId,
+    },
+  });
+}
+
+export async function patchData(param: string, inquiry: updateInquiryType) {
+  return prisma.inquiry.update({
+    where: { id: param },
+    data: {
+      ...inquiry,
     },
   });
 }
