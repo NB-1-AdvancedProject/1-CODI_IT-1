@@ -1,5 +1,6 @@
 import {
   CreateStoreDTO,
+  MyStoreDTO,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
 } from "../lib/dto/storeDTO";
@@ -9,6 +10,7 @@ import UnauthError from "../lib/errors/UnauthError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import { UserType } from "@prisma/client";
 import { Store } from "../types/storeType";
+import NotFoundError from "../lib/errors/NotFoundError";
 
 export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   const { userType, ...storeData } = dto;
@@ -33,7 +35,7 @@ export async function getStoreInfo(
   );
   return new StoreWithFavoriteCountDTO(store, favoriteCount);
 }
-export async function getStoreByUserId( // 현태 : 살려주세요
+export async function getStoreByUserId(
   userId: string
 ): Promise<StoreResDTO | null> {
   const store = await storeRepository.findStoreByUserId(userId);
@@ -41,4 +43,19 @@ export async function getStoreByUserId( // 현태 : 살려주세요
     return null;
   }
   return new StoreResDTO(store);
+}
+
+export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    throw new NotFoundError("store", `userId: ${userId}`);
+  }
+  const productCount = await storeRepository.countProductByStoreId(store.id);
+  const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
+    store.id
+  );
+  const favoriteCount = await storeRepository.countFavoriteStoreByStoreId(
+    store.id
+  );
+  return new MyStoreDTO(store, favoriteCount, productCount, monthFavoriteCount);
 }

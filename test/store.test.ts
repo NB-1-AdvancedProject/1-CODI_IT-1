@@ -4,6 +4,7 @@ import prisma from "../src/lib/prisma";
 import {
   clearDatabase,
   createTestFavoriteStore,
+  createTestProduct,
   createTestStore,
   createTestUser,
   disconnectTestDB,
@@ -11,6 +12,8 @@ import {
 } from "./testUtil";
 import {
   buyerUser as buyer1,
+  product1,
+  product2,
   sellerUser as seller1,
   sellerUser2 as seller2,
   store1,
@@ -87,7 +90,46 @@ describe("GET /api/stores/:id", () => {
     buyerUser = await createTestUser(buyer1);
     sellerUser = await createTestUser(seller1);
     store = await createTestStore(store1, sellerUser.id);
-    await createTestFavoriteStore(store.id, buyerUser.id);
+    await createTestFavoriteStore({ storeId: store.id, userId: buyerUser.id });
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 해당 id의 store 정보와 favoriteCount 를 반환함", async () => {
+      const response = await request(app).get(`/api/stores/${store.id}`);
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(store.id);
+      expect(response.body.favoriteCount).toBe(1);
+    });
+  });
+  describe("오류", () => {
+    test("CUID 형태가 아닌 스토어 아이디로 찾을 시 BadRequestError(400) 발생", async () => {
+      const response = await request(app).get("/api/stores/1234");
+      expect(response.status).toBe(400);
+    });
+    test("CUID 형태이나 존재하지 않는 스토어 요청 시 NotFoundError(404) 발생", async () => {
+      const nonExistingCUID = "c00000000000000000000000";
+      const response = await request(app).get(`/api/stores/${nonExistingCUID}`);
+      expect(response.status).toBe(404);
+    });
+  });
+});
+
+describe("GET /api/stores/detail/my", () => {
+  let buyerUser: User;
+  let sellerUser: User;
+  let sellerWithoutStore: User;
+  let store: Store;
+  beforeAll(async () => {
+    await clearDatabase();
+    buyerUser = await createTestUser(buyer1);
+    sellerUser = await createTestUser(seller1);
+    sellerWithoutStore = await createTestUser(seller2);
+    store = await createTestStore(store1, sellerUser.id);
+    await createTestProduct({ storeId: store.id, ...product1 });
+    await createTestProduct({ storeId: store.id, ...product2 });
+    await createTestFavoriteStore(store.id, buyerUser.id); // 정은 Todo : 아직 좀더 추가해야함~ testUtil 완료 후에~!
   });
   afterAll(async () => {
     await disconnectTestDB();

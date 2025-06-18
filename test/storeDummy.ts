@@ -47,3 +47,54 @@ export const store1 = {
   updatedAt: new Date("2024-06-01T10:00:00Z"),
   deletedAt: null,
 };
+
+// Category
+export const categories = [
+  {
+    id: "clxcat00top000001",
+    name: "상의",
+    description: "티셔츠, 셔츠, 니트 등 상의류",
+  },
+  {
+    id: "clxcat01bottom0002",
+    name: "하의",
+    description: "바지, 스커트 등 하의류",
+  },
+  {
+    id: "clxcat02outer00003",
+    name: "아우터",
+    description: "자켓, 코트, 패딩 등 겉옷",
+  },
+  {
+    id: "clxcat03shoes00004",
+    name: "신발",
+    description: "운동화, 부츠, 슬리퍼 등",
+  },
+  {
+    id: "clxcat04bag000005",
+    name: "가방",
+    description: "백팩, 토트백, 크로스백 등",
+  },
+  {
+    id: "clxcat05acc000006",
+    name: "액세서리",
+    description: "모자, 안경, 시계 등 패션 소품",
+  },
+];
+
+// Product
+
+export const product1 = {
+  name: "가디건",
+  image: "https://s3-URL",
+  content: "상품 상세 설명",
+  price: 100, // 정은 Todo : util 변경되면 decimal 로 바꿔야 할듯?
+  categoryId: "clxcat02outer00003",
+};
+export const product2 = {
+  name: "신발",
+  image: "https://shoes-URL",
+  content: "신발 상세 설명",
+  price: 100, // 정은 Todo : util 변경되면 decimal 로 바꿔야 할듯?
+  categoryId: "clxcat03shoes00004",
+};
