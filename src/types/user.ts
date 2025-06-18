@@ -6,29 +6,15 @@ export interface User {
   name: string;
   password: string;
   type: UserType;
-  point: Number;
+  point: number;
   grade?: Grade | null;
   gradeId?: string | null;
   image?: string | null;
-  totalAmount: Number;
+  totalAmount: number;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
 }
 
-export type Token = {
-  id: string;
-  email: string;
-  name: string;
-  type: UserType;
-  point: Number;
-  grade?: Grade | null;
-  gradeId?: string | null;
-  image?: string | null;
-  totalAmount: Number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
-};
-
+export type Token = Omit<User, "password">;
 export type TokenType = "access" | "refresh";
