@@ -11,7 +11,6 @@ async function createProduct(data: CreateProductBody, userId: string) {
   if (!store) {
     throw new NotFoundError("Store", userId);
   }
-  console.log("data", data);
   const newData = {
     name: data.name,
     price: data.price,
@@ -28,11 +27,8 @@ async function createProduct(data: CreateProductBody, userId: string) {
     },
     store: { connect: { id: store.id } },
   };
-  console.log("newData", newData);
   const product = await productRepository.create(newData);
-  console.log("product", product);
   const stocks = await stockService.createStocks(data.stocks, product.id);
-  console.log("stocks", stocks);
   return {
     ...product, //밑에있는 모든게 DetailedProductResponseDTO 로 처리필요
     storeId: product.store.id,
