@@ -38,6 +38,7 @@ model User {
   id          String    @id @default(cuid())
   email       String    @unique
   password    String
+  name        String
   type        UserType  @default(BUYER)
   point       Int       @default(0)
   grade       Grade?    @relation(fields: [gradeId], references: [id])
@@ -72,6 +73,7 @@ model Store {
   name        String
   address     String
   phoneNumber String
+  content     String
   userId      String    @unique
   image       String?
   createdAt   DateTime  @default(now())
@@ -164,7 +166,7 @@ model OrderItem {
   quantity  Int
   price     Int // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
 
-  order   Order   @relation(fields: [orderId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
   size    Size    @relation(fields: [sizeId], references: [id])
 }
@@ -177,7 +179,7 @@ model Payment {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  order Order @relation(fields: [orderId], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Cart {
@@ -195,7 +197,7 @@ model CartItem {
   sizeId    String
   quantity  Int
 
-  cart    Cart    @relation(fields: [cartId], references: [id])
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
   size    Size    @relation(fields: [sizeId], references: [id])
 }
