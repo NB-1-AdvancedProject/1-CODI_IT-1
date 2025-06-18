@@ -50,8 +50,9 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   if (!store) {
     throw new NotFoundError("store", `userId: ${userId}`);
   }
-  const productCount = await storeRepository.countProductByStoreId(store.id);
+  const productCount = await storeRepository.countProductByStoreId(store.id); // 정은 Todo: productRepo 랑 겹치는 경우 합칠 예정
   const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
+    // 정은 Todo: FavoriteStoreRepo를 따로 팔지 고민해보자
     store.id
   );
   const favoriteCount = await storeRepository.countFavoriteStoreByStoreId(
