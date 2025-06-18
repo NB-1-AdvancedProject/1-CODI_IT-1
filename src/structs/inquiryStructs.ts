@@ -1,4 +1,12 @@
-import { object, string, optional, Infer, defaulted } from "superstruct";
+import {
+  object,
+  string,
+  optional,
+  Infer,
+  defaulted,
+  boolean,
+  partial,
+} from "superstruct";
 import { integerString } from "./commonStructs";
 
 export const inquiryStruct = object({
@@ -7,4 +15,12 @@ export const inquiryStruct = object({
   status: optional(string()),
 });
 
+export const patchInquiryStruct = object({
+  title: string(),
+  content: string(),
+  isSecret: boolean(),
+});
+
 export type inquiryType = Infer<typeof inquiryStruct>;
+export const updateInquiryStruct = partial(patchInquiryStruct);
+export type updateInquiryType = Infer<typeof updateInquiryStruct>;
