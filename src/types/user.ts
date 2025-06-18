@@ -1,4 +1,5 @@
 import { Grade, UserType } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export interface User {
   id: string;
@@ -10,7 +11,7 @@ export interface User {
   grade?: Grade | null;
   gradeId?: string | null;
   image?: string | null;
-  totalAmount: number;
+  totalAmount: Decimal;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
