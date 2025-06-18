@@ -8,7 +8,6 @@ import { buyerUser as buyer1 } from "./inquiryDummy";
 describe("문의 API 테스트", () => {
   let buyerUser: User;
   let product: Product;
-  let token: string;
   beforeAll(async () => {
     await clearDatabase();
 
@@ -26,7 +25,7 @@ describe("문의 API 테스트", () => {
 
     const category = await prisma.category.create({
       data: {
-        id: "c0fm6puffcuhepnyi73xibhcr", // 고정 id를 원하면 이렇게
+        id: "c0fm6puffcuhepnyi73xibhcr",
         name: "테스트 카테고리",
       },
     });
@@ -70,8 +69,6 @@ describe("문의 API 테스트", () => {
       email: buyer1.email,
       password: buyer1.password,
     });
-
-    token = loginRes.body.accessToken;
   });
 
   afterAll(async () => {

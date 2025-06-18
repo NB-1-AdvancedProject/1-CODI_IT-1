@@ -5,7 +5,6 @@ import { InquiryListResponseDTO } from "../lib/dto/inquiryDto";
 import { RequestHandler } from "express";
 
 export const getInquiry: RequestHandler = async (req, res) => {
-  console.log("req.user:", req.user);
   const params = create(req.query, inquiryStruct);
   const userId = req.user.id;
 
