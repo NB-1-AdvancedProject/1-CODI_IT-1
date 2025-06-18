@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../src/app";
 import bcrypt from "bcrypt";
 import { User } from "../src/types/user";
+import { Store } from "../src/types/storeType";
 import { createAccessToken } from "../src/utils/jwt";
 
 export async function clearDatabase() {
@@ -25,8 +26,12 @@ export async function clearDatabase() {
   await prisma.grade.deleteMany();
 }
 
+export async function disconnectTestDB() {
+  await prisma.$disconnect();
+}
+
 // hash 작업을 포함해서 user를 test DB 에 생성해줌
-export async function createTestUser(userData: User) {
+export async function createTestUser(userData: Omit<User, "id">) {
   const plainPassword = userData.password;
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
@@ -40,8 +45,22 @@ export async function createTestUser(userData: User) {
   });
 }
 
-export async function disconnectTestDB() {
-  await prisma.$disconnect();
+export async function createTestStore(
+  storeData: Omit<Store, "id" | "userId">,
+  userId: string
+) {
+  return prisma.store.create({
+    data: {
+      ...storeData,
+      userId: userId,
+    },
+  });
+}
+
+export async function createTestFavoriteStore(storeId: string, userId: string) {
+  return prisma.favoriteStore.create({
+    data: { userId, storeId },
+  });
 }
 
 // agent 와 유사하게 header를 자동 세팅해주는 함수

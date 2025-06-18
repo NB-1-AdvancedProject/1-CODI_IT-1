@@ -5,7 +5,18 @@ import { Store } from "../types/storeType";
 export async function createStore(data: CreateStoreInput): Promise<Store> {
   return await prisma.store.create({ data });
 }
-// 정은 Todo: 스키마에 content 추가하기..!!
+
 export async function findStoreByUserId(userId: string): Promise<Store | null> {
   return await prisma.store.findFirst({ where: { userId } });
+}
+
+export async function getStoreById(id: string): Promise<Store> {
+  return await prisma.store.findUniqueOrThrow({ where: { id } });
+}
+
+// FavoriteStore 관련
+export async function countFavoriteStoreByStoreId(
+  storeId: string
+): Promise<number> {
+  return await prisma.favoriteStore.count({ where: { storeId } });
 }
