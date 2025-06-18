@@ -5,9 +5,10 @@ import {
   defaultNotFoundHandler,
   globalErrorHandler,
 } from "./controllers/errorController";
-import authRouter from "./routers/userRouter";
+import authRouter from "./routers/authRouter";
 import inquiryRouter from "./routers/inquiryRouter";
 import { storeRouter } from "./routers/storeRouter";
+import userRouter from "./routers/userRouter";
 import productRouter from "./routers/productRouter";
 
 const app = express();
@@ -20,6 +21,7 @@ app.get("/health", (req, res) => {
 app.use("/api/inquiries", inquiryRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/stores", storeRouter);
+app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 
 app.use(defaultNotFoundHandler);
