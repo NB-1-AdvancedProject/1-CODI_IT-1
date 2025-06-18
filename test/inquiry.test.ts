@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import prisma from "../src/lib/prisma";
-import { User, Product, InquiryStatus } from "@prisma/client";
+import { User, Product, InquiryStatus, Inquiry } from "@prisma/client";
 import { clearDatabase, createTestUser, getAuthenticatedReq } from "./testUtil";
 import { buyerUser as buyer1 } from "./inquiryDummy";
 
@@ -133,6 +133,46 @@ describe("문의 API 테스트", () => {
         isSecret: false,
         status: "completedAnswer",
       });
+    });
+  });
+
+  describe("GET api/inquiries/:id", () => {
+    let inquiry: Inquiry;
+    beforeAll(async () => {
+      inquiry = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: false,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+    });
+
+    test("내가 작성한 문의를 수정할 수 있다.(성공)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/inquiries/${inquiry.id}`);
+
+      expect(response.body).toMatchObject({
+        title: `상품 문의합니다.`,
+        content: `문의 내용입니다.`,
+        isSecret: false,
+        status: InquiryStatus.noAnswer,
+      });
+    });
+
+    test("내가 작성한 문의를 수정할 수 있다.(실패)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/inquiries/non-id-test`);
+
+      expect(response.body).toEqual({ message: "Not Found" });
+      expect(response.status).toBe(404);
     });
   });
 });
