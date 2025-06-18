@@ -1,13 +1,14 @@
-import { listData, patchData } from "../repositories/inquiryRepository";
+import {
+  listData,
+  patchData,
+  getData,
+  delInquiry,
+} from "../repositories/inquiryRepository";
 import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
-import {
-  InquiryListResponseDTO,
-  UpdateInquiryResDTO,
-} from "../lib/dto/inquiryDto";
-import userRepository from "../repositories/userRepository";
+import { InquiryListResponseDTO, InquiryResDTO } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
-import ForbiddenError from "../lib/errors/ForbiddenError";
+import UnauthError from "../lib/errors/UnauthError";
 
 export async function getList(
   params: inquiryType,
@@ -26,12 +27,34 @@ export async function patchInquiry(
   params: string,
   userId: string,
   inquiry: updateInquiryType
-): Promise<UpdateInquiryResDTO> {
-  const user = await userRepository.findById(userId);
-  if (!user) {
-    throw new NotFoundError("User", userId);
+): Promise<InquiryResDTO> {
+  const inquirys = await getData(params);
+
+  if (!inquirys) {
+    throw new NotFoundError("Inquiry", params);
+  }
+  if (inquirys.userId !== userId) {
+    throw new UnauthError();
+  }
+  const data = await patchData(params, inquiry);
+  return new InquiryResDTO(data);
+}
+
+export async function deleteData(
+  params: string,
+  user: string
+): Promise<InquiryResDTO> {
+  const inquiry = await getData(params);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", params);
   }
 
-  const data = await patchData(params, inquiry);
-  return new UpdateInquiryResDTO(data);
+  if (inquiry.userId !== user) {
+    throw new UnauthError();
+  }
+
+  await delInquiry(inquiry.id);
+
+  return new InquiryResDTO(inquiry);
 }
