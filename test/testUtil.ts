@@ -45,6 +45,25 @@ export async function createTestUser(userData: Omit<User, "id">) {
   });
 }
 
+// export async function createTestStore(storeData: any, userId: string) {
+//   return prisma.store.create({
+//     data: {
+//       name: storeData.name,
+//       address: storeData.address,
+//       phoneNumber: storeData.phoneNumber,
+//       content: storeData.content,
+//       user: { connect: { id: userId } },
+//     },
+//   });
+// }
+
+export async function createTestSize(data: { id: string; size: string }[]) {
+  return prisma.size.createMany({
+    data: data,
+    skipDuplicates: true,
+  });
+}
+
 export async function createTestStore(
   storeData: Omit<Store, "id" | "userId">,
   userId: string

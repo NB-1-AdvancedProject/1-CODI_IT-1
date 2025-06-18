@@ -1,17 +1,13 @@
 import { RequestHandler } from "express";
+import { create } from "superstruct";
+import { CreateProductBodyStruct } from "../structs/productStructs";
+import productService from "../services/productService";
 
 export const postProduct: RequestHandler = async (req, res) => {
-  const { name, description, price, categoryId } = req.body;
-
-  if (!name || !description || !price || !categoryId) {
-    res.status(400).json({ error: "All fields are required" });
-    return;
-  }
-
-  if (typeof price !== "number" || price <= 0) {
-    res.status(400).json({ error: "Price must be a positive number" });
-    return;
-  }
-
-  res.status(201).json({ message: "Product created (dummy)" });
+  console.log("postProduct", req.body);
+  const data = create(req.body, CreateProductBodyStruct);
+  console.log("validated data", data);
+  const product = await productService.createProduct(data, req.user.id);
+  console.log("created product", product);
+  res.status(201).json(product);
 };
