@@ -3,16 +3,17 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 import { User, Product, InquiryStatus, Inquiry } from "@prisma/client";
 import { clearDatabase, createTestUser, getAuthenticatedReq } from "./testUtil";
-import { buyerUser as buyer1 } from "./inquiryDummy";
+import { buyerUser as buyer1, sellerUser as seller1 } from "./inquiryDummy";
 
 describe("문의 API 테스트", () => {
   let buyerUser: User;
   let product: Product;
+  let sellerUser: User;
   beforeAll(async () => {
     await clearDatabase();
 
     buyerUser = await createTestUser(buyer1);
-
+    sellerUser = await createTestUser(seller1);
     const store = await prisma.store.create({
       data: {
         name: "테스트 상점",
@@ -65,7 +66,7 @@ describe("문의 API 테스트", () => {
         },
       });
     }
-    const loginRes = await request(app).post("/api/auth/login").send({
+    await request(app).post("/api/auth/login").send({
       email: buyer1.email,
       password: buyer1.password,
     });
@@ -136,7 +137,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("GET api/inquiries/:id", () => {
+  describe("PATCH api/inquiries/:id", () => {
     let inquiry: Inquiry;
     beforeAll(async () => {
       inquiry = await prisma.inquiry.create({
@@ -157,7 +158,13 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 수정할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/inquiries/${inquiry.id}`);
+      const response = await authReq
+        .patch(`/api/inquiries/${inquiry.id}`)
+        .send({
+          title: "상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
 
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -167,12 +174,72 @@ describe("문의 API 테스트", () => {
       });
     });
 
-    test("내가 작성한 문의를 수정할 수 있다.(실패)", async () => {
+    test("내가 작성한 문의를 수정할 수 있다.(문의 조회 실패))", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/inquiries/non-id-test`);
+      const response = await authReq.patch(`/api/inquiries/:id`);
 
-      expect(response.body).toEqual({ message: "Not Found" });
       expect(response.status).toBe(404);
+    });
+
+    test("내가 작성한 문의를 수정할 수 있다.(내가 작성한 문의 x)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq.patch(`/api/inquiries/${inquiry.id}`);
+
+      expect(response.body).toEqual({ message: "Unauthorized" });
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("DELETE api/inquiries/:id", () => {
+    let inquiry: Inquiry;
+    beforeAll(async () => {
+      inquiry = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: false,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+    });
+
+    test("내가 작성한 문의를 삭제 할 수 있다.(성공)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .patch(`/api/inquiries/${inquiry.id}`)
+        .send({
+          title: "상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
+
+      expect(response.body).toMatchObject({
+        title: `상품 문의합니다.`,
+        content: `문의 내용입니다.`,
+        isSecret: false,
+        status: InquiryStatus.noAnswer,
+      });
+    });
+
+    test("내가 작성한 문의를 삭제 할 수 있다.(문의 조회 실패))", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.delete(`/api/inquiries/:id`);
+
+      expect(response.status).toBe(404);
+    });
+
+    test("내가 작성한 문의를 수정할 수 있다.(내가 작성한 문의 x)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq.delete(`/api/inquiries/${inquiry.id}`);
+
+      expect(response.body).toEqual({ message: "Unauthorized" });
+      expect(response.status).toBe(401);
     });
   });
 });

@@ -208,5 +208,7 @@ export function getAuthenticatedReq(userId: string) {
       agent.put(url).set("Authorization", `Bearer ${accessToken}`),
     delete: (url: string) =>
       agent.delete(url).set("Authorization", `Bearer ${accessToken}`),
+    patch: (url: string) =>
+      agent.patch(url).set("Authorization", `Bearer ${accessToken}`),
   };
 }

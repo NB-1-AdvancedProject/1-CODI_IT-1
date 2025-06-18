@@ -9,4 +9,6 @@ export interface Inquiry {
   content: string;
   status: InquiryStatus;
   isSecret: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
