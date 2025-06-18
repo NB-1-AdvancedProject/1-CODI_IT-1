@@ -9,6 +9,7 @@ import authRouter from "./routers/authRouter";
 import inquiryRouter from "./routers/inquiryRouter";
 
 import { storeRouter } from "./routers/storeRouter";
+import userRouter from "./routers/userRouter";
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.get("/health", (req, res) => {
 app.use("/api/inquiries", inquiryRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/stores", storeRouter);
+app.use("/api/users", userRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);

@@ -18,8 +18,24 @@ async function findByEmail(email: string) {
 }
 
 async function save(data: CreateUserDTO) {
+  const grade = await prisma.grade.upsert({
+    where: { id: "grade_green" },
+    update: {},
+    create: {
+      id: "grade_green",
+      name: "green",
+      pointRate: 2,
+      minAmount: 100000,
+    },
+  });
+
+
   return await prisma.user.create({
-    data,
+    data: {
+      ...data,
+      gradeId: grade.id,
+    },
+    include: { grade: true },
   });
 }
 

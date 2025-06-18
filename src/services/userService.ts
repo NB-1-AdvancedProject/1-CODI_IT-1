@@ -3,7 +3,7 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
-import { CreateUserDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, UserResDTO } from "../lib/dto/userDTO";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 
 async function hashingPassword(password: string) {
@@ -58,7 +58,7 @@ async function createUser(data: CreateUserDTO) {
     password: hashedPassword,
   });
 
-  return filterSensitiveUserData(createdUser);
+  return new UserResDTO(createdUser);
 }
 
 export default { getUser, getById, getByEmail, createUser };
