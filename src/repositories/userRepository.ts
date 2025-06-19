@@ -49,4 +49,13 @@ async function updateData(data: UpdateUserDTO) {
   });
 }
 
-export default { findById, findByEmail, save, updateData };
+async function deletedUser(id: string) {
+  return await prisma.user.update({
+    where: { id },
+    data: {
+      deletedAt: new Date(),
+    },
+  });
+}
+
+export default { findById, findByEmail, save, updateData, deletedUser };

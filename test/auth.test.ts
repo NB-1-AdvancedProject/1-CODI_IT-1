@@ -52,4 +52,24 @@ describe("로그인 테스트", () => {
       expect(response.body.user.email).toBe("test@test.com");
     });
   });
+
+  describe("POST/api/auth", () => {
+    test("회원탈퇴시 로그인 안됨", async () => {
+      const email = "test@test.com";
+      const name = "김이박";
+      const user = await prisma.user.create({
+        data: {
+          email,
+          password: passwordHashed,
+          name,
+          deletedAt: new Date(),
+        },
+      });
+
+      const response = await request(app)
+        .post("/api/auth/login")
+        .send({ email, password });
+      expect(response.status).toBe(404);
+    });
+  });
 });
