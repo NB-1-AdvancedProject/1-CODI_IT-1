@@ -4,6 +4,8 @@ import {
   deleteData,
   createRepliesData,
   updateRepliesData,
+  getDetail,
+  getReply,
 } from "../services/inquiryService";
 import { create } from "superstruct";
 import { inquiryStruct, replyContentStruct } from "../structs/inquiryStructs";
@@ -69,4 +71,16 @@ export const patchReplies: RequestHandler = async (req, res) => {
 
   res.status(200).json(result);
   return;
+};
+
+export const getDetailInquiry: RequestHandler = async (req, res) => {
+  const { id: params } = create(req.params, IdParamsStruct);
+
+  const result = await getDetail(params);
+};
+
+export const getDetailReply: RequestHandler = async (req, res) => {
+  const { id: params } = create(req.params, IdParamsStruct);
+
+  const result = await getReply(params);
 };

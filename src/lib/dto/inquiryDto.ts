@@ -1,6 +1,6 @@
 import { InquiryStatus } from "@prisma/client";
-import { Inquiry, Reply } from "../../types/inquiryType";
-import { ReplyUser } from "../../types/inquiryType";
+import { Inquirys, Replys, InReplyType } from "../../types/inquiryType";
+import { ReplyUser, InquiryDetailQueryResult } from "../../types/inquiryType";
 
 export interface InquiryListResponseDTO {
   list: InquiryItem[];
@@ -34,7 +34,7 @@ export class InquiryResDTO {
   createdAt: string;
   updatedAt: string;
 
-  constructor(inquiry: Inquiry) {
+  constructor(inquiry: Inquirys) {
     this.id = inquiry.id;
     this.userId = inquiry.userId;
     this.productId = inquiry.productId;
@@ -56,7 +56,7 @@ export class replyResDTO {
   updatedAt: string;
   user: ReplyUser;
 
-  constructor(reply: Reply) {
+  constructor(reply: Replys) {
     this.id = reply.id;
     this.inquiryId = reply.inquiryId;
     this.userId = reply.userId;
@@ -67,5 +67,47 @@ export class replyResDTO {
       id: reply.user.id,
       name: reply.user.name,
     };
+  }
+}
+
+export class GetInquiryResDTO {
+  id: string;
+  userId: string;
+  productId: string;
+  title: string;
+  content: string;
+  status: InquiryStatus;
+  isSecret: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: { name: string };
+  reply: InReplyType | null;
+
+  constructor(inquiry: InquiryDetailQueryResult) {
+    this.id = inquiry.id;
+    this.userId = inquiry.userId;
+    this.productId = inquiry.productId;
+    this.title = inquiry.title;
+    this.content = inquiry.content;
+    this.status = inquiry.status;
+    this.isSecret = inquiry.isSecret;
+    this.createdAt = inquiry.createdAt.toISOString();
+    this.updatedAt = inquiry.updatedAt.toISOString();
+
+    this.user = {
+      name: inquiry.user.name,
+    };
+
+    this.reply = inquiry.reply
+      ? {
+          id: inquiry.reply.id,
+          content: inquiry.reply.content,
+          createdAt: inquiry.reply.createdAt.toISOString(),
+          updatedAt: inquiry.reply.updatedAt.toISOString(),
+          user: {
+            name: inquiry.reply.user.name,
+          },
+        }
+      : null;
   }
 }

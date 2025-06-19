@@ -1,11 +1,6 @@
 import { InquiryStatus } from "@prisma/client";
 import prisma from "../lib/prisma";
-import {
-  inquiryType,
-  updateInquiryType,
-  replyContentType,
-} from "../structs/inquiryStructs";
-import { IdParams } from "../structs/commonStructs";
+import { inquiryType, updateInquiryType } from "../structs/inquiryStructs";
 
 export async function listData(params: inquiryType, userId: string) {
   return prisma.inquiry.findMany({
@@ -94,6 +89,28 @@ export async function patchReplay(params: string, reply: string) {
     },
     include: {
       user: true,
+    },
+  });
+}
+
+export async function inquiryDetail(params: string) {
+  return prisma.inquiry.findUnique({
+    where: { id: params },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      Reply: {
+        include: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 }

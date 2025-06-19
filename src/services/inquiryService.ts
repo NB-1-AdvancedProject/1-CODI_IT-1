@@ -6,6 +6,7 @@ import {
   createReply,
   getReplyData,
   patchReplay,
+  inquiryDetail,
 } from "../repositories/inquiryRepository";
 import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
@@ -123,3 +124,13 @@ export async function updateRepliesData(
 
   return new replyResDTO(replayData);
 }
+
+export async function getDetail(params: string) {
+  const inquiry = await inquiryDetail(params);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", params);
+  }
+}
+
+export async function getReply(params: string) {}
