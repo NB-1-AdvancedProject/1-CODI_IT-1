@@ -224,7 +224,7 @@ model Reply {
   inquiryId String
   userId    String
   content   String
-  isChecked Boolean
+  isChecked Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -1,21 +1,26 @@
 import request from "supertest";
 import app from "../src/app";
 import prisma from "../src/lib/prisma";
+import bcrypt from "bcrypt";
 import {
   clearDatabase,
-  createTestFavoriteStore,
-  createTestStore,
-  createTestUser,
+  createTestProduct,
   disconnectTestDB,
   getAuthenticatedReq,
 } from "./testUtil";
 import {
   buyerUser as buyer1,
+  buyerUser2 as buyer2,
+  categories,
+  product1,
+  product2,
   sellerUser as seller1,
   sellerUser2 as seller2,
   store1,
 } from "./storeDummy";
-import { Store, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { User } from "../src/types/user";
+import { Store } from "../src/types/storeType";
 
 describe("POST /api/stores", () => {
   let buyerUser: User;
@@ -87,7 +92,7 @@ describe("GET /api/stores/:id", () => {
     buyerUser = await createTestUser(buyer1);
     sellerUser = await createTestUser(seller1);
     store = await createTestStore(store1, sellerUser.id);
-    await createTestFavoriteStore(store.id, buyerUser.id);
+    await createTestFavoriteStore({ storeId: store.id, userId: buyerUser.id });
   });
   afterAll(async () => {
     await disconnectTestDB();
@@ -112,3 +117,104 @@ describe("GET /api/stores/:id", () => {
     });
   });
 });
+
+describe("GET /api/stores/detail/my", () => {
+  let buyerUser: User;
+  let buyerUser2: User;
+  let sellerUser: User;
+  let sellerWithoutStore: User;
+  let store: Store;
+  beforeAll(async () => {
+    await clearDatabase();
+    buyerUser = await createTestUser(buyer1);
+    buyerUser2 = await createTestUser(buyer2);
+    sellerUser = await createTestUser(seller1);
+    sellerWithoutStore = await createTestUser(seller2);
+    await createTestCategories(categories);
+    store = await createTestStore(store1, sellerUser.id);
+    await createTestProduct({ storeId: store.id, ...product1 });
+    await createTestProduct({ storeId: store.id, ...product2 });
+    await createTestFavoriteStore({ storeId: store.id, userId: buyerUser.id });
+    await createTestFavoriteStore({
+      storeId: store.id,
+      userId: buyerUser2.id,
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    });
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 해당 id의 store 정보와 favoriteCount 를 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq.get("/api/stores/detail/my");
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(store.id);
+      expect(response.body.favoriteCount).toBe(2);
+      expect(response.body.monthFavoriteCount).toBe(1);
+      expect(response.body.productCount).toBe(2);
+    });
+  });
+  describe("오류", () => {
+    test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
+      const authReq = getAuthenticatedReq(sellerWithoutStore.id);
+      const response = await authReq.get("/api/stores/detail/my");
+      expect(response.status).toBe(404);
+    });
+    test("로그인 안했을 시 UnauthorizedError(401) 발생", async () => {
+      const response = await request(app).get("/api/stores/detail/my");
+      expect(response.status).toBe(401);
+    });
+  });
+});
+
+// 테스트용 함수들
+
+export async function createTestUser(
+  userData: Prisma.UserUncheckedCreateInput
+) {
+  const plainPassword = userData.password;
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+  return prisma.user.create({
+    data: {
+      email: userData.email,
+      name: userData.name,
+      password: hashedPassword,
+      type: userData.type,
+    },
+  });
+}
+
+export async function createTestSizes(data: Prisma.SizeCreateInput[]) {
+  return prisma.size.createMany({
+    data: data,
+    skipDuplicates: true,
+  });
+}
+export async function createTestCategories(data: Prisma.CategoryCreateInput[]) {
+  return prisma.category.createMany({
+    data: data,
+    skipDuplicates: true,
+  });
+}
+
+export async function createTestStore(
+  storeData: Omit<Store, "id" | "userId">,
+  userId: string
+) {
+  return prisma.store.create({
+    data: {
+      ...storeData,
+      userId: userId,
+    },
+  });
+}
+
+export async function createTestFavoriteStore(data: {
+  userId: string;
+  storeId: string;
+  createdAt?: Date;
+}) {
+  return prisma.favoriteStore.create({ data });
+}

@@ -4,6 +4,7 @@ import {
   MyStoreProductDTO,
   MyStoreProductsDTO,
   ProductWithStocks,
+  MyStoreDTO,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
 } from "../lib/dto/storeDTO";
@@ -38,7 +39,7 @@ export async function getStoreInfo(
   );
   return new StoreWithFavoriteCountDTO(store, favoriteCount);
 }
-export async function getStoreByUserId( // 현태 : 살려주세요
+export async function getStoreByUserId(
   userId: string
 ): Promise<StoreResDTO | null> {
   const store = await storeRepository.findStoreByUserId(userId);
@@ -69,4 +70,19 @@ export async function getMyStoreProductList(
   );
   const totalCount = products.length;
   return { list, totalCount };
+}
+
+export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    throw new NotFoundError("store", `userId: ${userId}`);
+  }
+  const productCount = await storeRepository.countProductByStoreId(store.id); // 정은 Todo: productRepo 랑 겹치는 경우 합칠 예정
+  const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
+    store.id
+  );
+  const favoriteCount = await storeRepository.countFavoriteStoreByStoreId(
+    store.id
+  );
+  return new MyStoreDTO(store, favoriteCount, productCount, monthFavoriteCount);
 }

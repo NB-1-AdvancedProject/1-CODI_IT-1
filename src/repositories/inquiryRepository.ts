@@ -1,6 +1,11 @@
 import { InquiryStatus } from "@prisma/client";
 import prisma from "../lib/prisma";
-import { inquiryType, updateInquiryType } from "../structs/inquiryStructs";
+import {
+  inquiryType,
+  updateInquiryType,
+  replyContentType,
+} from "../structs/inquiryStructs";
+import { IdParams } from "../structs/commonStructs";
 
 export async function listData(params: inquiryType, userId: string) {
   return prisma.inquiry.findMany({
@@ -54,5 +59,23 @@ export async function getData(param: string) {
 export async function delInquiry(inquiryId: string) {
   return prisma.inquiry.delete({
     where: { id: inquiryId },
+  });
+}
+
+export async function createReply(user: string, params: string, reply: string) {
+  return prisma.reply.create({
+    data: {
+      inquiryId: params,
+      userId: user,
+      content: reply,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 }
