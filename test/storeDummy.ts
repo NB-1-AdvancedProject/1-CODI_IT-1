@@ -92,19 +92,65 @@ export const categories = [
   },
 ];
 
+// Size
+export const sizes = [
+  { id: "clxsize00xs000000", size: "Free" },
+  { id: "clxsize01s000001", size: "S" },
+  { id: "clxsize02m000002", size: "M" },
+  { id: "clxsize03l000003", size: "L" },
+  { id: "clxsize04xl00004", size: "XL" },
+  { id: "clxsize05xxl0005", size: "XXL" },
+];
+
 // Product
 
 export const product1 = {
+  id: "clxprodlgop4n54ldsu",
   name: "가디건",
   image: "https://s3-URL",
   content: "상품 상세 설명",
-  price: 100, // 정은 Todo : util 변경되면 decimal 로 바꿔야 할듯?
+  price: 100,
   categoryId: "clxcat02outer00003",
 };
-export const product2 = {
+export const productWithDiscount = {
+  id: "clxprodndoe2shfjiko",
   name: "신발",
   image: "https://shoes-URL",
   content: "신발 상세 설명",
-  price: 100, // 정은 Todo : util 변경되면 decimal 로 바꿔야 할듯?
+  price: 100,
   categoryId: "clxcat03shoes00004",
+  discountRate: 10,
+  discountStartTime: new Date(),
+  discountEndTime: new Date("9999-12-31T23:59:59.999Z"),
 };
+
+// Stocks
+export const product1StocksQuantity18 = [
+  {
+    id: "clxstock00cardi01",
+    productId: "clxprodlgop4n54ldsu",
+    sizeId: "clxsize02m000002",
+    quantity: 10,
+  },
+  {
+    id: "clxstock01cardi02",
+    productId: "clxprodlgop4n54ldsu",
+    sizeId: "clxsize03l000003",
+    quantity: 8,
+  },
+];
+
+export const product2StocksQuantity0 = [
+  {
+    id: "clxstock02shoes01",
+    productId: "clxprodndoe2shfjiko",
+    sizeId: "clxsize04xl00004",
+    quantity: 0,
+  },
+  {
+    id: "clxstock03shoes02",
+    productId: "clxprodndoe2shfjiko",
+    sizeId: "clxsize05xxl0005",
+    quantity: 0,
+  },
+];

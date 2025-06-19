@@ -1,5 +1,9 @@
 import {
   CreateStoreDTO,
+  GetMyStoreProductsDTO,
+  MyStoreProductDTO,
+  MyStoreProductsDTO,
+  ProductWithStocks,
   MyStoreDTO,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
@@ -45,6 +49,29 @@ export async function getStoreByUserId(
   return new StoreResDTO(store);
 }
 
+export async function getMyStoreProductList(
+  dto: GetMyStoreProductsDTO
+): Promise<MyStoreProductsDTO> {
+  const { userId, page = 1, pageSize = 10 } = dto;
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    throw new NotFoundError("store", `userId: ${userId}`);
+  }
+  const products: ProductWithStocks[] =
+    await storeRepository.getProductsWithStocksByStoreId({
+      storeId: store.id,
+      page,
+      pageSize,
+    });
+  const list = await Promise.all(
+    products.map((product) => {
+      return new MyStoreProductDTO(product);
+    })
+  );
+  const totalCount = products.length;
+  return { list, totalCount };
+}
+
 export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   const store = await storeRepository.findStoreByUserId(userId);
   if (!store) {
@@ -52,7 +79,6 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   }
   const productCount = await storeRepository.countProductByStoreId(store.id); // 정은 Todo: productRepo 랑 겹치는 경우 합칠 예정
   const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
-    // 정은 Todo: FavoriteStoreRepo를 따로 팔지 고민해보자
     store.id
   );
   const favoriteCount = await storeRepository.countFavoriteStoreByStoreId(

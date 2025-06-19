@@ -1,4 +1,6 @@
+import { Product, Stock } from "@prisma/client";
 import { Store } from "../../types/storeType";
+import { Decimal } from "@prisma/client/runtime/library";
 
 // Request DTO
 export type CreateStoreDTO = {
@@ -9,6 +11,12 @@ export type CreateStoreDTO = {
   image?: string;
   userId: string;
   userType: string;
+};
+
+export type GetMyStoreProductsDTO = {
+  userId: string;
+  page: number;
+  pageSize: number;
 };
 
 // Response DTO
@@ -96,5 +104,48 @@ export class MyStoreDTO {
   }
 }
 
+export type MyStoreProductsDTO = {
+  list: MyStoreProductDTO[];
+  totalCount: number;
+};
+
 // Input (serivce <-> repository 간)
 export type CreateStoreInput = Omit<CreateStoreDTO, "userType">;
+export type FindMyStoreProductsInput = {
+  storeId: string;
+  page: number;
+  pageSize: number;
+};
+
+// 다른 도메인 DTO
+// 정은 Todo: 나중에 겹치는지 체크 필요
+export type ProductWithStocks = Product & {
+  stocks: Stock[];
+};
+export class MyStoreProductDTO {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  stocks: Stock[]; // 정은 Todo: 스웨거 확정되면 수정 필요
+  isDiscount: boolean;
+  isSoldOut: boolean;
+  createdAt: Date;
+
+  constructor(product: ProductWithStocks) {
+    this.id = product.id;
+    this.image = product.image || "";
+    this.name = product.name;
+    this.price = product.price.toNumber();
+    this.stocks = product.stocks;
+    this.isDiscount = product.discountEndTime
+      ? product.discountEndTime > new Date()
+      : false;
+    this.createdAt = product.createdAt;
+    const totalStock = product.stocks.reduce(
+      (sum, stock) => sum + stock.quantity,
+      0
+    );
+    this.isSoldOut = totalStock === 0 ? true : false;
+  }
+}
