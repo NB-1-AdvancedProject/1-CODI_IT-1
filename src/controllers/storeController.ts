@@ -30,7 +30,7 @@ export const getStoreInfo: RequestHandler = async (req, res) => {
 };
 
 export const getMyStoreProductList: RequestHandler = async (req, res) => {
-  const { id: userId } = req.user;
+  const { id: userId } = req.user!;
   const params = create(req.params, PageParamsStruct);
   const result = await storeService.getMyStoreProductList({
     userId,
@@ -40,7 +40,7 @@ export const getMyStoreProductList: RequestHandler = async (req, res) => {
 };
 
 export const getMyStoreInfo: RequestHandler = async (req, res) => {
-  const { id: userId } = req.user;
+  const { id: userId } = req.user!;
   const result = await storeService.getMyStoreInfo(userId);
   res.status(200).json(result);
 };

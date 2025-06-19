@@ -30,10 +30,8 @@ export const getInquiry: RequestHandler = async (req, res) => {
 };
 
 export const changeInquiry: RequestHandler = async (req, res) => {
-  const params = req.params.id;
-  const user = req.user!.id;
   const { id: params } = create(req.params, IdParamsStruct);
-  const user = req.user.id;
+  const user = req.user!.id;
   const inquiry = req.body;
   const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
 
