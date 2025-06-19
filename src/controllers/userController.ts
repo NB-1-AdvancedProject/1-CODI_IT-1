@@ -38,11 +38,12 @@ export const daleteUser: RequestHandler = async (req, res) => {
   await userService.deletedUser(id);
 
   res.status(200).send({ message: "회원 탈퇴 성공" });
-  export const getLikeStore: RequestHandler = async (req, res) => {
+};
+
+export const getLikeStore: RequestHandler = async (req, res) => {
   const userId = req.user.id;
 
   const likeStore = await userService.getFavoriteStore(userId);
 
   res.status(200).send(likeStore);
-
 };
