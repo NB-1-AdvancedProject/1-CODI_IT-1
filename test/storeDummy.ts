@@ -13,6 +13,16 @@ export const buyerUser = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
+export const buyerUser2 = {
+  email: "buyer2@example.com",
+  name: "파는사람2",
+  password: "password1234",
+  type: UserType.BUYER,
+  point: 0,
+  totalAmount: new Decimal(0),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
 export const sellerUser = {
   email: "seller@example.com",
