@@ -1,46 +1,70 @@
 import {
   clearDatabase,
-  createTestSize,
-  createTestStore,
-  createTestUser,
   disconnectTestDB,
   getAuthenticatedReq,
 } from "./testUtil";
-import { sellerUser as seller1, store1 } from "./storeDummy";
-import { User } from "@prisma/client";
-import { size } from "./productDummy";
+import { Product, User } from "@prisma/client";
+import {
+  sellerUser,
+  category1,
+  fullProduct,
+  size1,
+  store1,
+} from "./productDummy";
+import prisma from "../src/lib/prisma";
+import bcrypt from "bcrypt";
+import { Decimal } from "@prisma/client/runtime/library";
 
 describe("Product API 테스트", () => {
-  let sellerUser: User;
+  let sellerUser1: User;
+  let Product1: Product;
   beforeAll(async () => {
     await clearDatabase();
-    sellerUser = await createTestUser(seller1);
-    await createTestStore(store1, sellerUser.id);
-    await createTestSize(size);
+    sellerUser1 = await prisma.user.create({
+      data: {
+        ...sellerUser,
+        password: await bcrypt.hash(sellerUser.password, 10),
+      },
+    });
+    await prisma.store.create({ data: store1 });
+    await prisma.size.create({
+      data: size1,
+    });
+    await prisma.category.create({
+      data: category1,
+    });
   });
   afterAll(async () => {
     await disconnectTestDB();
   });
+  beforeEach(async () => {
+    await prisma.reply.deleteMany();
+    await prisma.inquiry.deleteMany();
+    await prisma.review.deleteMany();
+    await prisma.cartItem.deleteMany();
+    await prisma.orderItem.deleteMany();
+    await prisma.stock.deleteMany();
+    await prisma.product.deleteMany();
+    Product1 = await prisma.product.create({
+      data: fullProduct,
+    });
+  });
 
-  test("POST /products - 상품 추가", async () => {
+  test("POST /api/products - 상품 추가", async () => {
     const newProduct = {
       name: "가디건",
       image: "https://s3-URL",
       content: "상품 상세 설명",
-      price: 100,
-      categoryName: "의류",
+      price: Decimal(100),
+      categoryName: "clothing",
       stocks: [
         {
-          sizeId: "clxsize00xs000000", // Free 사이즈
+          sizeId: "size1-id",
           quantity: 10,
-        },
-        {
-          sizeId: "clxsize01s000001", // S 사이즈
-          quantity: 20,
         },
       ],
     };
-    const authReq = getAuthenticatedReq(sellerUser.id);
+    const authReq = getAuthenticatedReq(sellerUser1.id);
     const response = await authReq.post("/api/products").send(newProduct);
 
     expect(response.status).toBe(201);
@@ -120,5 +144,15 @@ describe("Product API 테스트", () => {
       expect(stock).toHaveProperty("sizeId");
       expect(stock).toHaveProperty("quantity");
     }
+  });
+  test("DELETE /api/products/:id - 상품 삭제", async () => {
+    const authReq = getAuthenticatedReq(sellerUser1.id);
+
+    const deleteResponse = await authReq.delete("/api/products/product1-id");
+    expect(deleteResponse.status).toBe(204);
+
+    // 삭제된 상품 조회 시 404 에러 발생 확인
+    const findResponse = await authReq.get("/api/products/product1-id");
+    expect(findResponse.status).toBe(404);
   });
 });
