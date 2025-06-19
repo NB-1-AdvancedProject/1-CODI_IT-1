@@ -1,4 +1,3 @@
-import { string } from "superstruct";
 import { CreateUserDTO, UpdateUserDTO } from "../lib/dto/userDTO";
 import prisma from "../lib/prisma";
 
