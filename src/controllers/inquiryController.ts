@@ -1,7 +1,17 @@
-import { getList, patchInquiry, deleteData } from "../services/inquiryService";
+import {
+  getList,
+  patchInquiry,
+  deleteData,
+  createRepliesData,
+} from "../services/inquiryService";
 import { create } from "superstruct";
-import { inquiryStruct } from "../structs/inquiryStructs";
-import { InquiryListResponseDTO, InquiryResDTO } from "../lib/dto/inquiryDto";
+import { inquiryStruct, replyContentStruct } from "../structs/inquiryStructs";
+import { IdParamsStruct } from "../structs/commonStructs";
+import {
+  InquiryListResponseDTO,
+  InquiryResDTO,
+  replyResDTO,
+} from "../lib/dto/inquiryDto";
 import { RequestHandler } from "express";
 
 export const getInquiry: RequestHandler = async (req, res) => {
@@ -19,7 +29,7 @@ export const getInquiry: RequestHandler = async (req, res) => {
 };
 
 export const changeInquiry: RequestHandler = async (req, res) => {
-  const params = req.params.id;
+  const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user.id;
   const inquiry = req.body;
   const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
@@ -29,11 +39,22 @@ export const changeInquiry: RequestHandler = async (req, res) => {
 };
 
 export const deleteInquiry: RequestHandler = async (req, res) => {
-  const params = req.params.id;
+  const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user.id;
 
   const result: InquiryResDTO = await deleteData(params, user);
 
   res.status(200).json(result);
+  return;
+};
+
+export const createReplies: RequestHandler = async (req, res) => {
+  const user = req.user.id;
+  const { id: params } = create(req.params, IdParamsStruct);
+  const { content: reply } = create(req.body, replyContentStruct);
+
+  const result: replyResDTO = await createRepliesData(user, params, reply);
+
+  res.status(201).json(result);
   return;
 };

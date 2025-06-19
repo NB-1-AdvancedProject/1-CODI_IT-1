@@ -5,6 +5,7 @@ import productRepository from "../repositories/productRepository";
 import { CreateProductBody } from "../structs/productStructs";
 import * as storeService from "../services/storeService";
 import stockService from "./stockService";
+import BadRequestError from "../lib/errors/BadRequestError";
 
 async function createProduct(data: CreateProductBody, userId: string) {
   const store = await storeService.getStoreByUserId(userId);
@@ -55,6 +56,22 @@ async function createProduct(data: CreateProductBody, userId: string) {
   };
 }
 
+async function deleteProduct(productId: string, userId: string) {
+  const store = await storeService.getStoreByUserId(userId);
+  if (!store) {
+    throw new NotFoundError("Store", userId);
+  }
+  const product = await productRepository.findProductById(productId);
+  if (!product) {
+    throw new NotFoundError("Product", productId);
+  }
+  if (product.storeId !== store.id) {
+    throw new BadRequestError("Product does not belong to your store");
+  }
+  await productRepository.deleteById(productId);
+}
+
 export default {
   createProduct,
+  deleteProduct,
 };

@@ -1,4 +1,4 @@
-import { CreateUserDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, UpdateUserDTO } from "../lib/dto/userDTO";
 import prisma from "../lib/prisma";
 
 async function findById(id: string) {
@@ -29,7 +29,6 @@ async function save(data: CreateUserDTO) {
     },
   });
 
-
   return await prisma.user.create({
     data: {
       ...data,
@@ -39,4 +38,33 @@ async function save(data: CreateUserDTO) {
   });
 }
 
-export default { findById, findByEmail, save };
+async function updateData(data: UpdateUserDTO) {
+  return await prisma.user.update({
+    where: { id: data.id },
+    data: {
+      name: data.name,
+      password: data.updatePassword,
+      image: data.image,
+    },
+  });
+}
+
+async function deletedUser(id: string) {
+  return await prisma.user.update({
+    where: { id },
+    data: {
+      deletedAt: new Date(),
+    },
+  });
+}
+
+async function getFavorite(id: string) {
+  return await prisma.favoriteStore.findMany({
+    where: { userId: id },
+    select: {
+      store: true,
+    },
+  });
+}
+
+export default { findById, findByEmail, save, updateData, deletedUser, getFavorite };
