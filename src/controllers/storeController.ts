@@ -28,3 +28,9 @@ export const getStoreInfo: RequestHandler = async (req, res) => {
   );
   res.status(200).json(result);
 };
+
+export const getMyStoreInfo: RequestHandler = async (req, res) => {
+  const { id: userId } = req.user;
+  const result = await storeService.getMyStoreInfo(userId);
+  res.status(200).json(result);
+};

@@ -63,10 +63,13 @@ export async function createTestStore(
   });
 }
 
-export async function createTestFavoriteStore(storeId: string, userId: string) {
-  return prisma.favoriteStore.create({
-    data: { userId, storeId },
-  });
+export async function createTestFavoriteStore(data: {
+  // 정은 : 변경했어요살려주세요
+  userId: string;
+  storeId: string;
+  createdAt?: Date;
+}) {
+  return prisma.favoriteStore.create({ data });
 }
 
 export async function createTestCategory(data: {
