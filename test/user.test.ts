@@ -7,9 +7,15 @@ import {
   createTestUser,
   disconnectTestDB,
   getAuthenticatedReq,
+  createTestStore,
+  createTestFavoriteStore,
 } from "./testUtil";
-import { buyerUser as buyer1 } from "./storeDummy";
-import { User } from "@prisma/client";
+import {
+  buyerUser as buyer1,
+  sellerUser as seller1,
+  store1,
+} from "./storeDummy";
+import { User, Store } from "@prisma/client";
 
 describe("유저 생성 기능", () => {
   beforeAll(async () => {
@@ -203,6 +209,41 @@ describe("회원 탈퇴", () => {
         const response = await authReq.delete("/api/users/delete").send();
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: "회원 탈퇴 성공" });
+      });
+    });
+  });
+});
+
+describe("내 관심 매장 조회", () => {
+  beforeAll(async () => {
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  describe("GET /api/users/me/likes", () => {
+    let buyerUser: User;
+    let sellerUser: User;
+    let store: Store;
+    beforeAll(async () => {
+      await clearDatabase();
+      buyerUser = await createTestUser(buyer1);
+      sellerUser = await createTestUser(seller1);
+      store = await createTestStore(store1, sellerUser.id);
+      await createTestFavoriteStore(store.id, buyerUser.id);
+    });
+    afterAll(async () => {
+      await disconnectTestDB();
+    });
+    describe("성공", () => {
+      test("관심 목록 조회", async () => {
+        const authReq = getAuthenticatedReq(buyerUser.id);
+        const response = await authReq.get("/api/users/me/likes").send();
+        expect(response.status).toBe(200);
+        console.log(response.body);
+        expect(response.body[0].store.name).toBe("마티네 마카롱");
       });
     });
   });
