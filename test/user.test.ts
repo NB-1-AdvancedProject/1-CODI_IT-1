@@ -127,8 +127,8 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          updatePassword: "Password!2345",
-          password: password,
+          password: "Password!2345",
+          currentPassword: password,
         };
 
         const authReq = getAuthenticatedReq(user.id);
@@ -154,8 +154,8 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          updatePassword: "Password!2345",
-          password: "password@1234~~",
+          password: "Password!2345",
+          currentPassword: "password@1234~~",
         };
 
         const authReq = getAuthenticatedReq(user.id);

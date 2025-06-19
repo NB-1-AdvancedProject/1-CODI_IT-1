@@ -81,9 +81,9 @@ async function updateUser(data: UpdateUserDTO) {
     throw new NotFoundError("User", data.id);
   }
 
-  const hashedPassword = await hashingPassword(data.password);
+  const hashedPassword = await hashingPassword(data.currentPassword);
 
-  if (!(await bcrypt.compare(data.password, user.password))) {
+  if (!(await bcrypt.compare(data.currentPassword, user.password))) {
     throw new UnauthError();
   }
 

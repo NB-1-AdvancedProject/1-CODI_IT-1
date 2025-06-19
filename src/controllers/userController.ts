@@ -19,14 +19,14 @@ export const getUser: RequestHandler = async (req, res) => {
 
 export const patchUser: RequestHandler = async (req, res) => {
   const id = req.user.id;
-  const { password, ...data } = req.body;
+  const { currentPassword, ...data } = req.body;
 
   const updateData = create(data, UpdateUser);
 
   const updatedUser = await userService.updateUser({
     id,
     ...updateData,
-    password,
+    currentPassword,
   });
 
   res.status(200).send(updatedUser);
