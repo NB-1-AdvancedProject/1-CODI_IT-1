@@ -22,7 +22,7 @@ export interface InquiryItem {
   };
 }
 
-export class UpdateInquiryResDTO {
+export class InquiryResDTO {
   id: string;
   userId: string;
   productId: string;
@@ -30,6 +30,8 @@ export class UpdateInquiryResDTO {
   content: string;
   status: InquiryStatus;
   isSecret: boolean;
+  createdAt: string;
+  updatedAt: string;
 
   constructor(inquiry: Inquiry) {
     this.id = inquiry.id;
@@ -39,5 +41,7 @@ export class UpdateInquiryResDTO {
     this.content = inquiry.content;
     this.status = inquiry.status;
     this.isSecret = inquiry.isSecret;
+    this.createdAt = inquiry.createdAt.toISOString();
+    this.updatedAt = inquiry.updatedAt.toISOString();
   }
 }

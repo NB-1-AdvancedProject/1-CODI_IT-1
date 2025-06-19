@@ -44,3 +44,15 @@ export async function patchData(param: string, inquiry: updateInquiryType) {
     },
   });
 }
+
+export async function getData(param: string) {
+  return prisma.inquiry.findUnique({
+    where: { id: param },
+  });
+}
+
+export async function delInquiry(inquiryId: string) {
+  return prisma.inquiry.delete({
+    where: { id: inquiryId },
+  });
+}

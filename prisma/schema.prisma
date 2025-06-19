@@ -117,7 +117,7 @@ model Stock {
   sizeId    String
   quantity  Int
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
 }
 
@@ -163,7 +163,7 @@ model OrderItem {
   price     Decimal // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
 }
 
@@ -194,7 +194,7 @@ model CartItem {
   quantity  Int
 
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
 }
 
@@ -210,7 +210,7 @@ model Inquiry {
   updatedAt DateTime      @updatedAt
 
   user    User    @relation(fields: [userId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   replies Reply[]
 }
 
@@ -228,7 +228,7 @@ model Reply {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inquiry Inquiry @relation(fields: [inquiryId], references: [id])
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id])
 }
 
@@ -241,7 +241,7 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id])
 }
 
@@ -250,8 +250,8 @@ model FavoriteStore {
   storeId   String
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  store Store @relation(fields: [storeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@id([userId, storeId])
 }

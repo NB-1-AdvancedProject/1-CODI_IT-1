@@ -1,10 +1,7 @@
-import { getList, patchInquiry } from "../services/inquiryService";
+import { getList, patchInquiry, deleteData } from "../services/inquiryService";
 import { create } from "superstruct";
 import { inquiryStruct } from "../structs/inquiryStructs";
-import {
-  InquiryListResponseDTO,
-  UpdateInquiryResDTO,
-} from "../lib/dto/inquiryDto";
+import { InquiryListResponseDTO, InquiryResDTO } from "../lib/dto/inquiryDto";
 import { RequestHandler } from "express";
 
 export const getInquiry: RequestHandler = async (req, res) => {
@@ -25,7 +22,17 @@ export const changeInquiry: RequestHandler = async (req, res) => {
   const params = req.params.id;
   const user = req.user.id;
   const inquiry = req.body;
-  const result: UpdateInquiryResDTO = await patchInquiry(params, user, inquiry);
+  const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
+
+  res.status(200).json(result);
+  return;
+};
+
+export const deleteInquiry: RequestHandler = async (req, res) => {
+  const params = req.params.id;
+  const user = req.user.id;
+
+  const result: InquiryResDTO = await deleteData(params, user);
 
   res.status(200).json(result);
   return;
