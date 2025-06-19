@@ -7,11 +7,14 @@ import {
 } from "../lib/dto/storeDTO";
 
 import { assert, create } from "superstruct";
-import { createStoreBodyStruct } from "../structs/storeStructs";
+import {
+  CreateStoreBodyStruct,
+  UpdateStoreBodyStruct,
+} from "../structs/storeStructs";
 import { IdParamsStruct, PageParamsStruct } from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
-  assert(req.body, createStoreBodyStruct);
+  assert(req.body, CreateStoreBodyStruct);
   const dto: CreateStoreDTO = {
     userId: req.user!.id,
     userType: req.user!.type,
@@ -42,5 +45,17 @@ export const getMyStoreProductList: RequestHandler = async (req, res) => {
 export const getMyStoreInfo: RequestHandler = async (req, res) => {
   const { id: userId } = req.user!;
   const result = await storeService.getMyStoreInfo(userId);
+  res.status(200).json(result);
+};
+
+export const updateMyStore: RequestHandler = async (req, res) => {
+  const { id: userId } = req.user!;
+  const { id: storeId } = create(req.params, IdParamsStruct);
+  assert(req.body, UpdateStoreBodyStruct);
+  const result = await storeService.updateMyStore({
+    userId,
+    storeId,
+    ...req.body,
+  });
   res.status(200).json(result);
 };

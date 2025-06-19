@@ -7,6 +7,7 @@ import {
   MyStoreDTO,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
+  UpdateMyStoreDTO,
 } from "../lib/dto/storeDTO";
 
 import * as storeRepository from "../repositories/storeRepository";
@@ -85,4 +86,19 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
     store.id
   );
   return new MyStoreDTO(store, favoriteCount, productCount, monthFavoriteCount);
+}
+
+export async function updateMyStore(
+  dto: UpdateMyStoreDTO
+): Promise<StoreResDTO> {
+  const { storeId, userId, ...rest } = dto;
+  const store = await storeRepository.findStoreByUserIdAndStoreId(
+    userId,
+    storeId
+  );
+  if (!store) {
+    throw new NotFoundError("Store", `userId: ${userId}&& storeId: ${storeId}`);
+  }
+  const result = await storeRepository.updateStore({ storeId, ...rest });
+  return new StoreResDTO(result);
 }

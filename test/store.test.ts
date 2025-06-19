@@ -243,6 +243,47 @@ describe("GET /api/stores/detail/my/product", () => {
   });
 });
 
+describe("PATCH /api/stores/:storeId", () => {
+  let sellerWithStore: User;
+  let sellerWithoutStore: User;
+  let store: Store;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    sellerWithoutStore = await createTestUser(seller2);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  const updatedStore = {
+    name: "updatedStore",
+    address: "updatedAddress",
+    phoneNumber: "010-0000-1234",
+    content: "Newly Updated!",
+  };
+  describe("성공", () => {
+    test("기본동작: 본인의 스토어이면 수정한 결과를 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerWithStore.id);
+      const response = await authReq
+        .patch(`/api/stores/${store.id}`)
+        .send(updatedStore);
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject(updatedStore);
+      expect(response.body.id).toBe(store.id);
+    });
+  });
+  describe("오류", () => {
+    test("본인의 스토어가 아닌 경우 NotFoundError(404) 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerWithoutStore.id);
+      const response = await authReq
+        .post(`/api/stores/${store.id}`)
+        .send(updatedStore);
+      expect(response.status).toBe(404);
+    });
+  });
+});
+
 // 테스트용 함수들
 
 export async function createTestUser(
