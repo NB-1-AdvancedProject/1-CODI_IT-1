@@ -11,7 +11,11 @@ import {
   CreateStoreBodyStruct,
   UpdateStoreBodyStruct,
 } from "../structs/storeStructs";
-import { IdParamsStruct, PageParamsStruct } from "../structs/commonStructs";
+import {
+  IdParamsStruct,
+  PageParamsStruct,
+  StoreIdParamsStruct,
+} from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, CreateStoreBodyStruct);
@@ -62,7 +66,7 @@ export const updateMyStore: RequestHandler = async (req, res) => {
 
 export const registerFavoriteStore: RequestHandler = async (req, res) => {
   const { id: userId } = req.user!;
-  const { id: storeId } = create(req.params, IdParamsStruct);
-  const result = await storeService.updateMyStore({ userId, storeId });
+  const { storeId } = create(req.params, StoreIdParamsStruct);
+  const result = await storeService.registerFavoriteStore({ userId, storeId });
   res.status(200).json(result);
 };

@@ -39,6 +39,9 @@ export type PageParamsType = Infer<typeof PageParamsStruct>;
 export const IdParamsStruct = object({
   id: Cuid,
 });
+export const StoreIdParamsStruct = object({
+  storeId: Cuid,
+});
 
 export type IdParams = Infer<typeof IdParamsStruct>;
 

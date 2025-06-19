@@ -189,10 +189,6 @@ describe("GET /api/stores/detail/my/product", () => {
         data: { storeId: store.id, ...product1 },
       });
       await createTestStocks(product1StocksQuantity18);
-      console.log(
-        `테스트 중 seller Id: ${sellerWithStore.id}, store의 userId: ${store.userId}`
-      );
-
       const authReq = getAuthenticatedReq(sellerWithStore.id);
       const response = await authReq.get("/api/stores/detail/my/product");
       expect(response.status).toBe(200);
@@ -280,6 +276,44 @@ describe("PATCH /api/stores/:storeId", () => {
         .post(`/api/stores/${store.id}`)
         .send(updatedStore);
       expect(response.status).toBe(404);
+    });
+  });
+});
+describe("POST /api/stores/:storeId/favorite", () => {
+  let sellerWithStore: User;
+  let store: Store;
+  let buyer: User;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    buyer = await createTestUser(buyer1);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: favoriteStore 가 생성되고 해당 store 정보가 반환됨", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(200);
+      expect(response.body.store).toMatchObject({
+        id: store.id,
+        name: store.name,
+        address: store.address,
+        phoneNumber: store.phoneNumber,
+        content: store.content,
+        image: store.image,
+        userId: store.userId,
+      });
+      expect(response.body.type).toBe("register");
+    });
+  });
+  describe("오류", () => {
+    test("이미 favorite 되어 있다면 AlreadyExtErr (409) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(409);
     });
   });
 });
