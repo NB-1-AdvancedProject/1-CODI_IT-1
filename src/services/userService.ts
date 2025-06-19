@@ -38,7 +38,7 @@ async function getByEmail(email: string) {
 async function getUser(email: string, password: string) {
   const user = await userRepository.findByEmail(email);
 
-  if (!user) {
+  if (!user || user.deletedAt) {
     throw new NotFoundError("User", email);
   }
 
