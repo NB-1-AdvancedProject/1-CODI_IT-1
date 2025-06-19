@@ -11,6 +11,14 @@ export type CreateUserDTO = {
   type: UserType;
 };
 
+export type UpdateUserDTO = {
+  id: string;
+  name?: string;
+  updatePassword?: string;
+  image?: string | null;
+  password: string;
+};
+
 //Response DTO
 export class UserResDTO {
   id: string;

@@ -3,8 +3,9 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
-import { CreateUserDTO, UserResDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, UpdateUserDTO, UserResDTO } from "../lib/dto/userDTO";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
+import UnauthError from "../lib/errors/UnauthError";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -69,4 +70,30 @@ async function getMydata(userId: string) {
   }
   return new UserResDTO(data);
 }
-export default { getUser, getById, getByEmail, createUser, getMydata };
+
+async function updateUser(data: UpdateUserDTO) {
+  const user = await userRepository.findById(data.id);
+
+  if (!user) {
+    throw new NotFoundError("User", data.id);
+  }
+
+  const hashedPassword = await hashingPassword(data.password);
+
+  if (!await bcrypt.compare(data.password, user.password)) {
+
+    throw new UnauthError();
+  }
+
+  const update = await userRepository.updateData(data);
+
+  return new UserResDTO(update);
+}
+export default {
+  getUser,
+  getById,
+  getByEmail,
+  createUser,
+  getMydata,
+  updateUser,
+};
