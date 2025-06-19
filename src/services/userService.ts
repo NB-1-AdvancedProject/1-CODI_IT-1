@@ -3,8 +3,9 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
-import { CreateUserDTO, FavoriteResDTO, UserResDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, UpdateUserDTO, UserResDTO, FavoriteResDTO } from "../lib/dto/userDTO";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
+import UnauthError from "../lib/errors/UnauthError";
 import { StoreResDTO } from "../lib/dto/storeDTO";
 
 async function hashingPassword(password: string) {
@@ -38,7 +39,7 @@ async function getByEmail(email: string) {
 async function getUser(email: string, password: string) {
   const user = await userRepository.findByEmail(email);
 
-  if (!user) {
+  if (!user || user.deletedAt) {
     throw new NotFoundError("User", email);
   }
 
@@ -71,6 +72,37 @@ async function getMydata(userId: string) {
   return new UserResDTO(data);
 }
 
+
+
+async function updateUser(data: UpdateUserDTO) {
+  const user = await userRepository.findById(data.id);
+
+  if (!user) {
+    throw new NotFoundError("User", data.id);
+  }
+
+  const hashedPassword = await hashingPassword(data.password);
+
+  if (!(await bcrypt.compare(data.password, user.password))) {
+    throw new UnauthError();
+  }
+
+  const update = await userRepository.updateData(data);
+
+  return new UserResDTO(update);
+}
+
+async function deletedUser(id: string) {
+  const user = await userRepository.findById(id);
+
+  if (!user) {
+    throw new UnauthError();
+  }
+
+  return await userRepository.deletedUser(id);
+}
+
+
 async function getFavoriteStore(userId: string) {
   const user = await userRepository.findById(userId);
 
@@ -83,4 +115,14 @@ async function getFavoriteStore(userId: string) {
 
   return store.map((store) => new FavoriteResDTO(userId, store));
 }
-export default { getUser, getById, getByEmail, createUser, getMydata, getFavoriteStore };
+
+export default {
+  getUser,
+  getById,
+  getByEmail,
+  createUser,
+  getMydata,
+  updateUser,
+  deletedUser,
+  getFavoriteStore
+};
