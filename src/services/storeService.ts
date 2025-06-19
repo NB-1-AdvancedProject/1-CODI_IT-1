@@ -1,5 +1,9 @@
 import {
   CreateStoreDTO,
+  GetMyStoreProductsDTO,
+  MyStoreProductDTO,
+  MyStoreProductsDTO,
+  ProductWithStocks,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
 } from "../lib/dto/storeDTO";
@@ -9,6 +13,7 @@ import UnauthError from "../lib/errors/UnauthError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import { UserType } from "@prisma/client";
 import { Store } from "../types/storeType";
+import NotFoundError from "../lib/errors/NotFoundError";
 
 export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   const { userType, ...storeData } = dto;
@@ -41,4 +46,27 @@ export async function getStoreByUserId( // 현태 : 살려주세요
     return null;
   }
   return new StoreResDTO(store);
+}
+
+export async function getMyStoreProductList(
+  dto: GetMyStoreProductsDTO
+): Promise<MyStoreProductsDTO> {
+  const { userId, page = 1, pageSize = 10 } = dto;
+  const store = await storeRepository.findStoreByUserId(userId);
+  if (!store) {
+    throw new NotFoundError("store", `userId: ${userId}`);
+  }
+  const products: ProductWithStocks[] =
+    await storeRepository.getProductsWithStocksByStoreId({
+      storeId: store.id,
+      page,
+      pageSize,
+    });
+  const list = await Promise.all(
+    products.map((product) => {
+      return new MyStoreProductDTO(product);
+    })
+  );
+  const totalCount = products.length;
+  return { list, totalCount };
 }

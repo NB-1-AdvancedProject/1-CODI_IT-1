@@ -8,7 +8,7 @@ import {
 
 import { assert, create } from "superstruct";
 import { createStoreBodyStruct } from "../structs/storeStructs";
-import { IdParamsStruct } from "../structs/commonStructs";
+import { IdParamsStruct, PageParamsStruct } from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, createStoreBodyStruct);
@@ -26,5 +26,15 @@ export const getStoreInfo: RequestHandler = async (req, res) => {
   const result: StoreWithFavoriteCountDTO = await storeService.getStoreInfo(
     storeId
   );
+  res.status(200).json(result);
+};
+
+export const getMyStoreProductList: RequestHandler = async (req, res) => {
+  const { id: userId } = req.user;
+  assert(req.params, PageParamsStruct);
+  const result = await storeService.getMyStoreProductList({
+    userId,
+    ...req.params,
+  });
   res.status(200).json(result);
 };

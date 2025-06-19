@@ -1,5 +1,9 @@
 import prisma from "../lib/prisma";
-import { CreateStoreInput } from "../lib/dto/storeDTO";
+import {
+  CreateStoreInput,
+  FindMyStoreProductsInput,
+  ProductWithStocks,
+} from "../lib/dto/storeDTO";
 import { Store } from "../types/storeType";
 
 export async function createStore(data: CreateStoreInput): Promise<Store> {
@@ -19,4 +23,17 @@ export async function countFavoriteStoreByStoreId(
   storeId: string
 ): Promise<number> {
   return await prisma.favoriteStore.count({ where: { storeId } });
+}
+
+// Product 관련
+export async function getProductsWithStocksByStoreId(
+  data: FindMyStoreProductsInput
+): Promise<ProductWithStocks[]> {
+  const { storeId, page, pageSize } = data;
+  return await prisma.product.findMany({
+    where: { storeId },
+    skip: pageSize * (page - 1),
+    take: pageSize,
+    include: { stocks: true },
+  });
 }
