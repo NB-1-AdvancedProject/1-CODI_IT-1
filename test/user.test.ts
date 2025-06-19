@@ -4,18 +4,9 @@ import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import {
   clearDatabase,
-  createTestUser,
   disconnectTestDB,
   getAuthenticatedReq,
-  createTestStore,
-  createTestFavoriteStore,
 } from "./testUtil";
-import {
-  buyerUser as buyer1,
-  sellerUser as seller1,
-  store1,
-} from "./storeDummy";
-import { User, Store } from "@prisma/client";
 
 describe("유저 생성 기능", () => {
   beforeAll(async () => {
@@ -224,22 +215,50 @@ describe("내 관심 매장 조회", () => {
   });
 
   describe("GET /api/users/me/likes", () => {
-    let buyerUser: User;
-    let sellerUser: User;
-    let store: Store;
     beforeAll(async () => {
       await clearDatabase();
-      buyerUser = await createTestUser(buyer1);
-      sellerUser = await createTestUser(seller1);
-      store = await createTestStore(store1, sellerUser.id);
-      await createTestFavoriteStore(store.id, buyerUser.id);
     });
     afterAll(async () => {
       await disconnectTestDB();
     });
     describe("성공", () => {
       test("관심 목록 조회", async () => {
-        const authReq = getAuthenticatedReq(buyerUser.id);
+        const password = "Password@1234";
+        const passwordHashed = bcrypt.hashSync(password, 10);
+
+        const user = await prisma.user.create({
+          data: {
+            email: "test2@test.com",
+            password: passwordHashed,
+            name: "홍길자",
+            type: "BUYER",
+          },
+        });
+
+        const seller = await prisma.user.create({
+          data: {
+            email: "seller@test.com",
+            password: passwordHashed,
+            name: "남겨요",
+            type: "SELLER",
+          },
+        });
+
+        const store = await prisma.store.create({
+          data: {
+            name: "마티네 마카롱",
+            address: "서울특별시 종로구 종로1가 1-1",
+            phoneNumber: "02-1111-2222",
+            content: "프랑스 수제 마카롱 전문점 🥐",
+            image: "https://example.com/images/store1.jpg",
+            userId: seller.id,
+          },
+        });
+
+        const favorite = await prisma.favoriteStore.create({
+          data: { userId: user.id, storeId: store.id },
+        });
+        const authReq = getAuthenticatedReq(user.id);
         const response = await authReq.get("/api/users/me/likes").send();
         expect(response.status).toBe(200);
         console.log(response.body);
