@@ -1,10 +1,22 @@
 import express from "express";
-import { createStore, getStoreInfo } from "../controllers/storeController";
+import {
+  createStore,
+  getMyStoreInfo,
+  getMyStoreProductList,
+  getStoreInfo,
+  updateMyStore,
+} from "../controllers/storeController";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 export const storeRouter = express.Router();
 
-// 정은 Todo: 로그인 된 것 확인하는 미들웨어 추가할 것!
 storeRouter.post("/", authMiddleware, asyncHandler(createStore));
 storeRouter.get("/:id", asyncHandler(getStoreInfo));
+storeRouter.patch("/:id", authMiddleware, asyncHandler(updateMyStore));
+storeRouter.get("/detail/my", authMiddleware, asyncHandler(getMyStoreInfo));
+storeRouter.get(
+  "/detail/my/product",
+  authMiddleware,
+  asyncHandler(getMyStoreProductList)
+);

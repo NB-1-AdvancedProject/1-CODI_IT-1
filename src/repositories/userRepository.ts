@@ -43,7 +43,7 @@ async function updateData(data: UpdateUserDTO) {
     where: { id: data.id },
     data: {
       name: data.name,
-      password: data.updatePassword,
+      password: data.password,
       image: data.image,
     },
   });
@@ -58,4 +58,13 @@ async function deletedUser(id: string) {
   });
 }
 
-export default { findById, findByEmail, save, updateData, deletedUser };
+async function getFavorite(id: string) {
+  return await prisma.favoriteStore.findMany({
+    where: { userId: id },
+    select: {
+      store: true,
+    },
+  });
+}
+
+export default { findById, findByEmail, save, updateData, deletedUser, getFavorite };

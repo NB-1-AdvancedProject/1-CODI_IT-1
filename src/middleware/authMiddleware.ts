@@ -3,30 +3,55 @@ import { verifyAccessToken } from "../utils/jwt";
 import UnauthError from "../lib/errors/UnauthError";
 import userService from "../services/userService";
 
+const extractToken = (req: Request): string | null => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  return authHeader.split(" ")[1];
+};
+
 export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
-    throw new UnauthError();
-  }
-
-  const token = authHeader?.split(" ")[1];
-
   try {
-    const decoded = verifyAccessToken(token) as { userId: string };
-    const user = await userService.getById(decoded.userId);
-
+    const token = extractToken(req);
+    if (!token) {
+      throw new UnauthError();
+    }
+    const { userId } = verifyAccessToken(token);
+    const user = await userService.getById(userId);
     if (!user) {
       throw new UnauthError();
     }
 
     req.user = user;
     next();
-  } catch (error) {
-    throw new UnauthError();
+  } catch {
+    next(new UnauthError());
+  }
+};
+
+export const optionalAuthMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = extractToken(req);
+    if (!token) {
+      return next();
+    }
+
+    const { userId } = verifyAccessToken(token);
+    const user = await userService.getById(userId);
+    if (user) {
+      req.user = user;
+    }
+  } catch {
+  } finally {
+    next();
   }
 };

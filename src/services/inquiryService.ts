@@ -3,19 +3,31 @@ import {
   patchData,
   getData,
   delInquiry,
+  createReply,
+  getReplyData,
+  patchReplay,
 } from "../repositories/inquiryRepository";
 import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
-import { InquiryListResponseDTO, InquiryResDTO } from "../lib/dto/inquiryDto";
+import {
+  InquiryListResponseDTO,
+  InquiryResDTO,
+  replyResDTO,
+} from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
+import userRepository from "../repositories/userRepository";
 
 export async function getList(
   params: inquiryType,
   userId: string
 ): Promise<InquiryListResponseDTO> {
-  //user 디비에 있는지 확인;
-  //없으면 오류
+  const userData = await userRepository.findById(userId);
+
+  if (!userData) {
+    throw new NotFoundError("User", userId);
+  }
+
   const list = await listData(params, userId);
 
   const totalCount = await countData(userId);
@@ -57,4 +69,57 @@ export async function deleteData(
   await delInquiry(inquiry.id);
 
   return new InquiryResDTO(inquiry);
+}
+
+export async function createRepliesData(
+  user: string,
+  params: string,
+  reply: string
+): Promise<replyResDTO> {
+  const userData = await userRepository.findById(user);
+
+  if (!userData) {
+    throw new NotFoundError("User", user);
+  }
+  if (userData.type === "BUYER") {
+    throw new UnauthError();
+  }
+
+  const inquiry = await getData(params);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", params);
+  }
+
+  const replies = await createReply(user, params, reply);
+
+  return new replyResDTO(replies);
+}
+
+export async function updateRepliesData(
+  user: string,
+  params: string,
+  reply: string
+): Promise<replyResDTO> {
+  const userData = await userRepository.findById(user);
+
+  if (!userData) {
+    throw new NotFoundError("User", user);
+  }
+  if (userData.type === "BUYER") {
+    throw new UnauthError();
+  }
+
+  const replyId = await getReplyData(params);
+  if (!replyId) {
+    throw new NotFoundError("Reply", params);
+  }
+
+  if (replyId.userId !== userData.id) {
+    throw new UnauthError();
+  }
+
+  const replayData = await patchReplay(params, reply);
+
+  return new replyResDTO(replayData);
 }

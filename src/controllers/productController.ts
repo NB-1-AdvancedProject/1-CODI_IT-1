@@ -60,12 +60,12 @@ export const getProducts: RequestHandler = async (req, res) => {
 
 export const postProduct: RequestHandler = async (req, res) => {
   const data = create(parseRequestBody(req.body), CreateProductBodyStruct);
-  const product = await productService.createProduct(data, req.user.id);
+  const product = await productService.createProduct(data, req.user!.id);
   res.status(201).json(product);
 };
 
 export const deleteProduct: RequestHandler = async (req, res) => {
   const productId = req.params.id;
-  await productService.deleteProduct(productId, req.user.id);
+  await productService.deleteProduct(productId, req.user!.id);
   res.status(204).send();
 };

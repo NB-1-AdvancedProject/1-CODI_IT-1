@@ -3,9 +3,10 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
-import { CreateUserDTO, UpdateUserDTO, UserResDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, UpdateUserDTO, UserResDTO, FavoriteResDTO } from "../lib/dto/userDTO";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import UnauthError from "../lib/errors/UnauthError";
+import { StoreResDTO } from "../lib/dto/storeDTO";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -71,6 +72,8 @@ async function getMydata(userId: string) {
   return new UserResDTO(data);
 }
 
+
+
 async function updateUser(data: UpdateUserDTO) {
   const user = await userRepository.findById(data.id);
 
@@ -78,9 +81,9 @@ async function updateUser(data: UpdateUserDTO) {
     throw new NotFoundError("User", data.id);
   }
 
-  const hashedPassword = await hashingPassword(data.password);
+  const hashedPassword = await hashingPassword(data.currentPassword);
 
-  if (!(await bcrypt.compare(data.password, user.password))) {
+  if (!(await bcrypt.compare(data.currentPassword, user.password))) {
     throw new UnauthError();
   }
 
@@ -98,6 +101,21 @@ async function deletedUser(id: string) {
 
   return await userRepository.deletedUser(id);
 }
+
+
+async function getFavoriteStore(userId: string) {
+  const user = await userRepository.findById(userId);
+
+  if (!user) {
+    throw new NotFoundError("User", userId);
+  }
+
+  const favorite = await userRepository.getFavorite(userId);
+  const store = favorite.map((fav) => new StoreResDTO(fav.store));
+
+  return store.map((store) => new FavoriteResDTO(userId, store));
+}
+
 export default {
   getUser,
   getById,
@@ -106,4 +124,5 @@ export default {
   getMydata,
   updateUser,
   deletedUser,
+  getFavoriteStore
 };
