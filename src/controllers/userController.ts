@@ -10,7 +10,7 @@ export const createUser: RequestHandler = async (req, res) => {
 };
 
 export const getUser: RequestHandler = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   const mypage = await userService.getMydata(userId);
 
@@ -18,22 +18,22 @@ export const getUser: RequestHandler = async (req, res) => {
 };
 
 export const patchUser: RequestHandler = async (req, res) => {
-  const id = req.user.id;
-  const { password, ...data } = req.body;
+  const id = req.user!.id;
+  const { currentPassword, ...data } = req.body;
 
   const updateData = create(data, UpdateUser);
 
   const updatedUser = await userService.updateUser({
     id,
     ...updateData,
-    password,
+    currentPassword,
   });
 
   res.status(200).send(updatedUser);
 };
 
 export const daleteUser: RequestHandler = async (req, res) => {
-  const id = req.user.id;
+  const id = req.user!.id;
 
   await userService.deletedUser(id);
 
@@ -41,7 +41,7 @@ export const daleteUser: RequestHandler = async (req, res) => {
 };
 
 export const getLikeStore: RequestHandler = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   const likeStore = await userService.getFavoriteStore(userId);
 

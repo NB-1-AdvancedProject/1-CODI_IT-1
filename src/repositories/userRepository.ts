@@ -43,7 +43,7 @@ async function updateData(data: UpdateUserDTO) {
     where: { id: data.id },
     data: {
       name: data.name,
-      password: data.updatePassword,
+      password: data.password,
       image: data.image,
     },
   });

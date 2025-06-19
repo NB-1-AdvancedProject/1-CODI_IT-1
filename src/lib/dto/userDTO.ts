@@ -15,9 +15,9 @@ export type CreateUserDTO = {
 export type UpdateUserDTO = {
   id: string;
   name?: string;
-  updatePassword?: string;
+  password?: string;
   image?: string | null;
-  password: string;
+  currentPassword: string;
 };
 
 //Response DTO

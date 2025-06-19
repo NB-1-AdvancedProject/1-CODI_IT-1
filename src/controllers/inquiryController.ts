@@ -19,7 +19,7 @@ import { RequestHandler } from "express";
 
 export const getInquiry: RequestHandler = async (req, res) => {
   const params = create(req.query, inquiryStruct);
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   const { list, totalCount } = await getList(params, userId);
 
@@ -33,7 +33,7 @@ export const getInquiry: RequestHandler = async (req, res) => {
 
 export const changeInquiry: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
-  const user = req.user.id;
+  const user = req.user!.id;
   const inquiry = req.body;
   const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
 
@@ -43,7 +43,8 @@ export const changeInquiry: RequestHandler = async (req, res) => {
 
 export const deleteInquiry: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
-  const user = req.user.id;
+  const user = req.user!.id;
+
 
   const result: InquiryResDTO = await deleteData(params, user);
 
@@ -52,7 +53,7 @@ export const deleteInquiry: RequestHandler = async (req, res) => {
 };
 
 export const createReplies: RequestHandler = async (req, res) => {
-  const user = req.user.id;
+  const user = req.user!.id;
   const { id: params } = create(req.params, IdParamsStruct);
   const { content: reply } = create(req.body, replyContentStruct);
 
@@ -65,7 +66,7 @@ export const createReplies: RequestHandler = async (req, res) => {
 export const patchReplies: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
   const { content: reply } = create(req.body, replyContentStruct);
-  const user = req.user.id;
+  const user = req.user!.id;
 
   const result: replyResDTO = await updateRepliesData(user, params, reply);
 
