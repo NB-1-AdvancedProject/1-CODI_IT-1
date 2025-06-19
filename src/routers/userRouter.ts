@@ -7,6 +7,6 @@ const userRouter = Router();
 
 userRouter.post("/", asyncHandler(createUser));
 userRouter.get("/me", authMiddleware, asyncHandler(getUser));
-userRouter.patch("/me", authMiddleware, asyncHandler(patchUser));
+userRouter.put("/me", authMiddleware, asyncHandler(patchUser));
 
 export default userRouter;

@@ -25,4 +25,10 @@ export const CreateUser = object({
   type: UserType,
 });
 
-export const UpdateUser = partial(CreateUser);
+export const UpdateUser = object({
+  name: coerce(pattern(string(), nameRegex), string(), (value) => value.trim()),
+  updatePassword: coerce(pattern(string(), passwordRegex), string(), (value) =>
+    value.trim()
+  ),
+  image: optional(string()),
+});

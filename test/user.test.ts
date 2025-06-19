@@ -97,3 +97,74 @@ describe("내 정보 조회", () => {
     });
   });
 });
+
+describe("내 정보 수정", () => {
+  beforeAll(async () => {
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  describe("PUT /api/users/me", () => {
+    beforeAll(async () => {
+      await clearDatabase();
+    });
+    afterAll(async () => {
+      await disconnectTestDB();
+    });
+    describe("성공", () => {
+      test("내 정보 수정", async () => {
+        const password = "Password@1234";
+        const passwordHashed = bcrypt.hashSync(password, 10);
+
+        const user = await prisma.user.create({
+          data: {
+            email: "test2@test.com",
+            password: passwordHashed,
+            name: "홍길자",
+            type: "BUYER",
+          },
+        });
+
+        const data = {
+          name: "김함자",
+          updatePassword: "Password!2345",
+          password: password,
+        };
+
+        const authReq = getAuthenticatedReq(user.id);
+        const response = await authReq.put("/api/users/me").send(data);
+        expect(response.status).toBe(201);
+        expect(response.body.name).toBe("김함자");
+      });
+    });
+
+    describe("실패", () => {
+      test("틀린 비밀번호 입력", async () => {
+        const password = "Password@1234";
+        const passwordHashed = bcrypt.hashSync(password, 10);
+
+        const user = await prisma.user.create({
+          data: {
+            email: "test3@test.com",
+            password: passwordHashed,
+            name: "홍길자",
+            type: "BUYER",
+          },
+        });
+
+        const data = {
+          name: "김함자",
+          updatePassword: "Password!2345",
+          password: "password@1234~~",
+        };
+
+        const authReq = getAuthenticatedReq(user.id);
+        const response = await authReq.put("/api/users/me").send(data);
+        expect(response.status).toBe(401);
+      });
+    });
+  });
+});
