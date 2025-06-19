@@ -4,7 +4,6 @@ import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import {
   clearDatabase,
-  createTestProduct,
   disconnectTestDB,
   getAuthenticatedReq,
 } from "./testUtil";
@@ -13,9 +12,12 @@ import {
   buyerUser2 as buyer2,
   categories,
   product1,
-  product2,
+  product1StocksQuantity18,
+  productWithDiscount,
+  product2StocksQuantity0,
   sellerUser as seller1,
   sellerUser2 as seller2,
+  sizes,
   store1,
 } from "./storeDummy";
 import { Prisma } from "@prisma/client";
@@ -132,8 +134,10 @@ describe("GET /api/stores/detail/my", () => {
     sellerWithoutStore = await createTestUser(seller2);
     await createTestCategories(categories);
     store = await createTestStore(store1, sellerUser.id);
-    await createTestProduct({ storeId: store.id, ...product1 });
-    await createTestProduct({ storeId: store.id, ...product2 });
+    await prisma.product.create({ data: { storeId: store.id, ...product1 } });
+    await prisma.product.create({
+      data: { storeId: store.id, ...productWithDiscount },
+    });
     await createTestFavoriteStore({ storeId: store.id, userId: buyerUser.id });
     await createTestFavoriteStore({
       storeId: store.id,
@@ -145,7 +149,7 @@ describe("GET /api/stores/detail/my", () => {
     await disconnectTestDB();
   });
   describe("성공", () => {
-    test("기본동작: 해당 id의 store 정보와 favoriteCount 를 반환함", async () => {
+    test("기본동작: 내 스토어 정보와 favoriteCount, monthFavoriteCount, productCount를 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq.get("/api/stores/detail/my");
       expect(response.status).toBe(200);
@@ -164,6 +168,77 @@ describe("GET /api/stores/detail/my", () => {
     test("로그인 안했을 시 UnauthorizedError(401) 발생", async () => {
       const response = await request(app).get("/api/stores/detail/my");
       expect(response.status).toBe(401);
+    });
+  });
+});
+
+describe("GET /api/stores/detail/my/product", () => {
+  beforeEach(async () => {
+    await clearDatabase();
+    await createTestCategories(categories);
+    await createTestSizes(sizes);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 내 스토어의 상품목록과 totalCount를 반환함", async () => {
+      const sellerWithStore = await createTestUser(seller1);
+      const store = await createTestStore(store1, sellerWithStore.id);
+      const product = await prisma.product.create({
+        data: { storeId: store.id, ...product1 },
+      });
+      await createTestStocks(product1StocksQuantity18);
+      console.log(
+        `테스트 중 seller Id: ${sellerWithStore.id}, store의 userId: ${store.userId}`
+      );
+
+      const authReq = getAuthenticatedReq(sellerWithStore.id);
+      const response = await authReq.get("/api/stores/detail/my/product");
+      expect(response.status).toBe(200);
+      expect(response.body.list[0].id).toBe(product.id);
+      expect(response.body.totalCount).toBe(1);
+      expect(response.body.list[0].isSoldOut).toBe(false);
+      expect(response.body.list[0].isDiscount).toBe(false);
+      expect(response.body.list[0].stocks).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: "clxstock00cardi01" }),
+          expect.objectContaining({ id: "clxstock01cardi02" }),
+        ])
+      );
+    });
+    test("기본동작: discount 중이라면 isDiscount 가 true임", async () => {
+      const sellerWithStore = await createTestUser(seller1);
+      const store = await createTestStore(store1, sellerWithStore.id);
+      const product = await prisma.product.create({
+        data: { storeId: store.id, ...productWithDiscount },
+      });
+      const authReq = getAuthenticatedReq(sellerWithStore.id);
+      const response = await authReq.get("/api/stores/detail/my/product");
+      expect(response.status).toBe(200);
+      expect(response.body.list[0].id).toBe(product.id);
+      expect(response.body.list[0].isDiscount).toBe(true);
+    });
+    test("기본동작: 재고가 총 0이라면 isSoldOut 가 true임", async () => {
+      const sellerWithStore = await createTestUser(seller1);
+      const store = await createTestStore(store1, sellerWithStore.id);
+      const product = await prisma.product.create({
+        data: { storeId: store.id, ...productWithDiscount },
+      });
+      await createTestStocks(product2StocksQuantity0);
+      const authReq = getAuthenticatedReq(sellerWithStore.id);
+      const response = await authReq.get("/api/stores/detail/my/product");
+      expect(response.status).toBe(200);
+      expect(response.body.list[0].id).toBe(product.id);
+      expect(response.body.list[0].isSoldOut).toBe(true);
+    });
+  });
+  describe("오류", () => {
+    test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
+      const sellerWithoutStore = await createTestUser(seller1);
+      const authReq = getAuthenticatedReq(sellerWithoutStore.id);
+      const response = await authReq.get("/api/stores/detail/my/product");
+      expect(response.status).toBe(404);
     });
   });
 });
@@ -217,4 +292,11 @@ export async function createTestFavoriteStore(data: {
   createdAt?: Date;
 }) {
   return prisma.favoriteStore.create({ data });
+}
+
+export async function createTestStocks(data: Prisma.StockCreateManyInput[]) {
+  return prisma.stock.createMany({
+    data: data,
+    skipDuplicates: true,
+  });
 }
