@@ -80,14 +80,23 @@ async function updateUser(data: UpdateUserDTO) {
 
   const hashedPassword = await hashingPassword(data.password);
 
-  if (!await bcrypt.compare(data.password, user.password)) {
-
+  if (!(await bcrypt.compare(data.password, user.password))) {
     throw new UnauthError();
   }
 
   const update = await userRepository.updateData(data);
 
   return new UserResDTO(update);
+}
+
+async function deletedUser(id: string) {
+  const user = await userRepository.findById(id);
+
+  if (!user) {
+    throw new UnauthError();
+  }
+
+  return await userRepository.deletedUser(id);
 }
 export default {
   getUser,
@@ -96,4 +105,5 @@ export default {
   createUser,
   getMydata,
   updateUser,
+  deletedUser,
 };

@@ -136,7 +136,7 @@ describe("내 정보 수정", () => {
 
         const authReq = getAuthenticatedReq(user.id);
         const response = await authReq.put("/api/users/me").send(data);
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
         expect(response.body.name).toBe("김함자");
       });
     });

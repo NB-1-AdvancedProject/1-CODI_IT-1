@@ -29,5 +29,13 @@ export const patchUser: RequestHandler = async (req, res) => {
     password,
   });
 
-  res.status(201).send(updatedUser);
+  res.status(200).send(updatedUser);
+};
+
+export const daleteUser: RequestHandler = async (req, res) => {
+  const id = req.user.id;
+
+  await userService.deletedUser(id);
+
+  res.status(200).send({ message: "회원 탈퇴 성공" });
 };
