@@ -16,3 +16,11 @@ export const getUser: RequestHandler = async (req, res) => {
 
   res.status(200).send(mypage);
 };
+
+export const getLikeStore: RequestHandler = async (req, res) => {
+  const userId = req.user.id;
+
+  const likeStore = await userService.getFavoriteStore(userId);
+
+  res.status(200).send(likeStore);
+};

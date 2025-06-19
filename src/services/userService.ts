@@ -3,8 +3,9 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
 import { User } from "../types/user";
-import { CreateUserDTO, UserResDTO } from "../lib/dto/userDTO";
+import { CreateUserDTO, FavoriteResDTO, UserResDTO } from "../lib/dto/userDTO";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
+import { StoreResDTO } from "../lib/dto/storeDTO";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -69,4 +70,17 @@ async function getMydata(userId: string) {
   }
   return new UserResDTO(data);
 }
-export default { getUser, getById, getByEmail, createUser, getMydata };
+
+async function getFavoriteStore(userId: string) {
+  const user = await userRepository.findById(userId);
+
+  if (!user) {
+    throw new NotFoundError("User", userId);
+  }
+
+  const favorite = await userRepository.getFavorite(userId);
+  const store = favorite.map((fav) => new StoreResDTO(fav.store));
+
+  return store.map((store) => new FavoriteResDTO(userId, store));
+}
+export default { getUser, getById, getByEmail, createUser, getMydata, getFavoriteStore };

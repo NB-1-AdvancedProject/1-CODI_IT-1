@@ -29,7 +29,6 @@ async function save(data: CreateUserDTO) {
     },
   });
 
-
   return await prisma.user.create({
     data: {
       ...data,
@@ -39,4 +38,13 @@ async function save(data: CreateUserDTO) {
   });
 }
 
-export default { findById, findByEmail, save };
+async function getFavorite(id: string) {
+  return await prisma.favoriteStore.findMany({
+    where: { userId: id },
+    select: {
+      store: true,
+    },
+  });
+}
+
+export default { findById, findByEmail, save, getFavorite };
