@@ -211,7 +211,7 @@ model Inquiry {
 
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  replies Reply[]
+  Reply   Reply?
 }
 
 enum InquiryStatus {
@@ -221,7 +221,7 @@ enum InquiryStatus {
 
 model Reply {
   id        String   @id @default(cuid())
-  inquiryId String
+  inquiryId String   @unique
   userId    String
   content   String
   isChecked Boolean  @default(false)

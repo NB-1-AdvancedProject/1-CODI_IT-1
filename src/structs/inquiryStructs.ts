@@ -21,6 +21,11 @@ export const patchInquiryStruct = object({
   isSecret: boolean(),
 });
 
+export const replyContentStruct = object({
+  content: string(),
+});
+
 export type inquiryType = Infer<typeof inquiryStruct>;
 export const updateInquiryStruct = partial(patchInquiryStruct);
 export type updateInquiryType = Infer<typeof updateInquiryStruct>;
+export type replyContentType = Infer<typeof replyContentStruct>;
