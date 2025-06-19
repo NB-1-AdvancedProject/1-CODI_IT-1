@@ -19,6 +19,15 @@ export type GetMyStoreProductsDTO = {
   pageSize: number;
 };
 
+export type UpdateMyStoreDTO = {
+  userId: string;
+  storeId: string;
+  name?: string;
+  address?: string;
+  phoneNumber?: string;
+  content?: string;
+  image?: string;
+};
 // Response DTO
 export class StoreResDTO {
   id: string;
@@ -116,6 +125,8 @@ export type FindMyStoreProductsInput = {
   page: number;
   pageSize: number;
 };
+
+export type UpdateStoreInput = Omit<UpdateMyStoreDTO, "userId">;
 
 // 다른 도메인 DTO
 // 정은 Todo: 나중에 겹치는지 체크 필요
