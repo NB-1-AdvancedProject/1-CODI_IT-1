@@ -97,7 +97,7 @@ export async function updateMyStore(
     storeId
   );
   if (!store) {
-    throw new NotFoundError("Store", `userId: ${userId}&& storeId: ${storeId}`);
+    throw new UnauthError();
   }
   const result = await storeRepository.updateStore({ storeId, ...rest });
   return new StoreResDTO(result);

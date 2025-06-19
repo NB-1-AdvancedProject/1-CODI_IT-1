@@ -311,12 +311,12 @@ describe("PATCH /api/stores/:storeId", () => {
     });
   });
   describe("오류", () => {
-    test("본인의 스토어가 아닌 경우 NotFoundError(404) 반환함", async () => {
+    test("본인의 스토어가 아닌 경우 Unauthorized(401) 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
       const response = await authReq
-        .post(`/api/stores/${store.id}`)
+        .patch(`/api/stores/${store.id}`)
         .send(updatedStore);
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(401);
     });
   });
 });
