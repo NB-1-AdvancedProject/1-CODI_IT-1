@@ -27,7 +27,7 @@ export const CreateUser = object({
 
 export const UpdateUser = object({
   name: coerce(pattern(string(), nameRegex), string(), (value) => value.trim()),
-  updatePassword: coerce(pattern(string(), passwordRegex), string(), (value) =>
+  password: coerce(pattern(string(), passwordRegex), string(), (value) =>
     value.trim()
   ),
   image: optional(string()),

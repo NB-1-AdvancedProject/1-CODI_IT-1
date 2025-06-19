@@ -4,8 +4,7 @@ import { Token } from "./user";
 declare global {
   namespace Express {
     interface Request {
-      user: Token;
+      user?: Token;
     }
   }
 }
-
