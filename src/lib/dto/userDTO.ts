@@ -1,6 +1,7 @@
 import { UserType } from "@prisma/client";
 import { User } from "../../types/user";
 import { Decimal } from "@prisma/client/runtime/library";
+import { StoreResDTO } from "./storeDTO";
 
 // Request DTO
 export type CreateUserDTO = {
@@ -53,5 +54,37 @@ export class UserResDTO {
         }
       : null;
     this.image = user.image ?? "";
+  }
+}
+
+export class FavoriteResDTO {
+  storeId: string;
+  userId: string;
+  store: {
+    id: string;
+    name: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string;
+    address: string;
+    phoneNumber: string;
+    content: string;
+    image: string;
+  };
+
+  constructor(userId: string, store: StoreResDTO) {
+    this.storeId = store.id;
+    this.userId = userId;
+    this.store = {
+      id: store.id,
+      name: store.name,
+      createdAt: store.createdAt,
+      updatedAt: store.updatedAt,
+      userId: store.userId,
+      address: store.address,
+      phoneNumber: store.phoneNumber,
+      content: store.content,
+      image: store.image,
+    };
   }
 }

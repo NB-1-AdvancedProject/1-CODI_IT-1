@@ -58,4 +58,13 @@ async function deletedUser(id: string) {
   });
 }
 
-export default { findById, findByEmail, save, updateData, deletedUser };
+async function getFavorite(id: string) {
+  return await prisma.favoriteStore.findMany({
+    where: { userId: id },
+    select: {
+      store: true,
+    },
+  });
+}
+
+export default { findById, findByEmail, save, updateData, deletedUser, getFavorite };
