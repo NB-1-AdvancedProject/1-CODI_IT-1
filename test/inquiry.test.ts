@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import prisma from "../src/lib/prisma";
-import { User, Product, InquiryStatus, Inquiry } from "@prisma/client";
+import { User, Product, InquiryStatus, Inquiry, Reply } from "@prisma/client";
 import { clearDatabase, createTestUser, getAuthenticatedReq } from "./testUtil";
 import { buyerUser as buyer1, sellerUser as seller1 } from "./inquiryDummy";
 
@@ -304,6 +304,77 @@ describe("문의 API 테스트", () => {
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Unauthorized" });
+    });
+  });
+
+  describe("PATCH api/inquiries/:id/replies", () => {
+    let inquiry: Inquiry;
+    let replay: Reply;
+    beforeAll(async () => {
+      inquiry = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: false,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+
+      replay = await prisma.reply.create({
+        data: {
+          content: "이 제품은 재입고 예정입니다.",
+          createdAt: "2024-06-01T12:00:00.000Z",
+          updatedAt: "2024-06-01T12:00:00.000Z",
+          user: { connect: { id: sellerUser.id } },
+          inquiry: { connect: { id: inquiry.id } },
+        },
+      });
+    });
+
+    test("문의 답변을 수정 할 수 있다.(성공)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq
+        .patch(`/api/inquiries/${replay.id}/replies`)
+        .send({
+          content: "답변 내용입니다.",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        content: "답변 내용입니다.",
+      });
+    });
+
+    test("문의 답변을 수정 할 수 있다.(실패- 권한없음)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .patch(`/api/inquiries/${replay.id}/replies`)
+        .send({
+          content: "답변 내용입니다.",
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Unauthorized" });
+    });
+
+    test("문의 답변을 수정 할 수 있다.(reply 없음)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq
+        .patch(`/api/inquiries/${"clabcxyz1234567890abcdefg"}/replies`)
+        .send({
+          content: "답변 내용입니다.",
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        message: "Reply with id clabcxyz1234567890abcdefg not found",
+      });
     });
   });
 });

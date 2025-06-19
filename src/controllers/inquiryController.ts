@@ -3,6 +3,7 @@ import {
   patchInquiry,
   deleteData,
   createRepliesData,
+  updateRepliesData,
 } from "../services/inquiryService";
 import { create } from "superstruct";
 import { inquiryStruct, replyContentStruct } from "../structs/inquiryStructs";
@@ -56,5 +57,16 @@ export const createReplies: RequestHandler = async (req, res) => {
   const result: replyResDTO = await createRepliesData(user, params, reply);
 
   res.status(201).json(result);
+  return;
+};
+
+export const patchReplies: RequestHandler = async (req, res) => {
+  const { id: params } = create(req.params, IdParamsStruct);
+  const { content: reply } = create(req.body, replyContentStruct);
+  const user = req.user.id;
+
+  const result: replyResDTO = await updateRepliesData(user, params, reply);
+
+  res.status(200).json(result);
   return;
 };

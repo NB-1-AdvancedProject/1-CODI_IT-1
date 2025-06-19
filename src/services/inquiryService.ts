@@ -4,13 +4,10 @@ import {
   getData,
   delInquiry,
   createReply,
+  getReplyData,
+  patchReplay,
 } from "../repositories/inquiryRepository";
-import {
-  updateInquiryType,
-  inquiryType,
-  replyContentType,
-} from "../structs/inquiryStructs";
-import { IdParams } from "../structs/commonStructs";
+import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
 import {
   InquiryListResponseDTO,
@@ -78,7 +75,7 @@ export async function createRepliesData(
   user: string,
   params: string,
   reply: string
-) {
+): Promise<replyResDTO> {
   const userData = await userRepository.findById(user);
 
   if (!userData) {
@@ -97,4 +94,32 @@ export async function createRepliesData(
   const replies = await createReply(user, params, reply);
 
   return new replyResDTO(replies);
+}
+
+export async function updateRepliesData(
+  user: string,
+  params: string,
+  reply: string
+): Promise<replyResDTO> {
+  const userData = await userRepository.findById(user);
+
+  if (!userData) {
+    throw new NotFoundError("User", user);
+  }
+  if (userData.type === "BUYER") {
+    throw new UnauthError();
+  }
+
+  const replyId = await getReplyData(params);
+  if (!replyId) {
+    throw new NotFoundError("Reply", params);
+  }
+
+  if (replyId.userId !== userData.id) {
+    throw new UnauthError();
+  }
+
+  const replayData = await patchReplay(params, reply);
+
+  return new replyResDTO(replayData);
 }
