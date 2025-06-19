@@ -1,6 +1,9 @@
 import { RequestHandler } from "express";
 import { create } from "superstruct";
-import { CreateProductBodyStruct } from "../structs/productStructs";
+import {
+  CreateProductBodyStruct,
+  ProductListParamsStruct,
+} from "../structs/productStructs";
 import productService from "../services/productService";
 
 function parseRequestBody(rawBody: any) {
@@ -28,6 +31,32 @@ function parseRequestBody(rawBody: any) {
       : [],
   };
 }
+
+function parseProductListParams(rawQuery: any) {
+  return {
+    page: rawQuery.page ? parseInt(rawQuery.page, 10) : 1,
+    pageSize: rawQuery.pageSize ? parseInt(rawQuery.pageSize, 10) : 16,
+    search: rawQuery.search ?? undefined,
+    searchBy: rawQuery.searchBy ?? undefined,
+    sort: rawQuery.sort ?? undefined,
+    priceMin:
+      rawQuery.priceMin !== undefined ? Number(rawQuery.priceMin) : undefined,
+    priceMax:
+      rawQuery.priceMax !== undefined ? Number(rawQuery.priceMax) : undefined,
+    favoriteStore: rawQuery.favoriteStore ?? undefined,
+    size: rawQuery.size ?? undefined,
+    categoryName: rawQuery.categoryName ?? undefined,
+  };
+}
+
+export const getProducts: RequestHandler = async (req, res) => {
+  const params = create(
+    parseProductListParams(req.query),
+    ProductListParamsStruct
+  );
+  const products = await productService.getProducts(params);
+  res.json(products);
+};
 
 export const postProduct: RequestHandler = async (req, res) => {
   const data = create(parseRequestBody(req.body), CreateProductBodyStruct);
