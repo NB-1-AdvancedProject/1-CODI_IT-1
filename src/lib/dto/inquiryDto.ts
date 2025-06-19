@@ -1,5 +1,6 @@
 import { InquiryStatus } from "@prisma/client";
-import { Inquiry } from "../../types/inquiryType";
+import { Inquiry, Reply } from "../../types/inquiryType";
+import { ReplyUser } from "../../types/inquiryType";
 
 export interface InquiryListResponseDTO {
   list: InquiryItem[];
@@ -43,5 +44,28 @@ export class InquiryResDTO {
     this.isSecret = inquiry.isSecret;
     this.createdAt = inquiry.createdAt.toISOString();
     this.updatedAt = inquiry.updatedAt.toISOString();
+  }
+}
+
+export class replyResDTO {
+  id: string;
+  inquiryId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  user: ReplyUser;
+
+  constructor(reply: Reply) {
+    this.id = reply.id;
+    this.inquiryId = reply.inquiryId;
+    this.userId = reply.userId;
+    this.content = reply.content;
+    this.createdAt = reply.createdAt.toISOString();
+    this.updatedAt = reply.updatedAt.toISOString();
+    this.user = {
+      id: reply.user.id,
+      name: reply.user.name,
+    };
   }
 }
