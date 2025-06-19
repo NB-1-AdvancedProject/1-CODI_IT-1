@@ -168,3 +168,42 @@ describe("내 정보 수정", () => {
     });
   });
 });
+
+describe("회원 탈퇴", () => {
+  beforeAll(async () => {
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  describe("DELETE /api/users/delete", () => {
+    beforeAll(async () => {
+      await clearDatabase();
+    });
+    afterAll(async () => {
+      await disconnectTestDB();
+    });
+    describe("성공", () => {
+      test("회원 탈퇴", async () => {
+        const password = "Password@1234";
+        const passwordHashed = bcrypt.hashSync(password, 10);
+
+        const user = await prisma.user.create({
+          data: {
+            email: "test2@test.com",
+            password: passwordHashed,
+            name: "홍길자",
+            type: "BUYER",
+          },
+        });
+
+        const authReq = getAuthenticatedReq(user.id);
+        const response = await authReq.delete("/api/users/delete").send();
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: "회원 탈퇴 성공" });
+      });
+    });
+  });
+});
