@@ -79,3 +79,21 @@ export async function createReply(user: string, params: string, reply: string) {
     },
   });
 }
+
+export async function getReplyData(params: string) {
+  return prisma.reply.findUnique({
+    where: { id: params },
+  });
+}
+
+export async function patchReplay(params: string, reply: string) {
+  return prisma.reply.update({
+    where: { id: params },
+    data: {
+      content: reply,
+    },
+    include: {
+      user: true,
+    },
+  });
+}
