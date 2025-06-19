@@ -4,6 +4,7 @@ import {
   getMyStoreInfo,
   getMyStoreProductList,
   getStoreInfo,
+  registerFavoriteStore,
   updateMyStore,
 } from "../controllers/storeController";
 import { asyncHandler } from "../middleware/asyncHandler";
@@ -19,4 +20,9 @@ storeRouter.get(
   "/detail/my/product",
   authMiddleware,
   asyncHandler(getMyStoreProductList)
+);
+storeRouter.post(
+  "/api/stores/:id/favorite",
+  authMiddleware,
+  asyncHandler(registerFavoriteStore)
 );

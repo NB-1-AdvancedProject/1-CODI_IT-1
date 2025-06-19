@@ -59,3 +59,10 @@ export const updateMyStore: RequestHandler = async (req, res) => {
   });
   res.status(200).json(result);
 };
+
+export const registerFavoriteStore: RequestHandler = async (req, res) => {
+  const { id: userId } = req.user!;
+  const { id: storeId } = create(req.params, IdParamsStruct);
+  const result = await storeService.updateMyStore({ userId, storeId });
+  res.status(200).json(result);
+};

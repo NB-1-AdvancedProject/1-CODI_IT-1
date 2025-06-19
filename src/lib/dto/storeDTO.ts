@@ -28,6 +28,12 @@ export type UpdateMyStoreDTO = {
   content?: string;
   image?: string;
 };
+
+export type RegisterFavoriteStoreDTO = {
+  userId: string;
+  storeId: string;
+};
+
 // Response DTO
 export class StoreResDTO {
   id: string;
@@ -118,6 +124,15 @@ export type MyStoreProductsDTO = {
   totalCount: number;
 };
 
+export class FavoriteStoreResDTO {
+  type: favoriteStoreType;
+  store: StoreResDTO;
+
+  constructor(type: favoriteStoreType, store: Store) {
+    this.type = type;
+    this.store = new StoreResDTO(store);
+  }
+}
 // Input (serivce <-> repository 간)
 export type CreateStoreInput = Omit<CreateStoreDTO, "userType">;
 export type FindMyStoreProductsInput = {
@@ -159,4 +174,10 @@ export class MyStoreProductDTO {
     );
     this.isSoldOut = totalStock === 0 ? true : false;
   }
+}
+
+// Enum
+export enum favoriteStoreType {
+  register = "register",
+  delete = "delete",
 }
