@@ -69,7 +69,7 @@ export async function getMyStoreProductList(
       return new MyStoreProductDTO(product);
     })
   );
-  const totalCount = products.length;
+  const totalCount = await storeRepository.countProductByStoreId(store.id);
   return { list, totalCount };
 }
 
