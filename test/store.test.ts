@@ -20,9 +20,10 @@ import {
   sizes,
   store1,
 } from "./storeDummy";
-import { Prisma } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { User } from "../src/types/user";
 import { Store } from "../src/types/storeType";
+import { Decimal } from "@prisma/client/runtime/library";
 
 describe("POST /api/stores", () => {
   let buyerUser: User;
@@ -232,6 +233,42 @@ describe("GET /api/stores/detail/my/product", () => {
       expect(response.body.list[0].id).toBe(product.id);
       expect(response.body.list[0].isSoldOut).toBe(true);
     });
+    test("페이지네이션: page와 pageSize에 따라 상품 목록이 제한됨", async () => {
+      const seller = await createTestUser(seller1);
+      const store = await createTestStore(store1, seller.id);
+      const products: Product[] = [];
+      for (let i = 0; i < 5; i++) {
+        const product = await prisma.product.create({
+          data: {
+            name: `상품${i + 1}`,
+            price: new Decimal(10000),
+            image: `https://example.com/image${i}.jpg`,
+            content: `상품${i + 1}의 설명`,
+            categoryId: "clxcat00top000001",
+            storeId: store.id,
+          },
+        });
+        products.push(product);
+      }
+
+      const authReq = getAuthenticatedReq(seller.id);
+
+      // page 1, pageSize 3
+      const resPage1 = await authReq.get(
+        `/api/stores/detail/my/product?page=1&pageSize=3`
+      );
+      expect(resPage1.status).toBe(200);
+      expect(resPage1.body.list).toHaveLength(3);
+      expect(resPage1.body.totalCount).toBe(5);
+
+      // page 2, pageSize 3 → 2개 남아 있어야 함
+      const resPage2 = await authReq.get(
+        `/api/stores/detail/my/product?page=2&pageSize=3`
+      );
+      expect(resPage2.status).toBe(200);
+      expect(resPage2.body.list).toHaveLength(2);
+      expect(resPage2.body.totalCount).toBe(5);
+    });
   });
   describe("오류", () => {
     test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
@@ -274,12 +311,12 @@ describe("PATCH /api/stores/:storeId", () => {
     });
   });
   describe("오류", () => {
-    test("본인의 스토어가 아닌 경우 NotFoundError(404) 반환함", async () => {
+    test("본인의 스토어가 아닌 경우 Unauthorized(401) 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
       const response = await authReq
-        .post(`/api/stores/${store.id}`)
+        .patch(`/api/stores/${store.id}`)
         .send(updatedStore);
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(401);
     });
   });
 });

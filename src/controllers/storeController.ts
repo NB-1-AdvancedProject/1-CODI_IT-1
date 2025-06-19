@@ -34,10 +34,10 @@ export const getStoreInfo: RequestHandler = async (req, res) => {
 
 export const getMyStoreProductList: RequestHandler = async (req, res) => {
   const { id: userId } = req.user!;
-  const params = create(req.params, PageParamsStruct);
+  const pageParams = create(req.query, PageParamsStruct);
   const result = await storeService.getMyStoreProductList({
     userId,
-    ...params,
+    ...pageParams,
   });
   res.status(200).json(result);
 };
