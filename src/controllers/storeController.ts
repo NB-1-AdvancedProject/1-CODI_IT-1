@@ -13,8 +13,8 @@ import { IdParamsStruct } from "../structs/commonStructs";
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, createStoreBodyStruct);
   const dto: CreateStoreDTO = {
-    userId: req.user.id,
-    userType: req.user.type,
+    userId: req.user!.id,
+    userType: req.user!.type,
     ...req.body,
   };
   const result: StoreResDTO = await storeService.createStore(dto);
