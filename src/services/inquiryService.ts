@@ -7,6 +7,7 @@ import {
   getReplyData,
   patchReplay,
   inquiryDetail,
+  replyDetail,
 } from "../repositories/inquiryRepository";
 import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
@@ -14,6 +15,7 @@ import {
   InquiryListResponseDTO,
   InquiryResDTO,
   replyResDTO,
+  GetInquiryResDTO,
 } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
@@ -125,12 +127,56 @@ export async function updateRepliesData(
   return new replyResDTO(replayData);
 }
 
-export async function getDetail(params: string) {
+export async function getDetail(params: string, user?: string) {
+  let userData = undefined;
+
+  if (user) {
+    userData = await userRepository.findById(user);
+
+    if (!userData) {
+      throw new NotFoundError("User", user);
+    }
+  }
+
   const inquiry = await inquiryDetail(params);
 
   if (!inquiry) {
     throw new NotFoundError("Inquiry", params);
   }
+
+  if (inquiry.isSecret && inquiry.userId !== user) {
+    throw new UnauthError();
+  }
+
+  return new GetInquiryResDTO(inquiry);
 }
 
-export async function getReply(params: string) {}
+export async function getReply(params: string, user?: string) {
+  let userData = undefined;
+
+  if (user) {
+    userData = await userRepository.findById(user);
+
+    if (!userData) {
+      throw new NotFoundError("User", user);
+    }
+  }
+
+  const reply = await replyDetail(params);
+
+  if (!reply) {
+    throw new NotFoundError("Reply", params);
+  }
+
+  const inquiry = await inquiryDetail(reply.inquiryId);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", reply.inquiryId);
+  }
+
+  if (inquiry.isSecret && reply.userId !== user) {
+    throw new UnauthError();
+  }
+
+  return new GetInquiryResDTO(inquiry);
+}

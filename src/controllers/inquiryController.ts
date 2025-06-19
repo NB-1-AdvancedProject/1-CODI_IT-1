@@ -14,6 +14,7 @@ import {
   InquiryListResponseDTO,
   InquiryResDTO,
   replyResDTO,
+  GetInquiryResDTO,
 } from "../lib/dto/inquiryDto";
 import { RequestHandler } from "express";
 
@@ -45,7 +46,6 @@ export const deleteInquiry: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user!.id;
 
-
   const result: InquiryResDTO = await deleteData(params, user);
 
   res.status(200).json(result);
@@ -76,12 +76,16 @@ export const patchReplies: RequestHandler = async (req, res) => {
 
 export const getDetailInquiry: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
+  const user = req.user?.id;
+  const result: GetInquiryResDTO = await getDetail(params, user);
 
-  const result = await getDetail(params);
+  res.status(200).json(result);
 };
 
 export const getDetailReply: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
+  const user = req.user?.id;
+  const result: GetInquiryResDTO = await getReply(params, user);
 
-  const result = await getReply(params);
+  res.status(200).json(result);
 };

@@ -114,3 +114,9 @@ export async function inquiryDetail(params: string) {
     },
   });
 }
+
+export async function replyDetail(params: string) {
+  return prisma.reply.findUnique({
+    where: { id: params },
+  });
+}
