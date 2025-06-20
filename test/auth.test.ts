@@ -4,7 +4,8 @@ import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import { clearDatabase, getAuthenticatedReq } from "./testUtil";
 import authService from "../src/services/authService";
-import { connectRedis, getRedisClient } from "../src/utils/radis";
+import { connectRedis, getRedisClient } from "../src/utils/redis";
+import { User } from "../src/types/user";
 
 describe("로그인 테스트", () => {
   const password = "Password@1234";
@@ -89,14 +90,8 @@ describe("로그인 테스트", () => {
   });
 
   describe("POST/api/auth/refresh", () => {
-    const user = {
-      email: "test5@test.com",
-      name: "김말자",
-      password: passwordHashed,
-      type: "BUYER",
-    };
     let redis: ReturnType<typeof getRedisClient>;
-    let createUser: any;
+    let createUser: User;
     let initialRefreshToken: string;
 
     beforeAll(async () => {
@@ -107,12 +102,10 @@ describe("로그인 테스트", () => {
     beforeEach(async () => {
       await redis?.flushAll();
 
-      createUser = await prisma.user.upsert({
-        where: { email: user.email },
-        update: { password: passwordHashed, name: user.name },
-        create: {
-          email: user.email,
-          name: user.name,
+      createUser = await prisma.user.create({
+        data: {
+          email: "test5@test.com",
+          name: "김말자",
           password: passwordHashed,
           type: "BUYER",
         },
@@ -139,9 +132,9 @@ describe("로그인 테스트", () => {
     });
 
     test("리프레시 토큰 정상 재발행", async () => {
-      const response = await request(app) 
+      const response = await request(app)
         .post("/api/auth/refresh")
-        .send({ refreshToken: initialRefreshToken }) 
+        .send({ refreshToken: initialRefreshToken })
         .expect(200);
     });
 
