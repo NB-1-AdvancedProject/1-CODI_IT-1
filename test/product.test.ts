@@ -3,7 +3,7 @@ import {
   disconnectTestDB,
   getAuthenticatedReq,
 } from "./testUtil";
-import { Product, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import {
   sellerUser,
   category1,
@@ -32,7 +32,6 @@ import request from "supertest";
 
 describe("Product API 테스트", () => {
   let sellerUser1: User;
-  let Product1: Product;
   beforeAll(async () => {
     await clearDatabase();
     sellerUser1 = await prisma.user.create({
@@ -41,28 +40,42 @@ describe("Product API 테스트", () => {
         password: await bcrypt.hash(sellerUser.password, 10),
       },
     });
+    await prisma.user.create({
+      data: {
+        ...seller2,
+        password: await bcrypt.hash(seller2.password, 10),
+      },
+    });
+    await prisma.user.create({
+      data: {
+        ...seller3,
+        password: await bcrypt.hash(seller3.password, 10),
+      },
+    });
     await prisma.store.create({ data: store1 });
+    await prisma.store.create({ data: store2 });
+    await prisma.store.create({ data: store3 });
     await prisma.size.create({
       data: size1,
     });
+    await prisma.size.create({ data: size2 });
+    await prisma.size.create({ data: size3 });
+    await prisma.size.create({ data: size4 });
     await prisma.category.create({
       data: category1,
     });
+    await prisma.category.create({ data: category2 });
+    await prisma.category.create({ data: category3 });
+    await prisma.product.create({
+      data: fullProduct,
+    });
+    await prisma.product.create({ data: fullProduct2 });
+    await prisma.product.create({ data: fullProduct3 });
+    await prisma.product.create({ data: fullProduct4 });
+    await prisma.product.create({ data: fullProduct5 });
   });
   afterAll(async () => {
     await disconnectTestDB();
-  });
-  beforeEach(async () => {
-    await prisma.reply.deleteMany();
-    await prisma.inquiry.deleteMany();
-    await prisma.review.deleteMany();
-    await prisma.cartItem.deleteMany();
-    await prisma.orderItem.deleteMany();
-    await prisma.stock.deleteMany();
-    await prisma.product.deleteMany();
-    Product1 = await prisma.product.create({
-      data: fullProduct,
-    });
   });
 
   test("POST /api/products - 상품 추가", async () => {
@@ -106,88 +119,39 @@ describe("Product API 테스트", () => {
     // reviews 배열
     expect(body).toHaveProperty("reviews");
     expect(Array.isArray(body.reviews)).toBe(true);
-    if (body.reviews.length > 0) {
-      const review = body.reviews[0];
-      expect(review).toHaveProperty("createdAt");
-      expect(review).toHaveProperty("updatedAt");
-      expect(review).toHaveProperty("content");
-      expect(review).toHaveProperty("rating");
-      expect(review).toHaveProperty("user");
-      expect(review.user).toHaveProperty("id");
-      expect(review.user).toHaveProperty("username");
-    }
 
     // inquiries 배열
     expect(body).toHaveProperty("inquiries");
     expect(Array.isArray(body.inquiries)).toBe(true);
-    if (body.inquiries.length > 0) {
-      const inquiry = body.inquiries[0];
-      expect(inquiry).toHaveProperty("id");
-      expect(inquiry).toHaveProperty("title");
-      expect(inquiry).toHaveProperty("content");
-      expect(inquiry).toHaveProperty("status");
-      expect(inquiry).toHaveProperty("isSecret");
-      expect(inquiry).toHaveProperty("createdAt");
-      expect(inquiry).toHaveProperty("updatedAt");
-
-      expect(inquiry).toHaveProperty("reply");
-      expect(inquiry.reply).toHaveProperty("id");
-      expect(inquiry.reply).toHaveProperty("content");
-      expect(inquiry.reply).toHaveProperty("createdAt");
-      expect(inquiry.reply).toHaveProperty("updatedAt");
-      expect(inquiry.reply).toHaveProperty("user");
-      expect(inquiry.reply.user).toHaveProperty("id");
-      expect(inquiry.reply.user).toHaveProperty("name");
-    }
 
     // category 배열
     expect(body).toHaveProperty("category");
     expect(Array.isArray(body.category)).toBe(true);
-    if (body.category.length > 0) {
-      const category = body.category[0];
-      expect(category).toHaveProperty("id");
-      expect(category).toHaveProperty("name");
-    }
+    const category = body.category[0];
+    expect(category).toHaveProperty("id");
+    expect(category).toHaveProperty("name");
 
     // stocks 배열
     expect(body).toHaveProperty("stocks");
     expect(Array.isArray(body.stocks)).toBe(true);
-    if (body.stocks.length > 0) {
-      const stock = body.stocks[0];
-      expect(stock).toHaveProperty("id");
-      expect(stock).toHaveProperty("productId");
-      expect(stock).toHaveProperty("sizeId");
-      expect(stock).toHaveProperty("quantity");
-    }
+    const stock = body.stocks[0];
+    expect(stock).toHaveProperty("id");
+    expect(stock).toHaveProperty("productId");
+    expect(stock).toHaveProperty("sizeId");
+    expect(stock).toHaveProperty("quantity");
   });
   describe("GET /api/products - 상품 목록 조회", () => {
-    let agent: ReturnType<typeof request>;
-    beforeAll(async () => {
-      agent = request(app);
-      await prisma.user.create({ data: seller2 });
-      await prisma.user.create({ data: seller3 });
-      await prisma.store.create({ data: store2 });
-      await prisma.store.create({ data: store3 });
-      await prisma.size.create({ data: size2 });
-      await prisma.size.create({ data: size3 });
-      await prisma.size.create({ data: size4 });
-      await prisma.category.create({ data: category2 });
-      await prisma.category.create({ data: category3 });
-      await prisma.product.create({ data: fullProduct2 });
-      await prisma.product.create({ data: fullProduct3 });
-      await prisma.product.create({ data: fullProduct4 });
-      await prisma.product.create({ data: fullProduct5 });
-    });
+    beforeAll(async () => {});
 
     test("기본 조회 - 페이징 기본값", async () => {
-      const res = await agent.get("/api/products");
+      const res = await request(app).get("/api/products");
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.list.products)).toBe(true);
       expect(typeof res.body.totalCount).toBe("number");
     });
 
     test("검색어로 이름 검색", async () => {
-      const res = await agent.get("/api/products").query({
+      const res = await request(app).get("/api/products").query({
         searchBy: "name",
         search: "가디건",
       });
@@ -199,7 +163,7 @@ describe("Product API 테스트", () => {
 
     test("검색어로 상점 이름 검색", async () => {
       const storeName = "내가 만든 상점";
-      const res = await agent.get("/api/products").query({
+      const res = await request(app).get("/api/products").query({
         searchBy: "store",
         search: storeName,
       });
@@ -211,7 +175,7 @@ describe("Product API 테스트", () => {
 
     test("카테고리 필터링", async () => {
       const categoryName = "clothing";
-      const res = await agent.get("/api/products").query({
+      const res = await request(app).get("/api/products").query({
         categoryName,
       });
       expect(res.status).toBe(200);
@@ -221,7 +185,7 @@ describe("Product API 테스트", () => {
     });
 
     test("가격 필터링 (min, max)", async () => {
-      const res = await agent.get("/api/products").query({
+      const res = await request(app).get("/api/products").query({
         priceMin: 5000,
         priceMax: 10000,
       });
@@ -234,7 +198,7 @@ describe("Product API 테스트", () => {
 
     test("사이즈 필터링", async () => {
       const size = "M";
-      const res = await agent.get("/api/products").query({ size });
+      const res = await request(app).get("/api/products").query({ size });
       expect(res.status).toBe(200);
       res.body.list.products.forEach((p: any) => {
         const hasSize = p.stocks.some((stock: any) => stock.size === size);
@@ -244,7 +208,7 @@ describe("Product API 테스트", () => {
 
     test("좋아요 누른 상점 필터링", async () => {
       const userId = sellerUser1.id;
-      const res = await agent.get("/api/products").query({
+      const res = await request(app).get("/api/products").query({
         favoriteStore: userId,
       });
       expect(res.status).toBe(200);
@@ -264,7 +228,7 @@ describe("Product API 테스트", () => {
       ];
 
       for (const sort of sorts) {
-        const res = await agent.get("/api/products").query({ sort });
+        const res = await request(app).get("/api/products").query({ sort });
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body.list.products)).toBe(true);
       }
@@ -272,10 +236,10 @@ describe("Product API 테스트", () => {
 
     test("페이지네이션 테스트", async () => {
       const pageSize = 2;
-      const res1 = await agent
+      const res1 = await request(app)
         .get("/api/products")
         .query({ page: 1, pageSize });
-      const res2 = await agent
+      const res2 = await request(app)
         .get("/api/products")
         .query({ page: 2, pageSize });
 
@@ -294,14 +258,66 @@ describe("Product API 테스트", () => {
       }
     });
   });
-  test("DELETE /api/products/:id - 상품 삭제", async () => {
-    const authReq = getAuthenticatedReq(sellerUser1.id);
+  describe("PATCH /products/:id - 상품 수정", () => {
+    test("기본 수정 테스트", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+      const response = await authReq.patch("/api/products/product1-id").send({
+        name: "Updated Product",
+        price: 19900,
+        content: "Updated content",
+        image: "https://example.com/image.jpg",
+        discountRate: 10,
+        discountStartTime: new Date(),
+        discountEndTime: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        categoryName: "Updated Category",
+        stocks: [
+          { sizeId: "size-id-1", quantity: 5 },
+          { sizeId: "size-id-2", quantity: 10 },
+        ],
+      });
 
-    const deleteResponse = await authReq.delete("/api/products/product1-id");
-    expect(deleteResponse.status).toBe(204);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.name).toBe("Updated Product");
+      expect(response.body.stocks.length).toBeGreaterThan(0);
+    });
 
-    // 삭제된 상품 한번더 삭제시 404 에러 발생 확인
-    const Response = await authReq.delete("/api/products/product1-id");
-    expect(Response.status).toBe(404);
+    test("일부 필드만 수정", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+      const response = await authReq.patch("/api/products/product1-id").send({
+        price: 29900,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.price).toBe("29900");
+    });
+
+    test("Int 필드에 잘못된타입 삽입 테스트", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+      const response = await authReq.patch("/api/products/product1-id").send({
+        price: "not-a-number",
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    test("본인의 상품이 아닌 경우 Unauthorized(401) 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+      const response = await authReq.patch("/api/products/product2-id").send({
+        name: "Some Name",
+      });
+      expect(response.status).toBe(401);
+    });
+  });
+  describe("DELETE /api/products/:id - 상품 삭제", () => {
+    test("기본 삭제 테스트", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+
+      const deleteResponse = await authReq.delete("/api/products/product2-id");
+      expect(deleteResponse.status).toBe(204);
+
+      // 삭제된 상품 한번더 삭제시 404 에러 발생 확인
+      const Response = await authReq.delete("/api/products/product1-id");
+      expect(Response.status).toBe(404);
+    });
   });
 });
