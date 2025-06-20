@@ -148,6 +148,7 @@ model Order {
   subtotal  Decimal
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+  paidAt    DateTime?
 
   user       User        @relation(fields: [userId], references: [id])
   orderItems OrderItem[]
