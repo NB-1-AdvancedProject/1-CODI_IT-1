@@ -21,11 +21,11 @@ export const login: RequestHandler = async (req, res) => {
       points: user.point,
     },
     accessToken: accessToken,
+    refreshToken: refreshToken,
   });
 };
 
 export const logout: RequestHandler = async (req, res) => {
-
   const userId = req.user!.id;
   await authService.logout(userId);
 
@@ -33,14 +33,18 @@ export const logout: RequestHandler = async (req, res) => {
 };
 
 export const refreshToken: RequestHandler = async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = req.body ?? {};
 
   if (!refreshToken) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
   const decoded = verifyRefreshToken(refreshToken);
-  const update = await authService.reissueTokens(decoded.userId, refreshToken);
+
+  if (!decoded) {
+    throw new BadRequestError("잘못된 요청입니다.");
+  }
+  const update = await authService.reissueTokens(decoded.id, refreshToken);
 
   res.status(200).json({
     accessToken: update.accessToken,

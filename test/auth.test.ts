@@ -3,6 +3,8 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import { clearDatabase, getAuthenticatedReq } from "./testUtil";
+import authService from "../src/services/authService";
+import { connectRedis, getRedisClient } from "../src/utils/radis";
 
 describe("로그인 테스트", () => {
   const password = "Password@1234";
@@ -81,8 +83,72 @@ describe("로그인 테스트", () => {
       });
 
       const authReq = getAuthenticatedReq(logoutUser.id);
-      const response = await authReq.post("/api/auth/logout").send();
+      const response = await authReq.post("/api/auth/logout").send({});
       expect(response.status).toBe(200);
+    });
+  });
+
+  describe("POST/api/auth/refresh", () => {
+    const user = {
+      email: "test5@test.com",
+      name: "김말자",
+      password: passwordHashed,
+      type: "BUYER",
+    };
+    let redis: ReturnType<typeof getRedisClient>;
+    let createUser: any;
+    let initialRefreshToken: string;
+
+    beforeAll(async () => {
+      await clearDatabase();
+      redis = await connectRedis();
+    });
+
+    beforeEach(async () => {
+      await redis?.flushAll();
+
+      createUser = await prisma.user.upsert({
+        where: { email: user.email },
+        update: { password: passwordHashed, name: user.name },
+        create: {
+          email: user.email,
+          name: user.name,
+          password: passwordHashed,
+          type: "BUYER",
+        },
+      });
+
+      initialRefreshToken = await authService.createToken(
+        createUser,
+        "refresh"
+      );
+
+      await authService.saveToken(createUser.id, initialRefreshToken);
+    });
+
+    afterEach(async () => {
+      await prisma.user.delete({ where: { id: createUser.id } });
+      await redis?.flushAll();
+    });
+
+    afterAll(async () => {
+      await prisma.$disconnect();
+      if (redis && redis.isReady) {
+        await redis.quit();
+      }
+    });
+
+    test("리프레시 토큰 정상 재발행", async () => {
+      const response = await request(app) 
+        .post("/api/auth/refresh")
+        .send({ refreshToken: initialRefreshToken }) 
+        .expect(200);
+    });
+
+    test("리프레시 토큰 없으면 에러", async () => {
+      const response = await request(app).post("/api/auth/refresh").send({});
+
+      expect(response.status).toBe(400);
     });
   });
 });
