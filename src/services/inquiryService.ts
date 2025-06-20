@@ -6,6 +6,9 @@ import {
   createReply,
   getReplyData,
   patchReplay,
+  inquiryDetail,
+  replyDetail,
+  inquiryStatus,
 } from "../repositories/inquiryRepository";
 import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
 import { countData } from "../repositories/inquiryRepository";
@@ -13,10 +16,14 @@ import {
   InquiryListResponseDTO,
   InquiryResDTO,
   replyResDTO,
+  GetInquiryResDTO,
 } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
 import userRepository from "../repositories/userRepository";
+import { getStoreById } from "../repositories/storeRepository";
+import { Store } from "../types/storeType";
+import { User } from "@prisma/client";
 
 export async function getList(
   params: inquiryType,
@@ -92,6 +99,7 @@ export async function createRepliesData(
   }
 
   const replies = await createReply(user, params, reply);
+  await inquiryStatus(replies.inquiryId);
 
   return new replyResDTO(replies);
 }
@@ -122,4 +130,78 @@ export async function updateRepliesData(
   const replayData = await patchReplay(params, reply);
 
   return new replyResDTO(replayData);
+}
+
+export async function getDetail(params: string, user?: string) {
+  let userData: User | null = null;
+  let storeUser: Store | null = null;
+  if (user !== undefined) {
+    userData = await userRepository.findById(user);
+    if (!userData) {
+      throw new NotFoundError("User", user);
+    }
+
+    if (userData.storeId) {
+      storeUser = await getStoreById(userData.storeId);
+    }
+  }
+
+  const inquiry = await inquiryDetail(params, user);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", params);
+  }
+
+  if (
+    inquiry.isSecret &&
+    user !== undefined &&
+    !(inquiry.userId === user || storeUser?.userId === user)
+  ) {
+    throw new UnauthError();
+  }
+
+  return new GetInquiryResDTO(inquiry);
+}
+
+export async function getReply(params: string, user?: string) {
+  let userData: User | null = null;
+  let storeUser: Store | null = null;
+
+  if (user !== undefined) {
+    userData = await userRepository.findById(user);
+
+    if (!userData) {
+      throw new NotFoundError("User", user);
+    }
+
+    if (userData.storeId) {
+      storeUser = await getStoreById(userData.storeId);
+    }
+  }
+
+  const reply = await replyDetail(params);
+
+  if (!reply) {
+    throw new NotFoundError("Reply", params);
+  }
+
+  const inquiry = await inquiryDetail(reply.inquiryId, user);
+
+  if (!inquiry) {
+    throw new NotFoundError("Inquiry", reply.inquiryId);
+  }
+
+  if (
+    inquiry.isSecret &&
+    user !== undefined &&
+    !(
+      reply.userId === user ||
+      inquiry.userId === user ||
+      storeUser?.userId === user
+    )
+  ) {
+    throw new UnauthError();
+  }
+
+  return new GetInquiryResDTO(inquiry);
 }
