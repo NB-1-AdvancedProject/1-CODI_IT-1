@@ -21,6 +21,9 @@ import {
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
 import userRepository from "../repositories/userRepository";
+import { getStoreById } from "../repositories/storeRepository";
+import { Store } from "../types/storeType";
+import { User } from "@prisma/client";
 
 export async function getList(
   params: inquiryType,
@@ -130,11 +133,16 @@ export async function updateRepliesData(
 }
 
 export async function getDetail(params: string, user?: string) {
-  let userData = undefined;
+  let userData: User | null = null;
+  let storeUser: Store | null = null;
   if (user !== undefined) {
     userData = await userRepository.findById(user);
     if (!userData) {
       throw new NotFoundError("User", user);
+    }
+
+    if (userData.storeId) {
+      storeUser = await getStoreById(userData.storeId);
     }
   }
 
@@ -144,7 +152,11 @@ export async function getDetail(params: string, user?: string) {
     throw new NotFoundError("Inquiry", params);
   }
 
-  if (inquiry.isSecret && user !== undefined && inquiry.userId !== user) {
+  if (
+    inquiry.isSecret &&
+    user !== undefined &&
+    !(inquiry.userId === user || storeUser?.userId === user)
+  ) {
     throw new UnauthError();
   }
 
@@ -152,13 +164,18 @@ export async function getDetail(params: string, user?: string) {
 }
 
 export async function getReply(params: string, user?: string) {
-  let userData = undefined;
+  let userData: User | null = null;
+  let storeUser: Store | null = null;
 
   if (user !== undefined) {
     userData = await userRepository.findById(user);
 
     if (!userData) {
       throw new NotFoundError("User", user);
+    }
+
+    if (userData.storeId) {
+      storeUser = await getStoreById(userData.storeId);
     }
   }
 
@@ -174,7 +191,15 @@ export async function getReply(params: string, user?: string) {
     throw new NotFoundError("Inquiry", reply.inquiryId);
   }
 
-  if (inquiry.isSecret && user !== undefined && reply.userId !== user) {
+  if (
+    inquiry.isSecret &&
+    user !== undefined &&
+    !(
+      reply.userId === user ||
+      inquiry.userId === user ||
+      storeUser?.userId === user
+    )
+  ) {
     throw new UnauthError();
   }
 

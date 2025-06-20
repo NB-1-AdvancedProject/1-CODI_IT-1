@@ -120,6 +120,9 @@ export async function inquiryDetail(params: string, user?: string) {
 export async function replyDetail(params: string) {
   return prisma.reply.findUnique({
     where: { id: params },
+    include: {
+      inquiry: true,
+    },
   });
 }
 
