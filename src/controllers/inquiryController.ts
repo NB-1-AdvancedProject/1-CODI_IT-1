@@ -39,7 +39,6 @@ export const changeInquiry: RequestHandler = async (req, res) => {
   const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
 
   res.status(200).json(result);
-  return;
 };
 
 export const deleteInquiry: RequestHandler = async (req, res) => {
@@ -49,7 +48,6 @@ export const deleteInquiry: RequestHandler = async (req, res) => {
   const result: InquiryResDTO = await deleteData(params, user);
 
   res.status(200).json(result);
-  return;
 };
 
 export const createReplies: RequestHandler = async (req, res) => {
@@ -60,7 +58,6 @@ export const createReplies: RequestHandler = async (req, res) => {
   const result: replyResDTO = await createRepliesData(user, params, reply);
 
   res.status(201).json(result);
-  return;
 };
 
 export const patchReplies: RequestHandler = async (req, res) => {
@@ -71,10 +68,10 @@ export const patchReplies: RequestHandler = async (req, res) => {
   const result: replyResDTO = await updateRepliesData(user, params, reply);
 
   res.status(200).json(result);
-  return;
 };
 
 export const getDetailInquiry: RequestHandler = async (req, res) => {
+  console.log("미들웨어 작동 확인", req.params, req.user);
   const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user?.id;
   const result: GetInquiryResDTO = await getDetail(params, user);

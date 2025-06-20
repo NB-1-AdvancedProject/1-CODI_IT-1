@@ -129,22 +129,25 @@ export async function updateRepliesData(
 
 export async function getDetail(params: string, user?: string) {
   let userData = undefined;
-
-  if (user) {
+  console.log("서비스 파라미터 확인", params, user);
+  if (user !== undefined) {
     userData = await userRepository.findById(user);
-
+    console.log("유저데이터 작동 확인", userData);
     if (!userData) {
       throw new NotFoundError("User", user);
     }
   }
 
-  const inquiry = await inquiryDetail(params);
+  const inquiry = await inquiryDetail(params, user);
+  console.log("문의데이터 작동 확인", inquiry);
 
   if (!inquiry) {
+    console.log("에러 전 마지막 메시지");
     throw new NotFoundError("Inquiry", params);
   }
 
-  if (inquiry.isSecret && inquiry.userId !== user) {
+  if (inquiry.isSecret && user !== undefined && inquiry.userId !== user) {
+    console.log("권한 문제 확인");
     throw new UnauthError();
   }
 
@@ -154,7 +157,7 @@ export async function getDetail(params: string, user?: string) {
 export async function getReply(params: string, user?: string) {
   let userData = undefined;
 
-  if (user) {
+  if (user !== undefined) {
     userData = await userRepository.findById(user);
 
     if (!userData) {
@@ -174,7 +177,7 @@ export async function getReply(params: string, user?: string) {
     throw new NotFoundError("Inquiry", reply.inquiryId);
   }
 
-  if (inquiry.isSecret && reply.userId !== user) {
+  if (inquiry.isSecret && user !== undefined && reply.userId !== user) {
     throw new UnauthError();
   }
 

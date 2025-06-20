@@ -41,7 +41,3 @@ export interface InReplyType {
     name: string;
   };
 }
-
-export interface UserLogin {
-  id?: string;
-}

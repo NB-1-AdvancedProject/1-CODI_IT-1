@@ -93,28 +93,52 @@ export async function patchReplay(params: string, reply: string) {
   });
 }
 
-export async function inquiryDetail(params: string) {
-  return prisma.inquiry.findUnique({
-    where: { id: params },
-    include: {
-      user: {
-        select: {
-          name: true,
+export async function inquiryDetail(params: string, user?: string) {
+  if (user !== undefined) {
+    return prisma.inquiry.findUnique({
+      where: { id: params },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
         },
-      },
-      Reply: {
-        include: {
-          user: {
-            select: {
-              name: true,
+        Reply: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } else {
+    return prisma.inquiry.findFirst({
+      where: {
+        id: params,
+        isSecret: false,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        Reply: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
-
 export async function replyDetail(params: string) {
   return prisma.reply.findUnique({
     where: { id: params },

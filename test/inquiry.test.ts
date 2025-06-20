@@ -11,7 +11,6 @@ describe("문의 API 테스트", () => {
   let sellerUser: User;
   beforeAll(async () => {
     await clearDatabase();
-
     buyerUser = await createTestUser(buyer1);
     sellerUser = await createTestUser(seller1);
     const store = await prisma.store.create({
@@ -375,6 +374,53 @@ describe("문의 API 테스트", () => {
       expect(response.body).toEqual({
         message: "Reply with id clabcxyz1234567890abcdefg not found",
       });
+    });
+  });
+
+  describe("GET api/inquiries/:id", () => {
+    let inquiry1: Inquiry;
+    beforeAll(async () => {
+      inquiry1 = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: true,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+    });
+
+    /* test("문의를 상세 조회 할 수 있다.(로그인 조회)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
+
+      expect(response.status).toBe(200);
+    });*/
+
+    test("문의를 상세 조회 할 수 있다.(비로그인 조회)", async () => {
+      const inquiry2 = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: false,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+
+      const response = await request(app).get(`/api/inquiries/${inquiry2.id}`);
+      expect(response.status).toBe(200);
     });
   });
 });
