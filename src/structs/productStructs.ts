@@ -1,12 +1,14 @@
 import {
   array,
   date,
+  defaulted,
   Infer,
   number,
   object,
   optional,
   string,
 } from "superstruct";
+import { integerString } from "./commonStructs";
 
 export const CreateProductBodyStruct = object({
   name: string(),
@@ -26,3 +28,18 @@ export const CreateProductBodyStruct = object({
 });
 
 export type CreateProductBody = Infer<typeof CreateProductBodyStruct>;
+
+export const ProductListParamsStruct = object({
+  page: defaulted(integerString, 1),
+  pageSize: defaulted(integerString, 16),
+  search: optional(string()),
+  searchBy: optional(string()),
+  sort: optional(string()),
+  priceMin: optional(number()),
+  priceMax: optional(number()),
+  favoriteStore: optional(string()),
+  size: optional(string()),
+  categoryName: optional(string()),
+});
+
+export type ProductListParams = Infer<typeof ProductListParamsStruct>;

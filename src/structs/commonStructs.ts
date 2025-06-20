@@ -29,10 +29,11 @@ export const integerString = coerce(integer(), string(), (value) =>
 );
 
 export const PageParamsStruct = object({
+  // 고급프로젝트에선 많이 사용 안되서 삭제 고려중
   page: defaulted(integerString, 1),
   pageSize: defaulted(integerString, 10),
+  search: optional(string()),
   searchBy: optional(string()),
-  keyword: optional(string()),
 });
 export type PageParamsType = Infer<typeof PageParamsStruct>;
 
@@ -42,7 +43,8 @@ export const IdParamsStruct = object({
 export type IdParams = Infer<typeof IdParamsStruct>;
 
 export const SearchParamsStruct = object({
-  searchBy: nonempty(string()),
-  keyword: optional(string()),
+  // 고급프로젝트에선 많이 사용 안되서 삭제 고려중
+  search: nonempty(string()),
+  searchBy: optional(string()),
 });
 export type SearchParamsType = Infer<typeof SearchParamsStruct>;

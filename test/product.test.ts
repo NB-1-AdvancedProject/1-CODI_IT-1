@@ -10,10 +10,25 @@ import {
   fullProduct,
   size1,
   store1,
+  fullProduct2,
+  fullProduct3,
+  fullProduct4,
+  fullProduct5,
+  size2,
+  size4,
+  size3,
+  category2,
+  category3,
+  seller2,
+  seller3,
+  store2,
+  store3,
 } from "./productDummy";
 import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import { Decimal } from "@prisma/client/runtime/library";
+import app from "../src/app";
+import request from "supertest";
 
 describe("Product API 테스트", () => {
   let sellerUser1: User;
@@ -145,14 +160,148 @@ describe("Product API 테스트", () => {
       expect(stock).toHaveProperty("quantity");
     }
   });
+  describe("GET /api/products - 상품 목록 조회", () => {
+    let agent: ReturnType<typeof request>;
+    beforeAll(async () => {
+      agent = request(app);
+      await prisma.user.create({ data: seller2 });
+      await prisma.user.create({ data: seller3 });
+      await prisma.store.create({ data: store2 });
+      await prisma.store.create({ data: store3 });
+      await prisma.size.create({ data: size2 });
+      await prisma.size.create({ data: size3 });
+      await prisma.size.create({ data: size4 });
+      await prisma.category.create({ data: category2 });
+      await prisma.category.create({ data: category3 });
+      await prisma.product.create({ data: fullProduct2 });
+      await prisma.product.create({ data: fullProduct3 });
+      await prisma.product.create({ data: fullProduct4 });
+      await prisma.product.create({ data: fullProduct5 });
+    });
+
+    test("기본 조회 - 페이징 기본값", async () => {
+      const res = await agent.get("/api/products");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.list.products)).toBe(true);
+      expect(typeof res.body.totalCount).toBe("number");
+    });
+
+    test("검색어로 이름 검색", async () => {
+      const res = await agent.get("/api/products").query({
+        searchBy: "name",
+        search: "가디건",
+      });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        expect(p.name.toLowerCase()).toContain("가디건");
+      });
+    });
+
+    test("검색어로 상점 이름 검색", async () => {
+      const storeName = "내가 만든 상점";
+      const res = await agent.get("/api/products").query({
+        searchBy: "store",
+        search: storeName,
+      });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        expect(p.storeId).toBeDefined();
+      });
+    });
+
+    test("카테고리 필터링", async () => {
+      const categoryName = "clothing";
+      const res = await agent.get("/api/products").query({
+        categoryName,
+      });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        expect(p.categoryId).toBeDefined();
+      });
+    });
+
+    test("가격 필터링 (min, max)", async () => {
+      const res = await agent.get("/api/products").query({
+        priceMin: 5000,
+        priceMax: 10000,
+      });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        expect(p.price).toBeGreaterThanOrEqual(5000);
+        expect(p.price).toBeLessThanOrEqual(10000);
+      });
+    });
+
+    test("사이즈 필터링", async () => {
+      const size = "M";
+      const res = await agent.get("/api/products").query({ size });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        const hasSize = p.stocks.some((stock: any) => stock.size === size);
+        expect(hasSize).toBe(true);
+      });
+    });
+
+    test("좋아요 누른 상점 필터링", async () => {
+      const userId = sellerUser1.id;
+      const res = await agent.get("/api/products").query({
+        favoriteStore: userId,
+      });
+      expect(res.status).toBe(200);
+      res.body.list.products.forEach((p: any) => {
+        expect(p.store).toBeDefined();
+      });
+    });
+
+    test("정렬 조건별 조회", async () => {
+      const sorts = [
+        "mostReviewed",
+        "highRating",
+        "HighPrice",
+        "lowPrice",
+        "recent",
+        "salesRanking",
+      ];
+
+      for (const sort of sorts) {
+        const res = await agent.get("/api/products").query({ sort });
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body.list.products)).toBe(true);
+      }
+    });
+
+    test("페이지네이션 테스트", async () => {
+      const pageSize = 2;
+      const res1 = await agent
+        .get("/api/products")
+        .query({ page: 1, pageSize });
+      const res2 = await agent
+        .get("/api/products")
+        .query({ page: 2, pageSize });
+
+      expect(res1.status).toBe(200);
+      expect(res2.status).toBe(200);
+      expect(res1.body.list.products.length).toBeLessThanOrEqual(pageSize);
+      expect(res2.body.list.products.length).toBeLessThanOrEqual(pageSize);
+      // 페이지 별로 결과가 다름을 간단히 확인
+      if (
+        res1.body.list.products.length > 0 &&
+        res2.body.list.products.length > 0
+      ) {
+        expect(res1.body.list.products[0].id).not.toBe(
+          res2.body.list.products[0].id
+        );
+      }
+    });
+  });
   test("DELETE /api/products/:id - 상품 삭제", async () => {
     const authReq = getAuthenticatedReq(sellerUser1.id);
 
     const deleteResponse = await authReq.delete("/api/products/product1-id");
     expect(deleteResponse.status).toBe(204);
 
-    // 삭제된 상품 조회 시 404 에러 발생 확인
-    const findResponse = await authReq.get("/api/products/product1-id");
-    expect(findResponse.status).toBe(404);
+    // 삭제된 상품 한번더 삭제시 404 에러 발생 확인
+    const Response = await authReq.delete("/api/products/product1-id");
+    expect(Response.status).toBe(404);
   });
 });
