@@ -102,3 +102,7 @@ export async function updateMyStore(
   const result = await storeRepository.updateStore({ storeId, ...rest });
   return new StoreResDTO(result);
 }
+
+export async function getStoreById(storeId: string) {
+  return await storeRepository.findStoreById(storeId);
+}

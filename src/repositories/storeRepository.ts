@@ -70,3 +70,11 @@ export async function countMonthFavoriteStore(
     where: { AND: [{ storeId }, { createdAt: { gte: thirtyDaysAgo } }] },
   });
 }
+
+export async function findStoreById(id: string) {
+  return await prisma.store.findUnique({
+    where: {
+      id: id,
+    },
+  });
+}
