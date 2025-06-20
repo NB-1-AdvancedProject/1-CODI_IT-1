@@ -198,8 +198,8 @@ export async function createTestAlarm(data: {
 
 // agent 와 유사하게 header를 자동 세팅해주는 함수
 // 사용법은 store.test.ts 를 참고하세요~
-export function getAuthenticatedReq(id: string) {
-  const accessToken = createAccessToken(id);
+export function getAuthenticatedReq(userId: string) {
+  const accessToken = createAccessToken(userId);
   const agent = request(app);
 
   return {
