@@ -19,7 +19,7 @@ storeRouter.get(
   asyncHandler(getMyStoreProductList)
 );
 storeRouter.post(
-  "/:storeId/favorite",
+  "/:id/favorite",
   authMiddleware,
   asyncHandler(registerFavoriteStore)
 );
