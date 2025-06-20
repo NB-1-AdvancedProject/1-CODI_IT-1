@@ -49,6 +49,7 @@ export const optionalAuthMiddleware = async (
     const user = await userService.getById(userId);
     if (user) {
       req.user = user;
+      next();
     }
   } catch {
     next();
