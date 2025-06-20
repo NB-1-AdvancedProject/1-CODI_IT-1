@@ -24,11 +24,11 @@ import AlreadyExstError from "../lib/errors/AlreadyExstError";
 export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   const { userType, ...storeData } = dto;
   if (userType !== UserType.SELLER) {
-    throw new UnauthError(); // 정은 : 이 에러가 최선인가..
+    throw new UnauthError();
   }
   const existingStore = await storeRepository.findStoreByUserId(dto.userId);
   if (existingStore) {
-    throw new BadRequestError("You alreadly have a store"); // 정은 : 이 에러가 최선인가..
+    throw new AlreadyExstError("Store");
   }
 
   const store: Store = await storeRepository.createStore(storeData);
@@ -82,7 +82,7 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   if (!store) {
     throw new NotFoundError("store", `userId: ${userId}`);
   }
-  const productCount = await storeRepository.countProductByStoreId(store.id); // 정은 Todo: productRepo 랑 겹치는 경우 합칠 예정
+  const productCount = await storeRepository.countProductByStoreId(store.id);
   const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
     store.id
   );
