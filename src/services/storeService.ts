@@ -7,6 +7,10 @@ import {
   MyStoreDTO,
   StoreResDTO,
   StoreWithFavoriteCountDTO,
+  UpdateMyStoreDTO,
+  RegisterFavoriteStoreDTO,
+  FavoriteStoreResDTO,
+  favoriteStoreType,
 } from "../lib/dto/storeDTO";
 
 import * as storeRepository from "../repositories/storeRepository";
@@ -15,6 +19,7 @@ import BadRequestError from "../lib/errors/BadRequestError";
 import { UserType } from "@prisma/client";
 import { Store } from "../types/storeType";
 import NotFoundError from "../lib/errors/NotFoundError";
+import AlreadyExstError from "../lib/errors/AlreadyExstError";
 
 export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   const { userType, ...storeData } = dto;
@@ -68,7 +73,7 @@ export async function getMyStoreProductList(
       return new MyStoreProductDTO(product);
     })
   );
-  const totalCount = products.length;
+  const totalCount = await storeRepository.countProductByStoreId(store.id);
   return { list, totalCount };
 }
 
@@ -85,4 +90,33 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
     store.id
   );
   return new MyStoreDTO(store, favoriteCount, productCount, monthFavoriteCount);
+}
+
+export async function updateMyStore(
+  dto: UpdateMyStoreDTO
+): Promise<StoreResDTO> {
+  const { storeId, userId, ...rest } = dto;
+  const store = await storeRepository.findStoreByUserIdAndStoreId(
+    userId,
+    storeId
+  );
+  if (!store) {
+    throw new UnauthError();
+  }
+  const result = await storeRepository.updateStore({ storeId, ...rest });
+  return new StoreResDTO(result);
+}
+
+export async function registerFavoriteStore(
+  dto: RegisterFavoriteStoreDTO
+): Promise<FavoriteStoreResDTO> {
+  const { storeId, userId } = dto;
+  const existingFavoriteStore =
+    await storeRepository.countFavoriteStoreByStoreIdAndUserID(storeId, userId);
+  if (existingFavoriteStore !== 0) {
+    throw new AlreadyExstError("FavoriteStore");
+  }
+  const newFavoriteStore = await storeRepository.createFavoriteStore(dto);
+  const store = await storeRepository.getStoreById(newFavoriteStore.storeId);
+  return new FavoriteStoreResDTO(favoriteStoreType.register, store);
 }

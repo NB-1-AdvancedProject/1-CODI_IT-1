@@ -19,6 +19,21 @@ export type GetMyStoreProductsDTO = {
   pageSize: number;
 };
 
+export type UpdateMyStoreDTO = {
+  userId: string;
+  storeId: string;
+  name?: string;
+  address?: string;
+  phoneNumber?: string;
+  content?: string;
+  image?: string;
+};
+
+export type RegisterFavoriteStoreDTO = {
+  userId: string;
+  storeId: string;
+};
+
 // Response DTO
 export class StoreResDTO {
   id: string;
@@ -109,6 +124,15 @@ export type MyStoreProductsDTO = {
   totalCount: number;
 };
 
+export class FavoriteStoreResDTO {
+  type: favoriteStoreType;
+  store: StoreResDTO;
+
+  constructor(type: favoriteStoreType, store: Store) {
+    this.type = type;
+    this.store = new StoreResDTO(store);
+  }
+}
 // Input (serivce <-> repository 간)
 export type CreateStoreInput = Omit<CreateStoreDTO, "userType">;
 export type FindMyStoreProductsInput = {
@@ -116,6 +140,8 @@ export type FindMyStoreProductsInput = {
   page: number;
   pageSize: number;
 };
+
+export type UpdateStoreInput = Omit<UpdateMyStoreDTO, "userId">;
 
 // 다른 도메인 DTO
 // 정은 Todo: 나중에 겹치는지 체크 필요
@@ -148,4 +174,10 @@ export class MyStoreProductDTO {
     );
     this.isSoldOut = totalStock === 0 ? true : false;
   }
+}
+
+// Enum
+export enum favoriteStoreType {
+  register = "register",
+  delete = "delete",
 }

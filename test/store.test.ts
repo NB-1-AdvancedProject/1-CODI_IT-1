@@ -20,9 +20,10 @@ import {
   sizes,
   store1,
 } from "./storeDummy";
-import { Prisma } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { User } from "../src/types/user";
 import { Store } from "../src/types/storeType";
+import { Decimal } from "@prisma/client/runtime/library";
 
 describe("POST /api/stores", () => {
   let buyerUser: User;
@@ -189,10 +190,6 @@ describe("GET /api/stores/detail/my/product", () => {
         data: { storeId: store.id, ...product1 },
       });
       await createTestStocks(product1StocksQuantity18);
-      console.log(
-        `테스트 중 seller Id: ${sellerWithStore.id}, store의 userId: ${store.userId}`
-      );
-
       const authReq = getAuthenticatedReq(sellerWithStore.id);
       const response = await authReq.get("/api/stores/detail/my/product");
       expect(response.status).toBe(200);
@@ -232,6 +229,42 @@ describe("GET /api/stores/detail/my/product", () => {
       expect(response.body.list[0].id).toBe(product.id);
       expect(response.body.list[0].isSoldOut).toBe(true);
     });
+    test("페이지네이션: page와 pageSize에 따라 상품 목록이 제한됨", async () => {
+      const seller = await createTestUser(seller1);
+      const store = await createTestStore(store1, seller.id);
+      const products: Product[] = [];
+      for (let i = 0; i < 5; i++) {
+        const product = await prisma.product.create({
+          data: {
+            name: `상품${i + 1}`,
+            price: new Decimal(10000),
+            image: `https://example.com/image${i}.jpg`,
+            content: `상품${i + 1}의 설명`,
+            categoryId: "clxcat00top000001",
+            storeId: store.id,
+          },
+        });
+        products.push(product);
+      }
+
+      const authReq = getAuthenticatedReq(seller.id);
+
+      // page 1, pageSize 3
+      const resPage1 = await authReq.get(
+        `/api/stores/detail/my/product?page=1&pageSize=3`
+      );
+      expect(resPage1.status).toBe(200);
+      expect(resPage1.body.list).toHaveLength(3);
+      expect(resPage1.body.totalCount).toBe(5);
+
+      // page 2, pageSize 3 → 2개 남아 있어야 함
+      const resPage2 = await authReq.get(
+        `/api/stores/detail/my/product?page=2&pageSize=3`
+      );
+      expect(resPage2.status).toBe(200);
+      expect(resPage2.body.list).toHaveLength(2);
+      expect(resPage2.body.totalCount).toBe(5);
+    });
   });
   describe("오류", () => {
     test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
@@ -239,6 +272,85 @@ describe("GET /api/stores/detail/my/product", () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
       const response = await authReq.get("/api/stores/detail/my/product");
       expect(response.status).toBe(404);
+    });
+  });
+});
+
+describe("PATCH /api/stores/:storeId", () => {
+  let sellerWithStore: User;
+  let sellerWithoutStore: User;
+  let store: Store;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    sellerWithoutStore = await createTestUser(seller2);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  const updatedStore = {
+    name: "updatedStore",
+    address: "updatedAddress",
+    phoneNumber: "010-0000-1234",
+    content: "Newly Updated!",
+  };
+  describe("성공", () => {
+    test("기본동작: 본인의 스토어이면 수정한 결과를 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerWithStore.id);
+      const response = await authReq
+        .patch(`/api/stores/${store.id}`)
+        .send(updatedStore);
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject(updatedStore);
+      expect(response.body.id).toBe(store.id);
+    });
+  });
+  describe("오류", () => {
+    test("본인의 스토어가 아닌 경우 Unauthorized(401) 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerWithoutStore.id);
+      const response = await authReq
+        .patch(`/api/stores/${store.id}`)
+        .send(updatedStore);
+      expect(response.status).toBe(401);
+    });
+  });
+});
+describe("POST /api/stores/:storeId/favorite", () => {
+  let sellerWithStore: User;
+  let store: Store;
+  let buyer: User;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    buyer = await createTestUser(buyer1);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: favoriteStore 가 생성되고 해당 store 정보가 반환됨", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(200);
+      expect(response.body.store).toMatchObject({
+        id: store.id,
+        name: store.name,
+        address: store.address,
+        phoneNumber: store.phoneNumber,
+        content: store.content,
+        image: store.image,
+        userId: store.userId,
+      });
+      expect(response.body.type).toBe("register");
+    });
+  });
+  describe("오류", () => {
+    test("이미 favorite 되어 있다면 AlreadyExtErr (409) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(409);
     });
   });
 });
