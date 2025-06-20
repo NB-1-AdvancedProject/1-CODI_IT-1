@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/main.js",
-    "test": "jest",
+    "test": "dotenv -e .env.test -- npm run prisma:migrate && dotenv -e .env.test -- jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy"
@@ -15,17 +15,28 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1",
+    "redis": "^5.5.6",
+    "superstruct": "^2.0.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.13",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
+    "dotenv-cli": "^8.0.0",
     "jest": "^30.0.0",
     "nodemon": "^3.1.10",
+    "prisma": "^6.9.0",
     "supertest": "^7.1.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
@@ -33,8 +44,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "yamljs": "^0.3.0"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.mjs"
   }
 }
