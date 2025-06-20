@@ -64,16 +64,16 @@ describe("POST /api/stores", () => {
       const response = await authReq.post("/api/stores").send(newStore);
       expect(response.status).toBe(401);
     });
-    test("이미 스토어를 가지고 있을 시 BadRequestError(400) 발생", async () => {
+    test("이미 스토어를 가지고 있을 시 AlreadyExistError(409) 발생", async () => {
       const anotherStore = {
         name: "anotherStore",
         address: "anotherAddress",
         phoneNumber: "010-0000-0000",
         content: "anotherStoreForYou",
       };
-      const authReq = getAuthenticatedReq(sellerUser.id); // 앞서 이미 newStore 가지고 있음
+      const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq.post("/api/stores").send(anotherStore);
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(409);
     });
     test("입력값이 맞지 않을 시 BadRequestError(400) 발생", async () => {
       const wrongStore = {
@@ -190,10 +190,6 @@ describe("GET /api/stores/detail/my/product", () => {
         data: { storeId: store.id, ...product1 },
       });
       await createTestStocks(product1StocksQuantity18);
-      console.log(
-        `테스트 중 seller Id: ${sellerWithStore.id}, store의 userId: ${store.userId}`
-      );
-
       const authReq = getAuthenticatedReq(sellerWithStore.id);
       const response = await authReq.get("/api/stores/detail/my/product");
       expect(response.status).toBe(200);
@@ -317,6 +313,83 @@ describe("PATCH /api/stores/:storeId", () => {
         .patch(`/api/stores/${store.id}`)
         .send(updatedStore);
       expect(response.status).toBe(401);
+    });
+  });
+});
+describe("POST /api/stores/:storeId/favorite", () => {
+  let sellerWithStore: User;
+  let store: Store;
+  let buyer: User;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    buyer = await createTestUser(buyer1);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: favoriteStore 가 생성되고 해당 store 정보가 반환됨", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(200);
+      expect(response.body.store).toMatchObject({
+        id: store.id,
+        name: store.name,
+        address: store.address,
+        phoneNumber: store.phoneNumber,
+        content: store.content,
+        image: store.image,
+        userId: store.userId,
+      });
+      expect(response.body.type).toBe("register");
+    });
+  });
+  describe("오류", () => {
+    test("이미 favorite 되어 있다면 AlreadyExtErr (409) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(409);
+    });
+  });
+});
+describe("DELETE /api/stores/:storeId/favorite", () => {
+  let sellerWithStore: User;
+  let store: Store;
+  let buyer: User;
+  beforeAll(async () => {
+    await clearDatabase();
+    sellerWithStore = await createTestUser(seller1);
+    store = await createTestStore(store1, sellerWithStore.id);
+    buyer = await createTestUser(buyer1);
+    await createTestFavoriteStore({ userId: buyer.id, storeId: store.id });
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: favoriteStore 가 삭제 해당 store 정보가 deleteType과 함께 반환됨", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.delete(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(200);
+      expect(response.body.store).toMatchObject({
+        id: store.id,
+        name: store.name,
+        address: store.address,
+        phoneNumber: store.phoneNumber,
+        content: store.content,
+        image: store.image,
+        userId: store.userId,
+      });
+      expect(response.body.type).toBe("delete");
+    });
+  });
+  describe("오류", () => {
+    test("찜하지 않은 스토어를 삭제요청 하면 NotFoundError (404) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyer.id);
+      const response = await authReq.delete(`/api/stores/${store.id}/favorite`);
+      expect(response.status).toBe(404);
     });
   });
 });

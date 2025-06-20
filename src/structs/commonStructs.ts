@@ -30,6 +30,7 @@ export const integerString = coerce(integer(), string(), (value) =>
 
 export const PageParamsStruct = object({
   // 고급프로젝트에선 많이 사용 안되서 삭제 고려중
+  // 정은: 저 쓰고 있어요..! 살려주십쇼
   page: defaulted(integerString, 1),
   pageSize: defaulted(integerString, 10),
   search: optional(string()),
@@ -40,7 +41,6 @@ export type PageParamsType = Infer<typeof PageParamsStruct>;
 export const IdParamsStruct = object({
   id: Cuid,
 });
-
 export type IdParams = Infer<typeof IdParamsStruct>;
 
 export const SearchParamsStruct = object({

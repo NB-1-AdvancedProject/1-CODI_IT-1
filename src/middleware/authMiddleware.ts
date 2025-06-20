@@ -21,8 +21,9 @@ export const authMiddleware = async (
     if (!token) {
       throw new UnauthError();
     }
-    const { userId } = verifyAccessToken(token);
-    const user = await userService.getById(userId);
+
+    const { id } = verifyAccessToken(token);
+    const user = await userService.getById(id);
     if (!user) {
       throw new UnauthError();
     }
@@ -45,13 +46,13 @@ export const optionalAuthMiddleware = async (
       return next();
     }
 
-    const { userId } = verifyAccessToken(token);
-    const user = await userService.getById(userId);
+    const { id } = verifyAccessToken(token);
+    const user = await userService.getById(id);
     if (user) {
       req.user = user;
+      next();
     }
   } catch {
-  } finally {
     next();
   }
 };

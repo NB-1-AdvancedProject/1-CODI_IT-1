@@ -3,7 +3,6 @@ import request from "supertest";
 import app from "../src/app";
 import bcrypt from "bcrypt";
 import { User } from "../src/types/user";
-import { Store } from "../src/types/storeType";
 import { createAccessToken } from "../src/utils/jwt";
 
 export async function clearDatabase() {

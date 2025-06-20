@@ -261,7 +261,6 @@ describe("내 관심 매장 조회", () => {
         const authReq = getAuthenticatedReq(user.id);
         const response = await authReq.get("/api/users/me/likes").send();
         expect(response.status).toBe(200);
-        console.log(response.body);
         expect(response.body[0].store.name).toBe("마티네 마카롱");
       });
     });

@@ -37,6 +37,10 @@ jobs:
 
       # JWT 서명을 위한 시크릿 키 (테스트용 더미 값)
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+
+      # Redis 서명을 위한 시크릿 키
+      REDIS_URL: ${{ secrets.REDIS_URL }}
 
     steps:
       - name: Checkout code
