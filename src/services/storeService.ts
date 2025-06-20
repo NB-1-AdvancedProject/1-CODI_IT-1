@@ -8,7 +8,7 @@ import {
   StoreResDTO,
   StoreWithFavoriteCountDTO,
   UpdateMyStoreDTO,
-  RegisterFavoriteStoreDTO,
+  FavoriteStoreTargetDTO,
   FavoriteStoreResDTO,
   favoriteStoreType,
 } from "../lib/dto/storeDTO";
@@ -108,7 +108,7 @@ export async function updateMyStore(
 }
 
 export async function registerFavoriteStore(
-  dto: RegisterFavoriteStoreDTO
+  dto: FavoriteStoreTargetDTO
 ): Promise<FavoriteStoreResDTO> {
   const { storeId, userId } = dto;
   const existingFavoriteStore =
@@ -119,4 +119,23 @@ export async function registerFavoriteStore(
   const newFavoriteStore = await storeRepository.createFavoriteStore(dto);
   const store = await storeRepository.getStoreById(newFavoriteStore.storeId);
   return new FavoriteStoreResDTO(favoriteStoreType.register, store);
+}
+
+export async function deleteFavoriteStore(
+  dto: FavoriteStoreTargetDTO
+): Promise<FavoriteStoreResDTO> {
+  const { storeId, userId } = dto;
+  const existingFavoriteStore =
+    await storeRepository.countFavoriteStoreByStoreIdAndUserID(storeId, userId);
+  if (existingFavoriteStore === 0) {
+    throw new NotFoundError(
+      "FavoriteStore",
+      `userId: ${userId} + storeId: ${storeId}`
+    );
+  }
+  const deletedFavoriteStore = await storeRepository.deleteFavoriteStore(dto);
+  const store = await storeRepository.getStoreById(
+    deletedFavoriteStore.storeId
+  );
+  return new FavoriteStoreResDTO(favoriteStoreType.delete, store);
 }
