@@ -51,7 +51,6 @@ export const optionalAuthMiddleware = async (
       req.user = user;
     }
   } catch {
-  } finally {
     next();
   }
 };
