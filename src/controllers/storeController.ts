@@ -66,3 +66,10 @@ export const registerFavoriteStore: RequestHandler = async (req, res) => {
   const result = await storeService.registerFavoriteStore({ userId, storeId });
   res.status(200).json(result);
 };
+
+export const deleteFavoriteStore: RequestHandler = async (req, res) => {
+  const { id: userId } = req.user!;
+  const { id: storeId } = create(req.params, IdParamsStruct);
+  const result = await storeService.deleteFavoriteStore({ userId, storeId });
+  res.status(200).json(result);
+};
