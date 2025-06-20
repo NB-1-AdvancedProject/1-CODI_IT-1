@@ -40,7 +40,6 @@ export type PageParamsType = Infer<typeof PageParamsStruct>;
 export const IdParamsStruct = object({
   id: Cuid,
 });
-
 export type IdParams = Infer<typeof IdParamsStruct>;
 
 export const SearchParamsStruct = object({

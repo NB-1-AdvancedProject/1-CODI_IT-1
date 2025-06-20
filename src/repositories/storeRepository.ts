@@ -3,10 +3,11 @@ import {
   CreateStoreInput,
   FindMyStoreProductsInput,
   ProductWithStocks,
+  RegisterFavoriteStoreDTO,
   UpdateStoreInput,
 } from "../lib/dto/storeDTO";
 import { Store } from "../types/storeType";
-import { Prisma } from "@prisma/client";
+import { FavoriteStore, Prisma } from "@prisma/client";
 
 export async function createStore(data: CreateStoreInput): Promise<Store> {
   return await prisma.store.create({ data });
@@ -47,6 +48,14 @@ export async function countFavoriteStoreByStoreId(
 ): Promise<number> {
   return await prisma.favoriteStore.count({ where: { storeId } });
 }
+export async function countFavoriteStoreByStoreIdAndUserID(
+  storeId: string,
+  userId: string
+): Promise<number> {
+  return await prisma.favoriteStore.count({
+    where: { AND: [{ storeId }, { userId }] },
+  });
+}
 
 // Product 관련
 export async function getProductsWithStocksByStoreId(
@@ -68,5 +77,16 @@ export async function countMonthFavoriteStore(
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   return await prisma.favoriteStore.count({
     where: { AND: [{ storeId }, { createdAt: { gte: thirtyDaysAgo } }] },
+  });
+}
+
+export async function createFavoriteStore(
+  data: RegisterFavoriteStoreDTO
+): Promise<FavoriteStore> {
+  return await prisma.favoriteStore.create({
+    data: {
+      userId: data.userId,
+      storeId: data.storeId,
+    },
   });
 }
