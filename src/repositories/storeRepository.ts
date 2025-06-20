@@ -3,7 +3,7 @@ import {
   CreateStoreInput,
   FindMyStoreProductsInput,
   ProductWithStocks,
-  RegisterFavoriteStoreDTO,
+  FavoriteStoreTargetDTO,
   UpdateStoreInput,
 } from "../lib/dto/storeDTO";
 import { Store } from "../types/storeType";
@@ -57,19 +57,6 @@ export async function countFavoriteStoreByStoreIdAndUserID(
   });
 }
 
-// Product 관련
-export async function getProductsWithStocksByStoreId(
-  data: FindMyStoreProductsInput
-): Promise<ProductWithStocks[]> {
-  const { storeId, page, pageSize } = data;
-  return await prisma.product.findMany({
-    where: { storeId },
-    skip: pageSize * (page - 1),
-    take: pageSize,
-    include: { stocks: true },
-  });
-}
-
 export async function countMonthFavoriteStore(
   storeId: string
 ): Promise<number> {
@@ -81,12 +68,38 @@ export async function countMonthFavoriteStore(
 }
 
 export async function createFavoriteStore(
-  data: RegisterFavoriteStoreDTO
+  data: FavoriteStoreTargetDTO
 ): Promise<FavoriteStore> {
   return await prisma.favoriteStore.create({
     data: {
       userId: data.userId,
       storeId: data.storeId,
     },
+  });
+}
+
+export async function deleteFavoriteStore(
+  data: FavoriteStoreTargetDTO
+): Promise<FavoriteStore> {
+  return await prisma.favoriteStore.delete({
+    where: {
+      userId_storeId: {
+        userId: data.userId,
+        storeId: data.storeId,
+      },
+    },
+  });
+}
+
+// Product 관련
+export async function getProductsWithStocksByStoreId(
+  data: FindMyStoreProductsInput
+): Promise<ProductWithStocks[]> {
+  const { storeId, page, pageSize } = data;
+  return await prisma.product.findMany({
+    where: { storeId },
+    skip: pageSize * (page - 1),
+    take: pageSize,
+    include: { stocks: true },
   });
 }

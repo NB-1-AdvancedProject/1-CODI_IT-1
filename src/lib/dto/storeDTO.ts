@@ -29,7 +29,7 @@ export type UpdateMyStoreDTO = {
   image?: string;
 };
 
-export type RegisterFavoriteStoreDTO = {
+export type FavoriteStoreTargetDTO = {
   userId: string;
   storeId: string;
 };

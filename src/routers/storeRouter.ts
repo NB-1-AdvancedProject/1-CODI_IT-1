@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createStore,
+  deleteFavoriteStore,
   getMyStoreInfo,
   getMyStoreProductList,
   getStoreInfo,
@@ -22,6 +23,11 @@ storeRouter.post(
   "/:id/favorite",
   authMiddleware,
   asyncHandler(registerFavoriteStore)
+);
+storeRouter.delete(
+  "/:id/favorite",
+  authMiddleware,
+  asyncHandler(deleteFavoriteStore)
 );
 storeRouter.get("/:id", asyncHandler(getStoreInfo));
 storeRouter.patch("/:id", authMiddleware, asyncHandler(updateMyStore));

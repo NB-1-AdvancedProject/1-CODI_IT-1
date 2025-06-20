@@ -8,7 +8,7 @@ import {
   StoreResDTO,
   StoreWithFavoriteCountDTO,
   UpdateMyStoreDTO,
-  RegisterFavoriteStoreDTO,
+  FavoriteStoreTargetDTO,
   FavoriteStoreResDTO,
   favoriteStoreType,
 } from "../lib/dto/storeDTO";
@@ -24,11 +24,11 @@ import AlreadyExstError from "../lib/errors/AlreadyExstError";
 export async function createStore(dto: CreateStoreDTO): Promise<StoreResDTO> {
   const { userType, ...storeData } = dto;
   if (userType !== UserType.SELLER) {
-    throw new UnauthError(); // 정은 : 이 에러가 최선인가..
+    throw new UnauthError();
   }
   const existingStore = await storeRepository.findStoreByUserId(dto.userId);
   if (existingStore) {
-    throw new BadRequestError("You alreadly have a store"); // 정은 : 이 에러가 최선인가..
+    throw new AlreadyExstError("Store");
   }
 
   const store: Store = await storeRepository.createStore(storeData);
@@ -82,7 +82,7 @@ export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   if (!store) {
     throw new NotFoundError("store", `userId: ${userId}`);
   }
-  const productCount = await storeRepository.countProductByStoreId(store.id); // 정은 Todo: productRepo 랑 겹치는 경우 합칠 예정
+  const productCount = await storeRepository.countProductByStoreId(store.id);
   const monthFavoriteCount = await storeRepository.countMonthFavoriteStore(
     store.id
   );
@@ -108,7 +108,7 @@ export async function updateMyStore(
 }
 
 export async function registerFavoriteStore(
-  dto: RegisterFavoriteStoreDTO
+  dto: FavoriteStoreTargetDTO
 ): Promise<FavoriteStoreResDTO> {
   const { storeId, userId } = dto;
   const existingFavoriteStore =
@@ -119,4 +119,23 @@ export async function registerFavoriteStore(
   const newFavoriteStore = await storeRepository.createFavoriteStore(dto);
   const store = await storeRepository.getStoreById(newFavoriteStore.storeId);
   return new FavoriteStoreResDTO(favoriteStoreType.register, store);
+}
+
+export async function deleteFavoriteStore(
+  dto: FavoriteStoreTargetDTO
+): Promise<FavoriteStoreResDTO> {
+  const { storeId, userId } = dto;
+  const existingFavoriteStore =
+    await storeRepository.countFavoriteStoreByStoreIdAndUserID(storeId, userId);
+  if (existingFavoriteStore === 0) {
+    throw new NotFoundError(
+      "FavoriteStore",
+      `userId: ${userId} + storeId: ${storeId}`
+    );
+  }
+  const deletedFavoriteStore = await storeRepository.deleteFavoriteStore(dto);
+  const store = await storeRepository.getStoreById(
+    deletedFavoriteStore.storeId
+  );
+  return new FavoriteStoreResDTO(favoriteStoreType.delete, store);
 }
