@@ -379,6 +379,8 @@ describe("문의 API 테스트", () => {
 
   describe("GET api/inquiries/:id", () => {
     let inquiry1: Inquiry;
+    let inquiry2: Inquiry;
+
     beforeAll(async () => {
       inquiry1 = await prisma.inquiry.create({
         data: {
@@ -394,17 +396,83 @@ describe("문의 API 테스트", () => {
           },
         },
       });
+
+      inquiry2 = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: false,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
     });
 
-    /* test("문의를 상세 조회 할 수 있다.(로그인 조회)", async () => {
+    test("문의를 상세 조회 할 수 있다.(로그인 조회)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
-
       expect(response.status).toBe(200);
-    });*/
+      expect(response.body).toMatchObject({
+        title: `상품 문의합니다.`,
+        content: `문의 내용입니다.`,
+        isSecret: true,
+      });
+    });
 
     test("문의를 상세 조회 할 수 있다.(비로그인 조회)", async () => {
-      const inquiry2 = await prisma.inquiry.create({
+      const response = await request(app).get(`/api/inquiries/${inquiry2.id}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        title: `상품 문의합니다.`,
+        content: `문의 내용입니다.`,
+        isSecret: false,
+      });
+    });
+
+    test("문의를 상세 조회 할 수 있다.(자신이 작성한 거 아님)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Unauthorized" });
+    });
+
+    test("문의를 상세 조회 할 수 있다.(isSecret =true , 비로그인 테스트)", async () => {
+      const response = await request(app).get(`/api/inquiries/${inquiry1.id}`);
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        message: `Inquiry with id ${inquiry1.id} not found`,
+      });
+    });
+  });
+
+  describe("GET api/inquiries/:id/replies", () => {
+    let inquiry1: Inquiry;
+    let inquiry2: Inquiry;
+    let reply1: Reply;
+    let reply2: Reply;
+
+    beforeAll(async () => {
+      inquiry1 = await prisma.inquiry.create({
+        data: {
+          title: `상품 문의합니다.`,
+          content: `문의 내용입니다.`,
+          isSecret: true,
+          status: InquiryStatus.noAnswer,
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          product: {
+            connect: { id: product.id },
+          },
+        },
+      });
+
+      inquiry2 = await prisma.inquiry.create({
         data: {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
@@ -419,8 +487,66 @@ describe("문의 API 테스트", () => {
         },
       });
 
-      const response = await request(app).get(`/api/inquiries/${inquiry2.id}`);
+      reply1 = await prisma.reply.create({
+        data: {
+          content: "이 제품은 재입고 예정입니다.",
+          createdAt: new Date("2024-06-01T12:00:00.000Z"),
+          updatedAt: new Date("2024-06-01T12:00:00.000Z"),
+          user: {
+            connect: { id: buyerUser.id },
+          },
+          inquiry: {
+            connect: { id: inquiry1.id },
+          },
+        },
+      });
+
+      reply2 = await prisma.reply.create({
+        data: {
+          content: "이 제품은 재입고 예정입니다.",
+          createdAt: new Date("2024-06-01T12:00:00.000Z"),
+          updatedAt: new Date("2024-06-01T12:00:00.000Z"),
+          user: {
+            connect: { id: sellerUser.id },
+          },
+          inquiry: {
+            connect: { id: inquiry2.id },
+          },
+        },
+      });
+    });
+
+    test("문의답변을 상세 조회 할 수 있다.(로그인 조회)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/inquiries/${reply1.id}/replies`);
       expect(response.status).toBe(200);
+      expect(response.body.reply).toMatchObject({
+        content: "이 제품은 재입고 예정입니다.",
+      });
+    });
+
+    test("문의답변을 상세 조회 할 수 있다.(비로그인 조회)", async () => {
+      const response = await request(app).get(
+        `/api/inquiries/${reply2.id}/replies`
+      );
+      expect(response.status).toBe(200);
+    });
+
+    test("문의답변을 상세 조회 할 수 있다.(로그인 권한 실패)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq.get(`/api/inquiries/${reply1.id}/replies`);
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Unauthorized" });
+    });
+
+    test("문의답변을 상세 조회 할 수 있다.(비로그인 secret true 조회)", async () => {
+      const response = await request(app).get(
+        `/api/inquiries/${reply1.id}/replies`
+      );
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        message: `Inquiry with id ${inquiry1.id} not found`,
+      });
     });
   });
 });

@@ -29,7 +29,7 @@ export type ReplyUser = Pick<User, "id" | "name">; //김: reply dto용
 
 export interface InquiryDetailQueryResult extends Inquiry {
   user: { name: string };
-  reply?: (Reply & { user: { name: string } }) | null;
+  Reply?: (Reply & { user: { name: string } }) | null;
 }
 
 export interface InReplyType {

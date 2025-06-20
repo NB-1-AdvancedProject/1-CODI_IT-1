@@ -98,14 +98,14 @@ export class GetInquiryResDTO {
       name: inquiry.user.name,
     };
 
-    this.reply = inquiry.reply
+    this.reply = inquiry.Reply
       ? {
-          id: inquiry.reply.id,
-          content: inquiry.reply.content,
-          createdAt: inquiry.reply.createdAt.toISOString(),
-          updatedAt: inquiry.reply.updatedAt.toISOString(),
+          id: inquiry.Reply.id,
+          content: inquiry.Reply.content,
+          createdAt: inquiry.Reply.createdAt.toISOString(),
+          updatedAt: inquiry.Reply.updatedAt.toISOString(),
           user: {
-            name: inquiry.reply.user.name,
+            name: inquiry.Reply.user.name,
           },
         }
       : null;

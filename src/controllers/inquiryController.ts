@@ -71,7 +71,6 @@ export const patchReplies: RequestHandler = async (req, res) => {
 };
 
 export const getDetailInquiry: RequestHandler = async (req, res) => {
-  console.log("미들웨어 작동 확인", req.params, req.user);
   const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user?.id;
   const result: GetInquiryResDTO = await getDetail(params, user);

@@ -98,49 +98,36 @@ export async function inquiryDetail(params: string, user?: string) {
     return prisma.inquiry.findUnique({
       where: { id: params },
       include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
+        user: { select: { name: true } },
         Reply: {
-          include: {
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
+          include: { user: { select: { name: true } } },
         },
       },
     });
   } else {
     return prisma.inquiry.findFirst({
-      where: {
-        id: params,
-        isSecret: false,
-      },
+      where: { id: params, isSecret: false },
       include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
+        user: { select: { name: true } },
         Reply: {
-          include: {
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
+          include: { user: { select: { name: true } } },
         },
       },
     });
   }
 }
+
 export async function replyDetail(params: string) {
   return prisma.reply.findUnique({
     where: { id: params },
+  });
+}
+
+export async function inquiryStatus(inquiryId: string) {
+  return prisma.inquiry.update({
+    where: { id: inquiryId },
+    data: {
+      status: InquiryStatus.completedAnswer,
+    },
   });
 }
