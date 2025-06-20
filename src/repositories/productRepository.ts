@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
+import { ProductListDTO } from "../lib/dto/productDTO";
 
 async function create(data: Prisma.ProductCreateInput) {
   return await prisma.product.create({
@@ -27,6 +28,14 @@ async function findProductById(productId: string) {
   });
 }
 
+async function findAllProducts(params: Prisma.ProductFindManyArgs) {
+  return await prisma.product.findMany(params);
+}
+
+async function findAllProductCount(where: Prisma.ProductWhereInput) {
+  return await prisma.product.count({ where });
+}
+
 async function deleteById(productId: string) {
   return await prisma.product.delete({
     where: { id: productId },
@@ -36,5 +45,7 @@ async function deleteById(productId: string) {
 export default {
   create,
   findProductById,
+  findAllProducts,
+  findAllProductCount,
   deleteById,
 };
