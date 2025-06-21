@@ -1,4 +1,3 @@
-import { ProductListDTO, ProductListResponseDTO } from "../lib/dto/productDTO";
 import NotFoundError from "../lib/errors/NotFoundError";
 import productRepository from "../repositories/productRepository";
 import {
@@ -165,6 +164,9 @@ async function getProducts(params: ProductListParams) {
     take: params.pageSize,
     where: whereCondition,
     orderBy,
+    include: {
+      store: true,
+    },
   };
 
   const products = await productRepository.findAllProducts(prismaParams);
@@ -172,7 +174,10 @@ async function getProducts(params: ProductListParams) {
     prismaParams.where
   );
 
-  return new ProductListResponseDTO(new ProductListDTO(products), productCount);
+  return {
+    list: products,
+    totalCount: productCount,
+  };
 }
 
 async function getproduct(productId: string) {

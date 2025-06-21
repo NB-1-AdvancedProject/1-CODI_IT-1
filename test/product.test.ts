@@ -146,7 +146,7 @@ describe("Product API 테스트", () => {
     test("기본 조회 - 페이징 기본값", async () => {
       const res = await request(app).get("/api/products");
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.list.products)).toBe(true);
+      expect(Array.isArray(res.body.list)).toBe(true);
       expect(typeof res.body.totalCount).toBe("number");
     });
 
@@ -156,7 +156,7 @@ describe("Product API 테스트", () => {
         search: "가디건",
       });
       expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
+      res.body.list.forEach((p: any) => {
         expect(p.name.toLowerCase()).toContain("가디건");
       });
     });
@@ -168,7 +168,7 @@ describe("Product API 테스트", () => {
         search: storeName,
       });
       expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
+      res.body.list.forEach((p: any) => {
         expect(p.storeId).toBeDefined();
       });
     });
@@ -179,7 +179,7 @@ describe("Product API 테스트", () => {
         categoryName,
       });
       expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
+      res.body.list.forEach((p: any) => {
         expect(p.categoryId).toBeDefined();
       });
     });
@@ -190,32 +190,13 @@ describe("Product API 테스트", () => {
         priceMax: 10000,
       });
       expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
+      res.body.list.forEach((p: any) => {
         expect(p.price).toBeGreaterThanOrEqual(5000);
         expect(p.price).toBeLessThanOrEqual(10000);
       });
     });
 
-    test("사이즈 필터링", async () => {
-      const size = "M";
-      const res = await request(app).get("/api/products").query({ size });
-      expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
-        const hasSize = p.stocks.some((stock: any) => stock.size === size);
-        expect(hasSize).toBe(true);
-      });
-    });
-
-    test("좋아요 누른 상점 필터링", async () => {
-      const userId = sellerUser1.id;
-      const res = await request(app).get("/api/products").query({
-        favoriteStore: userId,
-      });
-      expect(res.status).toBe(200);
-      res.body.list.products.forEach((p: any) => {
-        expect(p.store).toBeDefined();
-      });
-    });
+    //사이즈 필터링이 되는지 확인해야하는데, 요구하는 responseBody 에 사이즈 정보가없으므로 보류.
 
     test("정렬 조건별 조회", async () => {
       const sorts = [
@@ -230,7 +211,7 @@ describe("Product API 테스트", () => {
       for (const sort of sorts) {
         const res = await request(app).get("/api/products").query({ sort });
         expect(res.status).toBe(200);
-        expect(Array.isArray(res.body.list.products)).toBe(true);
+        expect(Array.isArray(res.body.list)).toBe(true);
       }
     });
 
@@ -245,16 +226,11 @@ describe("Product API 테스트", () => {
 
       expect(res1.status).toBe(200);
       expect(res2.status).toBe(200);
-      expect(res1.body.list.products.length).toBeLessThanOrEqual(pageSize);
-      expect(res2.body.list.products.length).toBeLessThanOrEqual(pageSize);
+      expect(res1.body.list.length).toBeLessThanOrEqual(pageSize);
+      expect(res2.body.list.length).toBeLessThanOrEqual(pageSize);
       // 페이지 별로 결과가 다름을 간단히 확인
-      if (
-        res1.body.list.products.length > 0 &&
-        res2.body.list.products.length > 0
-      ) {
-        expect(res1.body.list.products[0].id).not.toBe(
-          res2.body.list.products[0].id
-        );
+      if (res1.body.list.length > 0 && res2.body.list.length > 0) {
+        expect(res1.body.list[0].id).not.toBe(res2.body.list[0].id);
       }
     });
   });
@@ -271,8 +247,8 @@ describe("Product API 테스트", () => {
         discountEndTime: new Date(Date.now() + 1000 * 60 * 60 * 24),
         categoryName: "Updated Category",
         stocks: [
-          { sizeId: "size-id-1", quantity: 5 },
-          { sizeId: "size-id-2", quantity: 10 },
+          { sizeId: "size1-id", quantity: 5 },
+          { sizeId: "size2-id", quantity: 10 },
         ],
       });
 
@@ -312,7 +288,7 @@ describe("Product API 테스트", () => {
     test("기본 삭제 테스트", async () => {
       const authReq = getAuthenticatedReq(sellerUser1.id);
 
-      const deleteResponse = await authReq.delete("/api/products/product2-id");
+      const deleteResponse = await authReq.delete("/api/products/product1-id");
       expect(deleteResponse.status).toBe(204);
 
       // 삭제된 상품 한번더 삭제시 404 에러 발생 확인

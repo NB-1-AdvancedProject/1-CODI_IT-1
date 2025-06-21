@@ -76,6 +76,7 @@ export const patchProduct: RequestHandler = async (req, res) => {
 
   const data = create(parseRequestBody(req.body), PatchProductBodyStruct);
   const product = await productService.updateProduct(data, productId);
+  console.log(product);
   res.json(product);
 };
 
