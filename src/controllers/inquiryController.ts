@@ -6,9 +6,16 @@ import {
   updateRepliesData,
   getDetail,
   getReply,
+  postQuiry,
+  quiryList,
 } from "../services/inquiryService";
 import { create } from "superstruct";
-import { inquiryStruct, replyContentStruct } from "../structs/inquiryStructs";
+import {
+  inquiryStruct,
+  replyContentStruct,
+  inquiresStruct,
+  updateInquiryStruct,
+} from "../structs/inquiryStructs";
 import { IdParamsStruct } from "../structs/commonStructs";
 import {
   InquiryListResponseDTO,
@@ -35,7 +42,7 @@ export const getInquiry: RequestHandler = async (req, res) => {
 export const changeInquiry: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user!.id;
-  const inquiry = req.body;
+  const inquiry = create(req.body, updateInquiryStruct);
   const result: InquiryResDTO = await patchInquiry(params, user, inquiry);
 
   res.status(200).json(result);
@@ -82,6 +89,24 @@ export const getDetailReply: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
   const user = req.user?.id;
   const result: GetInquiryResDTO = await getReply(params, user);
+
+  res.status(200).json(result);
+};
+
+export const postQuiryData: RequestHandler = async (req, res) => {
+  const { id: params } = create(req.params, IdParamsStruct);
+  const quiry = create(req.body, inquiresStruct);
+  const user = req.user!.id;
+
+  const result: InquiryResDTO = await postQuiry(params, quiry, user);
+
+  res.status(201).json(result);
+};
+
+export const getQuiryList: RequestHandler = async (req, res) => {
+  const { id: params } = create(req.params, IdParamsStruct);
+
+  const result: GetInquiryResDTO[] = await quiryList(params);
 
   res.status(200).json(result);
 };

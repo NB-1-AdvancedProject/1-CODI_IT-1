@@ -93,10 +93,10 @@ describe("문의 API 테스트", () => {
       expect(response.body.totalCount).toBe(20);
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
-        title: `상품 문의합니다.0`,
-        content: `문의 내용입니다.0`,
+        title: `상품 문의합니다.19`,
+        content: `문의 내용입니다.19`,
         isSecret: false,
-        status: "noAnswer",
+        status: "completedAnswer",
       });
     });
 
@@ -105,10 +105,10 @@ describe("문의 API 테스트", () => {
       const response = await authReq.get("/api/inquiries?page=2");
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
-        title: `상품 문의합니다.10`,
-        content: `문의 내용입니다.10`,
+        title: `상품 문의합니다.9`,
+        content: `문의 내용입니다.9`,
         isSecret: false,
-        status: "noAnswer",
+        status: "completedAnswer",
       });
     });
 
@@ -117,10 +117,10 @@ describe("문의 API 테스트", () => {
       const response = await authReq.get("/api/inquiries?pageSize=5");
       expect(response.body.list.length).toBe(5);
       expect(response.body.list[4]).toMatchObject({
-        title: `상품 문의합니다.4`,
-        content: `문의 내용입니다.4`,
+        title: `상품 문의합니다.15`,
+        content: `문의 내용입니다.15`,
         isSecret: false,
-        status: "noAnswer",
+        status: "completedAnswer",
       });
       expect(response.body.list[5]).toBeUndefined();
     });
@@ -132,14 +132,14 @@ describe("문의 API 테스트", () => {
       );
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
-        title: `상품 문의합니다.1`,
-        content: `문의 내용입니다.1`,
+        title: `상품 문의합니다.19`,
+        content: `문의 내용입니다.19`,
         isSecret: false,
         status: "completedAnswer",
       });
       expect(response.body.list[9]).toMatchObject({
-        title: `상품 문의합니다.19`,
-        content: `문의 내용입니다.19`,
+        title: `상품 문의합니다.1`,
+        content: `문의 내용입니다.1`,
         isSecret: false,
         status: "completedAnswer",
       });
@@ -185,16 +185,26 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 수정할 수 있다.(문의 조회 실패))", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.patch(
-        `/api/inquiries/${"clabcxyz1234567890abcdefg"}`
-      );
+      const response = await authReq
+        .patch(`/api/inquiries/${"clabcxyz1234567890abcdefg"}`)
+        .send({
+          title: "상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
 
       expect(response.status).toBe(404);
     });
 
     test("내가 작성한 문의를 수정할 수 있다.(내가 작성한 문의 x)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.patch(`/api/inquiries/${inquiry.id}`);
+      const response = await authReq
+        .patch(`/api/inquiries/${inquiry.id}`)
+        .send({
+          title: "상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
 
       expect(response.body).toEqual({ message: "Unauthorized" });
       expect(response.status).toBe(401);
@@ -576,6 +586,111 @@ describe("문의 API 테스트", () => {
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
         message: `Inquiry with id ${inquiry1.id} not found`,
+      });
+    });
+  });
+
+  describe("POST api/products/:id/inquiries", () => {
+    test("상품에 대한 문의를 생성할 수 있다(성공)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .post(`/api/products/${product.id}/inquiries`)
+        .send({
+          title: " 상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        title: " 상품 문의합니다.",
+        content: "문의 내용입니다.",
+        isSecret: false,
+      });
+    });
+
+    test("상품에 대한 문의를 판매자가 올릴 수 없다.(실패-판매자 문의)", async () => {
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const response = await authReq
+        .post(`/api/products/${product.id}/inquiries`)
+        .send({
+          title: " 상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Unauthorized" });
+    });
+
+    test("상품이 없음(실패-상품 X)", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .post(`/api/products/${"clabcxyz1234567890abcdefg"}/inquiries`)
+        .send({
+          title: " 상품 문의합니다.",
+          content: "문의 내용입니다.",
+          isSecret: false,
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        message: `Product with id ${"clabcxyz1234567890abcdefg"} not found`,
+      });
+    });
+  });
+
+  describe("GET api/products/:id/inquiries", () => {
+    beforeAll(async () => {
+      await prisma.reply.deleteMany({});
+      await prisma.inquiry.deleteMany({});
+      for (let i = 0; i < 20; i++) {
+        await prisma.inquiry.create({
+          data: {
+            title: `상품 문의합니다.${i}`,
+            content: `문의 내용입니다.${i}`,
+            isSecret: i % 2 === 0 ? false : true,
+            status:
+              i % 2 === 0
+                ? InquiryStatus.noAnswer
+                : InquiryStatus.completedAnswer,
+            user: {
+              connect: { id: buyerUser.id },
+            },
+            product: {
+              connect: { id: product.id },
+            },
+          },
+        });
+      }
+    });
+
+    test("문의 전체 조회 단 isSecret 제외", async () => {
+      const response = await request(app).get(
+        `/api/products/${product.id}/inquiries`
+      );
+      expect(response.status).toBe(200);
+      expect(response.body[0]).toMatchObject({
+        title: `상품 문의합니다.18`,
+        content: `문의 내용입니다.18`,
+        isSecret: false,
+      });
+      expect(response.body[9]).toMatchObject({
+        title: `상품 문의합니다.0`,
+        content: `문의 내용입니다.0`,
+        isSecret: false,
+      });
+    });
+
+    test("문의 전체 조회 단 isSecret 제외(product 자체가 없음 실패", async () => {
+      const response = await request(app).get(
+        `/api/products/${"clabcxyz1234567890abcdefg"}/inquiries`
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.length).toBeUndefined();
+      expect(response.body).toEqual({
+        message: `Product with id ${"clabcxyz1234567890abcdefg"} not found`,
       });
     });
   });
