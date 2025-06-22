@@ -221,7 +221,6 @@ describe("Product API 테스트", () => {
       const response1 = await request(app).get("/api/products").query({
         sort: "mostReviewed",
       });
-      console.log(response1.body);
       expect(response1.status).toBe(200);
       expect(response1.body.list[0].reviewsCount).toBe(25);
 

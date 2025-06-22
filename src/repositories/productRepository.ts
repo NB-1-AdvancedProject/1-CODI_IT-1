@@ -56,6 +56,15 @@ async function updateProductWithStocks(
   });
 }
 
+async function update(data: Prisma.ProductUpdateInput, productId: string) {
+  return await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: data,
+  });
+}
+
 async function deleteById(productId: string) {
   return await prisma.product.delete({
     where: { id: productId },
@@ -68,5 +77,6 @@ export default {
   findAllProducts,
   findAllProductCount,
   updateProductWithStocks,
+  update,
   deleteById,
 };

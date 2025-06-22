@@ -21,6 +21,10 @@ async function createProduct(data: CreateProductBody, userId: string) {
     price: data.price,
     content: data.content,
     image: data.image,
+    // discountPrice 스키마 생성시 수정할 예정
+    // discountPrice: data.discountRate
+    //   ? data.price * (100 - data.discountRate)
+    //   : null,
     discountRate: data.discountRate || 0,
     discountStartTime: data.discountStartTime || null,
     discountEndTime: data.discountEndTime || null,
@@ -52,6 +56,7 @@ async function createProduct(data: CreateProductBody, userId: string) {
     reviewsCount: product.reviews.length,
     reviews: product.reviews,
     inquiries: product.inquiries,
+    // discountPrice 스키마 생성시 수정할 예정
     discountPrice:
       Number(product.discountRate || 0) > 0
         ? Number(product.price) * (1 - Number(product.discountRate || 0) / 100)
@@ -174,8 +179,22 @@ async function getProducts(params: ProductListParams) {
   };
 
   const products = await productRepository.findAllProducts(prismaParams);
-  const productsIncludeStoreId = await Promise.all(
-    products.map(async (product) => {
+
+  // 할인 상태 체크 및 업데이트
+  const refreshedProducts = await Promise.all(
+    products.map((product) =>
+      checkAndUpdateDiscountState(product.discountEndTime, product.id)
+    )
+  );
+
+  // 하나라도 갱신된 게 있다면 최신 데이터로 다시 조회
+  const finalProducts = refreshedProducts.some((p) => p !== null)
+    ? await productRepository.findAllProducts(prismaParams)
+    : products;
+
+  // storeName 붙이기
+  const finalResult = await Promise.all(
+    finalProducts.map(async (product) => {
       const store = await storeService.getStoreById(product.storeId);
       return {
         ...product,
@@ -189,14 +208,26 @@ async function getProducts(params: ProductListParams) {
   );
 
   return {
-    list: productsIncludeStoreId,
+    list: finalResult,
     totalCount: productCount,
   };
 }
 
-async function getproduct(productId: string) {
+async function getProduct(productId: string) {
   const product = await productRepository.findProductById(productId);
-  return { ...product, storeName: product!.store.name };
+  if (!product) return null;
+  const store = await storeService.getStoreById(product.storeId);
+  const refreshedProduct = await checkAndUpdateDiscountState(
+    product.discountEndTime,
+    product.id
+  );
+
+  const finalProduct = refreshedProduct ?? product;
+
+  return {
+    ...finalProduct,
+    storeName: store!.id,
+  };
 }
 
 async function updateProduct(data: PatchProductBody, productId: string) {
@@ -210,7 +241,7 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     discountEndTime: data.discountEndTime || undefined,
   };
 
-  const updatedProduct = await prisma.$transaction(async (tx) => {
+  let updatedProduct = await prisma.$transaction(async (tx) => {
     if (data.stocks) {
       await stockService.updateStocksForProduct(data.stocks, productId);
     }
@@ -220,8 +251,14 @@ async function updateProduct(data: PatchProductBody, productId: string) {
       productId
     );
   });
+
+  const refreshedProduct = await checkAndUpdateDiscountState(
+    updatedProduct.discountEndTime,
+    updatedProduct.id
+  );
+
   return {
-    ...updatedProduct, //밑에있는 모든게 DetailedProductResponseDTO 로 처리필요
+    ...updatedProduct,
     storeId: updatedProduct.store.id,
     storeName: updatedProduct.store.name,
     reviewsRating:
@@ -230,18 +267,18 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     reviewsCount: updatedProduct.reviews.length,
     reviews: updatedProduct.reviews,
     inquiries: updatedProduct.inquiries,
-    discountPrice:
-      Number(updatedProduct.discountRate || 0) > 0
-        ? Number(updatedProduct.price) *
-          (1 - Number(updatedProduct.discountRate || 0) / 100)
-        : Number(updatedProduct.price),
-    discountRate: updatedProduct.discountRate || 0,
-    discountStartTime: updatedProduct.discountStartTime
-      ? updatedProduct.discountStartTime.toISOString()
-      : null,
-    discountEndTime: updatedProduct.discountEndTime
-      ? updatedProduct.discountEndTime.toISOString()
-      : null,
+    // 스키마 변경 시 사용예정
+    //discountPrice: refreshedProduct?.discountPrice ?? updatedProduct.discountPrice ?? updatedProduct.price;,
+    discountRate:
+      refreshedProduct?.discountRate ?? updatedProduct.discountRate ?? 0,
+    discountStartTime:
+      refreshedProduct?.discountStartTime ??
+      updatedProduct.discountStartTime ??
+      null,
+    discountEndTime:
+      refreshedProduct?.discountEndTime ??
+      updatedProduct.discountEndTime ??
+      null,
     stocks: updatedProduct.stocks,
     category: [
       { name: updatedProduct.category.name, id: updatedProduct.category.id },
@@ -265,7 +302,7 @@ async function deleteProduct(productId: string, userId: string) {
 }
 
 async function getSellerIdByProductId(productId: string) {
-  const product = await getproduct(productId);
+  const product = await getProduct(productId);
   if (!product) {
     throw new NotFoundError("product", productId);
   }
@@ -276,11 +313,31 @@ async function getSellerIdByProductId(productId: string) {
   return store.userId;
 }
 
+async function checkAndUpdateDiscountState(
+  discountEndTime: Date | null,
+  productId: string
+) {
+  if (discountEndTime && discountEndTime < new Date()) {
+    // 할인 만료 → 상태 초기화 후 최신 product 리턴
+    return await productRepository.update(
+      {
+        discountRate: undefined,
+        discountStartTime: undefined,
+        discountEndTime: undefined,
+      },
+      productId
+    );
+  }
+
+  return null;
+}
+
 export default {
   createProduct,
-  getproduct,
+  getProduct,
   getProducts,
   updateProduct,
   deleteProduct,
   getSellerIdByProductId,
+  checkAndUpdateDiscountState,
 };
