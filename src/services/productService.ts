@@ -195,7 +195,8 @@ async function getProducts(params: ProductListParams) {
 }
 
 async function getproduct(productId: string) {
-  return await productRepository.findProductById(productId);
+  const product = await productRepository.findProductById(productId);
+  return { ...product, storeName: product!.store.name };
 }
 
 async function updateProduct(data: PatchProductBody, productId: string) {
@@ -268,15 +269,16 @@ async function getSellerIdByProductId(productId: string) {
   if (!product) {
     throw new NotFoundError("product", productId);
   }
-  const store = await storeService.getStoreById(product.storeId);
+  const store = await storeService.getStoreById(product.storeId!);
   if (!store) {
-    throw new NotFoundError("store", product.storeId);
+    throw new NotFoundError("store", product.storeId!);
   }
   return store.userId;
 }
 
 export default {
   createProduct,
+  getproduct,
   getProducts,
   updateProduct,
   deleteProduct,

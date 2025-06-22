@@ -137,6 +137,24 @@ describe("Product API 테스트", () => {
       },
     });
   });
+  test("GET /api/products/:id 상품 상세 조회", async () => {
+    const res = await request(app).get("/api/products/product1-id");
+    expect(res.body.name).toBe("가디건");
+    expect(res.body.image).toBe("https://s3-url");
+    expect(res.body.content).toBe("상품 상세 설명");
+    expect(res.body.price).toBe("100");
+    expect(res.body.createdAt).toBe("2023-01-01T00:00:00.000Z");
+    expect(res.body).toHaveProperty("updatedAt");
+    expect(res.body.reviewsRating).toBe(1);
+    expect(res.body.storeId).toBe("store1-id");
+    expect(res.body.storeName).toBe("Store1");
+    //expect(res.body.discountPrice).toBe("discountPrice");
+    //스키마 변경후에 추가할 예정
+    expect(res.body).toHaveProperty("discountRate");
+    expect(res.body).toHaveProperty("discountStartTime");
+    expect(res.body).toHaveProperty("discountEndTime");
+    expect(res.body.reviewsCount).toBe(1);
+  });
   describe("GET /api/products - 상품 목록 조회", () => {
     beforeAll(async () => {});
 

@@ -52,6 +52,11 @@ function parseProductListParams(rawQuery: any) {
   };
 }
 
+export const getProduct: RequestHandler = async (req, res) => {
+  const product = await productService.getproduct(req.params.id);
+  res.json(product);
+};
+
 export const getProducts: RequestHandler = async (req, res) => {
   const params = create(
     parseProductListParams(req.query),
