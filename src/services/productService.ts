@@ -32,8 +32,15 @@ async function createProduct(data: CreateProductBody, userId: string) {
     },
     store: { connect: { id: store.id } },
   };
-  const product = await productRepository.create(newData);
-  const stocks = await stockService.createStocks(data.stocks, product.id);
+  const { product, stocks } = await prisma.$transaction(async (tx) => {
+    const product = await productRepository.createwithStocks(tx, newData);
+    const stocks = await stockService.createStocksForProduct(
+      tx,
+      data.stocks,
+      product.id
+    );
+    return { product, stocks };
+  });
 
   return {
     ...product, //밑에있는 모든게 DetailedProductResponseDTO 로 처리필요
@@ -164,18 +171,25 @@ async function getProducts(params: ProductListParams) {
     take: params.pageSize,
     where: whereCondition,
     orderBy,
-    include: {
-      store: true,
-    },
   };
 
   const products = await productRepository.findAllProducts(prismaParams);
+  const productsIncludeStoreId = await Promise.all(
+    products.map(async (product) => {
+      const store = await storeService.getStoreById(product.storeId);
+      return {
+        ...product,
+        storeName: store!.name,
+      };
+    })
+  );
+
   const productCount = await productRepository.findAllProductCount(
     prismaParams.where
   );
 
   return {
-    list: products,
+    list: productsIncludeStoreId,
     totalCount: productCount,
   };
 }
