@@ -226,7 +226,7 @@ async function getProduct(productId: string) {
 
   return {
     ...finalProduct,
-    storeName: store!.id,
+    storeName: store!.name,
   };
 }
 
