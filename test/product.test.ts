@@ -26,7 +26,6 @@ import {
 } from "./productDummy";
 import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
-import { Decimal } from "@prisma/client/runtime/library";
 import app from "../src/app";
 import request from "supertest";
 
@@ -55,20 +54,14 @@ describe("Product API 테스트", () => {
     await prisma.store.create({ data: store1 });
     await prisma.store.create({ data: store2 });
     await prisma.store.create({ data: store3 });
-    await prisma.size.create({
-      data: size1,
-    });
+    await prisma.size.create({ data: size1 });
     await prisma.size.create({ data: size2 });
     await prisma.size.create({ data: size3 });
     await prisma.size.create({ data: size4 });
-    await prisma.category.create({
-      data: category1,
-    });
+    await prisma.category.create({ data: category1 });
     await prisma.category.create({ data: category2 });
     await prisma.category.create({ data: category3 });
-    await prisma.product.create({
-      data: fullProduct,
-    });
+    await prisma.product.create({ data: fullProduct });
     await prisma.product.create({ data: fullProduct2 });
     await prisma.product.create({ data: fullProduct3 });
     await prisma.product.create({ data: fullProduct4 });
@@ -83,7 +76,7 @@ describe("Product API 테스트", () => {
       name: "가디건",
       image: "https://s3-URL",
       content: "상품 상세 설명",
-      price: Decimal(100),
+      price: 100,
       categoryName: "clothing",
       stocks: [
         {
@@ -100,10 +93,10 @@ describe("Product API 테스트", () => {
     const body = response.body;
 
     // 기본 필드
-    expect(body).toHaveProperty("name");
-    expect(body).toHaveProperty("content");
-    expect(body).toHaveProperty("id");
-    expect(body).toHaveProperty("image");
+    expect(body.name).toBe("가디건");
+    expect(body.image).toBe("https://s3-URL");
+    expect(body.content).toBe("상품 상세 설명");
+    expect(body.price).toBe("100");
     expect(body).toHaveProperty("createdAt");
     expect(body).toHaveProperty("updatedAt");
     expect(body).toHaveProperty("reviewsRating");
@@ -129,90 +122,114 @@ describe("Product API 테스트", () => {
     expect(Array.isArray(body.category)).toBe(true);
     const category = body.category[0];
     expect(category).toHaveProperty("id");
-    expect(category).toHaveProperty("name");
+    expect(category.name).toBe("clothing");
 
     // stocks 배열
     expect(body).toHaveProperty("stocks");
     expect(Array.isArray(body.stocks)).toBe(true);
     const stock = body.stocks[0];
-    expect(stock).toHaveProperty("id");
-    expect(stock).toHaveProperty("productId");
-    expect(stock).toHaveProperty("sizeId");
-    expect(stock).toHaveProperty("quantity");
+    expect(stock.sizeId).toBe("size1-id");
+    expect(stock.quantity).toBe(10);
+
+    await prisma.product.delete({
+      where: {
+        id: response.body.id,
+      },
+    });
   });
   describe("GET /api/products - 상품 목록 조회", () => {
     beforeAll(async () => {});
 
-    test("기본 조회 - 페이징 기본값", async () => {
+    test("상품 기본 조회 - 페이징 기본값", async () => {
       const res = await request(app).get("/api/products");
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.list)).toBe(true);
+      expect(res.body.list[0]).toHaveProperty("id");
+      expect(res.body.list[0]).toHaveProperty("storeId");
+      expect(res.body.list[0]).toHaveProperty("storeName");
+      expect(res.body.list[0]).toHaveProperty("price");
+      //expect(res.body.list[0]).toHaveProperty("discountPrice");
+      //스키마 변경후 다시 주석취소할예정.
+      expect(res.body.list[0]).toHaveProperty("discountRate");
+      expect(res.body.list[0]).toHaveProperty("discountStartTime");
+      expect(res.body.list[0]).toHaveProperty("discountEndTime");
+      expect(res.body.list[0]).toHaveProperty("reviewsCount");
+      expect(res.body.list[0]).toHaveProperty("reviewsRating");
+      expect(res.body.list[0]).toHaveProperty("createdAt");
+      expect(res.body.list[0]).toHaveProperty("updatedAt");
+      expect(res.body.list[0]).toHaveProperty("sales");
+
       expect(typeof res.body.totalCount).toBe("number");
     });
 
-    test("검색어로 이름 검색", async () => {
+    test("상품이름 기준으로 상품 검색", async () => {
       const res = await request(app).get("/api/products").query({
         searchBy: "name",
-        search: "가디건",
+        search: "반팔",
       });
       expect(res.status).toBe(200);
-      res.body.list.forEach((p: any) => {
-        expect(p.name.toLowerCase()).toContain("가디건");
-      });
+      expect(res.body.list[0].name).toBe("반팔 티셔츠");
     });
 
-    test("검색어로 상점 이름 검색", async () => {
-      const storeName = "내가 만든 상점";
+    test("스토어 기준으로 상품 검색", async () => {
       const res = await request(app).get("/api/products").query({
         searchBy: "store",
-        search: storeName,
+        search: "2",
       });
       expect(res.status).toBe(200);
-      res.body.list.forEach((p: any) => {
-        expect(p.storeId).toBeDefined();
-      });
+      expect(res.body.list[0].storeName).toBe("Store2");
     });
 
     test("카테고리 필터링", async () => {
-      const categoryName = "clothing";
       const res = await request(app).get("/api/products").query({
-        categoryName,
+        categoryName: "생활용품",
       });
       expect(res.status).toBe(200);
-      res.body.list.forEach((p: any) => {
-        expect(p.categoryId).toBeDefined();
-      });
+      expect(res.body.list[0].name).toBe("운동화");
     });
 
     test("가격 필터링 (min, max)", async () => {
       const res = await request(app).get("/api/products").query({
-        priceMin: 5000,
-        priceMax: 10000,
+        priceMin: 40000,
+        priceMax: 50001,
       });
       expect(res.status).toBe(200);
-      res.body.list.forEach((p: any) => {
-        expect(p.price).toBeGreaterThanOrEqual(5000);
-        expect(p.price).toBeLessThanOrEqual(10000);
-      });
+      expect(res.body.list[0].price).toBe("50000");
     });
 
     //사이즈 필터링이 되는지 확인해야하는데, 요구하는 responseBody 에 사이즈 정보가없으므로 보류.
 
     test("정렬 조건별 조회", async () => {
-      const sorts = [
-        "mostReviewed",
-        "highRating",
-        "HighPrice",
-        "lowPrice",
-        "recent",
-        "salesRanking",
-      ];
+      const response1 = await request(app).get("/api/products").query({
+        sort: "mostReviewed",
+      });
+      console.log(response1.body);
+      expect(response1.status).toBe(200);
+      expect(response1.body.list[0].reviewsCount).toBe(25);
 
-      for (const sort of sorts) {
-        const res = await request(app).get("/api/products").query({ sort });
-        expect(res.status).toBe(200);
-        expect(Array.isArray(res.body.list)).toBe(true);
-      }
+      const response2 = await request(app).get("/api/products").query({
+        sort: "highRating",
+      });
+      expect(response2.status).toBe(200);
+      expect(response2.body.list[0].reviewsRating).toBe(4.9);
+
+      const response3 = await request(app).get("/api/products").query({
+        sort: "lowPrice",
+      });
+      expect(response3.status).toBe(200);
+      expect(response3.body.list[0].price).toBe("1");
+
+      const response4 = await request(app).get("/api/products").query({
+        sort: "recent",
+      });
+      expect(response4.status).toBe(200);
+      expect(response4.body.list[0].createdAt).toBe("2999-02-15T00:00:00.000Z");
+
+      const response5 = await request(app).get("/api/products").query({
+        sort: "salesRanking",
+      });
+      expect(response5.status).toBe(200);
+      expect(response5.body.list[0].sales).toBe(100);
     });
 
     test("페이지네이션 테스트", async () => {

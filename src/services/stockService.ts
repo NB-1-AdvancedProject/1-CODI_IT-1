@@ -13,7 +13,8 @@ type CreateStockData = {
   quantity: number;
 };
 
-async function createStocks(
+async function createStocksForProduct(
+  tx: Prisma.TransactionClient,
   stocks: { sizeId: string; quantity: number }[],
   productId: string
 ) {
@@ -25,11 +26,9 @@ async function createStocks(
     quantity: stock.quantity,
   }));
 
-  return await prisma.$transaction(async (tx) => {
-    return await Promise.all(
-      stocksCreateInput.map((input) => stockRepository.createStockTx(tx, input))
-    );
-  });
+  return await Promise.all(
+    stocksCreateInput.map((input) => stockRepository.createStockTx(tx, input))
+  );
 }
 
 async function getStocksByProductId(productId: string) {
@@ -41,26 +40,21 @@ async function updateStocksForProduct(
   productId: string
 ) {
   const existingStocks = await getStocksByProductId(productId);
-  // 기존 stock을 sizeId 기준으로 Map으로 만들어 빠른 검색용
   const existingStockMap = new Map(
     existingStocks.map((stock) => [stock.sizeId, stock])
   );
 
-  // 업데이트할 StocksData
   const stocksUpdateInput: UpdateStockData[] = [];
-  // 새로 만들어야되는 StocksData
   const stocksCreateInput: CreateStockData[] = [];
 
   for (const stockInput of data) {
     const existing = existingStockMap.get(stockInput.sizeId);
     if (existing) {
-      // 업데이트
       stocksUpdateInput.push({
         where: { id: existing.id },
         data: { quantity: stockInput.quantity },
       });
     } else {
-      // 새로 생성
       stocksCreateInput.push({
         product: { connect: { id: productId } },
         size: {
@@ -87,7 +81,7 @@ async function updateStocksForProduct(
 }
 
 export default {
-  createStocks,
+  createStocksForProduct,
   getStocksByProductId,
   updateStocksForProduct,
 };

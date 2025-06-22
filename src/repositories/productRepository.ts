@@ -1,8 +1,11 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
 
-async function create(data: Prisma.ProductCreateInput) {
-  return await prisma.product.create({
+async function createwithStocks(
+  tx: Prisma.TransactionClient,
+  data: Prisma.ProductCreateInput
+) {
+  return await tx.product.create({
     data: data,
     include: {
       category: true,
@@ -60,7 +63,7 @@ async function deleteById(productId: string) {
 }
 
 export default {
-  create,
+  createwithStocks,
   findProductById,
   findAllProducts,
   findAllProductCount,
