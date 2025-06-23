@@ -1,6 +1,10 @@
 import { InquiryStatus } from "@prisma/client";
 import prisma from "../lib/prisma";
-import { inquiryType, updateInquiryType } from "../structs/inquiryStructs";
+import {
+  inquiryType,
+  updateInquiryType,
+  inquiresType,
+} from "../structs/inquiryStructs";
 
 export async function listData(params: inquiryType, userId: string) {
   return prisma.inquiry.findMany({
@@ -10,6 +14,7 @@ export async function listData(params: inquiryType, userId: string) {
     },
     skip: (params.page - 1) * params.pageSize,
     take: params.pageSize,
+    orderBy: { createdAt: "desc" },
     include: {
       product: {
         select: {
@@ -131,6 +136,34 @@ export async function inquiryStatus(inquiryId: string) {
     where: { id: inquiryId },
     data: {
       status: InquiryStatus.completedAnswer,
+    },
+  });
+}
+
+export async function postData(
+  params: string,
+  quiry: inquiresType,
+  user: string
+) {
+  return prisma.inquiry.create({
+    data: {
+      ...quiry,
+      status: "noAnswer",
+      userId: user,
+      productId: params,
+    },
+  });
+}
+
+export async function listQuiries(params: string) {
+  return prisma.inquiry.findMany({
+    where: { productId: params, isSecret: false },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { name: true } },
+      Reply: {
+        include: { user: { select: { name: true } } },
+      },
     },
   });
 }
