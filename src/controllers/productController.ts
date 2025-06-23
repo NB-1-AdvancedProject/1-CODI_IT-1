@@ -6,8 +6,8 @@ import {
   ProductListParamsStruct,
 } from "../structs/productStructs";
 import productService from "../services/productService";
-import productRepository from "../repositories/productRepository";
 import UnauthError from "../lib/errors/UnauthError";
+import NotFoundError from "../lib/errors/NotFoundError";
 
 function parseRequestBody(rawBody: any) {
   return {
@@ -34,7 +34,6 @@ function parseRequestBody(rawBody: any) {
       : [],
   };
 }
-
 function parseProductListParams(rawQuery: any) {
   return {
     page: rawQuery.page ? parseInt(rawQuery.page, 10) : 1,
@@ -43,9 +42,17 @@ function parseProductListParams(rawQuery: any) {
     searchBy: rawQuery.searchBy ?? undefined,
     sort: rawQuery.sort ?? undefined,
     priceMin:
-      rawQuery.priceMin !== undefined ? Number(rawQuery.priceMin) : undefined,
+      rawQuery.priceMin !== undefined
+        ? isNaN(Number(rawQuery.priceMin))
+          ? undefined
+          : Number(rawQuery.priceMin)
+        : undefined,
     priceMax:
-      rawQuery.priceMax !== undefined ? Number(rawQuery.priceMax) : undefined,
+      rawQuery.priceMax !== undefined
+        ? isNaN(Number(rawQuery.priceMax))
+          ? undefined
+          : Number(rawQuery.priceMax)
+        : undefined,
     favoriteStore: rawQuery.favoriteStore ?? undefined,
     size: rawQuery.size ?? undefined,
     categoryName: rawQuery.categoryName ?? undefined,
@@ -53,7 +60,8 @@ function parseProductListParams(rawQuery: any) {
 }
 
 export const getProduct: RequestHandler = async (req, res) => {
-  const product = await productService.getproduct(req.params.id);
+  const product = await productService.getProduct(req.params.id);
+  if (!product) throw new NotFoundError("product", req.params.id);
   res.json(product);
 };
 
@@ -81,7 +89,6 @@ export const patchProduct: RequestHandler = async (req, res) => {
 
   const data = create(parseRequestBody(req.body), PatchProductBodyStruct);
   const product = await productService.updateProduct(data, productId);
-  console.log(product);
   res.json(product);
 };
 
