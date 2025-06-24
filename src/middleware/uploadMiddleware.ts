@@ -14,8 +14,8 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
       }
       return res.json({
         message: "이미지 업로드 성공",
-        path: req.file.filename,
-        key: req.file.originalname,
+        url: req.file.destination,
+        key: req.file.path,
       });
     });
     return;
