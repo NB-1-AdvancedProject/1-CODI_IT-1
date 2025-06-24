@@ -11,16 +11,11 @@ import { User } from "@prisma/client";
 import { sellerUser } from "./productDummy";
 import bcrypt from "bcrypt";
 import { s3Client } from "../src/lib/s3Client";
+import { uploadMiddleware } from "../src/middleware/uploadMiddleware";
 
+//multer 업로드 부분 mock 구현 설정
 jest.mock("../src/middleware/uploadMiddleware", () => ({
-  uploadMiddleware: (req: any, res: any, next: any) => {
-    req.file = {
-      originalname: "test.txt",
-      mimetype: "text/plain",
-      buffer: Buffer.from("dummy file"),
-    };
-    next();
-  },
+  uploadMiddleware: jest.fn(),
 }));
 
 const s3Mock = mockClient(s3Client);
@@ -44,29 +39,39 @@ describe("파일 업로드 테스트", () => {
   });
 
   test("파일 업로드 기본 동작 테스트", async () => {
+    //multer 업로드 부분 mock 구현 설정
+    (uploadMiddleware as jest.Mock).mockImplementationOnce((req, res, next) => {
+      req.file = {
+        originalname: "test.jpg",
+        mimetype: "image/jpeg",
+        buffer: Buffer.from("fake image"),
+      };
+      next();
+    });
+
     const authReq = getAuthenticatedReq(sellerUser1.id);
     const response = await authReq.post("/api/s3/upload");
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("이미지 업로드 성공");
     expect(response.body.url).toContain("uploads/");
-    expect(response.body.key).toMatch(/^uploads\/\d+_test\.txt$/);
+    expect(response.body.key).toMatch(/^uploads\/\d+_test\.jpg$/);
 
     expect(s3Mock).toHaveReceivedCommand(PutObjectCommand);
     expect(s3Mock).toHaveReceivedCommandWith(PutObjectCommand, {
-      ContentType: "text/plain",
-      Key: expect.stringMatching(/^uploads\/\d+_test\.txt$/),
+      ContentType: "image/jpeg",
+      Key: expect.stringMatching(/^uploads\/\d+_test\.jpg$/),
     });
   });
 
   test("파일이 없을 경우", async () => {
     // uploadMiddleware mock 내 req.file을 일부러 undefined로 만들어보기
-    jest
-      .mocked(require("../src/middleware/uploadMiddleware").uploadMiddleware)
-      .mockImplementationOnce((req: any, res: any, next: any) => {
+    (uploadMiddleware as jest.Mock).mockImplementationOnce(
+      (req: any, res: any, next: any) => {
         req.file = undefined;
         next();
-      });
+      }
+    );
 
     const authReq = getAuthenticatedReq(sellerUser1.id);
     const response = await authReq.post("/api/s3/upload");
