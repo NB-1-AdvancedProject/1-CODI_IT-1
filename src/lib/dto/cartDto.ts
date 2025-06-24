@@ -76,7 +76,7 @@ export class productDTO {
   id: string;
   storeId: string;
   name: string;
-  price: Decimal;
+  price: Number;
   image: string;
   discountRate: Number | null;
   discountStartTime: string | null;
@@ -88,7 +88,7 @@ export class productDTO {
     this.id = products.id;
     this.storeId = products.storeId;
     this.name = products.name;
-    this.price = products.price;
+    this.price = products.price.toNumber();
     this.image = products.image;
     this.discountRate = products.discountRate;
     this.discountStartTime = products.discountStartTime
