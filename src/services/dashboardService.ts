@@ -37,11 +37,11 @@ export async function getDashboard(
     { priceRange: "만원 미만", minPrice: 0, maxPrice: 10000 },
     { priceRange: "만원 이상 오만원 미만", minPrice: 10000, maxPrice: 50000 },
     {
-      priceRange: "오만원 이상 십만원 미만 ",
+      priceRange: "오만원 이상 십만원 미만",
       minPrice: 50000,
       maxPrice: 100000,
     },
-    { priceRange: "십만원 초과 ", minPrice: 100000, maxPrice: Infinity },
+    { priceRange: "십만원 초과", minPrice: 100000, maxPrice: 999999999999 },
   ];
 
   const totalSalesPerRange = await Promise.all(
@@ -191,7 +191,12 @@ async function getTotalSalesByPriceRange(
 ): Promise<number> {
   const option: Prisma.OrderItemFindManyArgs = {
     where: {
-      product: { storeId, price: { gte: minPrice, lt: maxPrice } },
+      product: {
+        is: {
+          storeId,
+          price: { gte: minPrice, lt: maxPrice },
+        },
+      },
     },
     select: { price: true, quantity: true },
   };
