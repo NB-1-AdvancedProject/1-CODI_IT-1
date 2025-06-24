@@ -10,6 +10,7 @@ import inquiryRouter from "./routers/inquiryRouter";
 import { storeRouter } from "./routers/storeRouter";
 import userRouter from "./routers/userRouter";
 import productRouter from "./routers/productRouter";
+import uploadRouter from "./routers/uploadRouter";
 
 const app = express();
 app.use(express.json());
@@ -23,6 +24,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/stores", storeRouter);
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
+app.use("/api/s3", uploadRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
