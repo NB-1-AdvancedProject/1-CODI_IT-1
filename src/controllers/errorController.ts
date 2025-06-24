@@ -28,7 +28,7 @@ export function globalErrorHandler(
   res: Response,
   next: NextFunction
 ) {
-  console.error(err);
+  //console.error(err);
   if (err instanceof CommonError) {
     res.status(err.status).send({ message: err.message });
   } else if (err instanceof StructError || err instanceof BadRequestError) {
