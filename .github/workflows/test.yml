@@ -42,7 +42,6 @@ jobs:
       # Redis 서명을 위한 시크릿 키
       REDIS_URL: ${{ secrets.REDIS_URL }}
 
-      NODE_ENV: production
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -63,4 +62,4 @@ jobs:
         run: npm run prisma:migrate # Prisma 마이그레이션 적용 (testdb에 스키마 반영)
 
       - name: Run Tests
-        run: npm run test # 테스트 실행 (예: Jest, Supertest 등 포함)
+        run: npm run jest # 테스트 실행 (예: Jest, Supertest 등 포함)

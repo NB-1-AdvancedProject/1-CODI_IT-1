@@ -9,7 +9,8 @@
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy",
-    "test:deploy": "npx prisma migrate deploy && npx jest -i"
+    "test:deploy": "npx prisma migrate deploy && npx jest -i",
+    "jest": "jest -i"
   },
   "author": "",
   "license": "ISC",
