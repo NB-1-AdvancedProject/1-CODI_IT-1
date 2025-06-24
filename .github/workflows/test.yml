@@ -58,7 +58,7 @@ jobs:
           node-version: "lts/*" # 또는 프로젝트에 필요한 Node.js 버전
 
       - name: Install dependencies
-        run: npm install # 프로젝트 의존성 설치
+        run: npm ci # 프로젝트 의존성 설치
       - name: Apply DB Schema
         run: npm run prisma:migrate # Prisma 마이그레이션 적용 (testdb에 스키마 반영)
 
