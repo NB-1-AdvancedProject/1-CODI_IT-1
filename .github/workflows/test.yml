@@ -63,4 +63,4 @@ jobs:
         run: npm run prisma:migrate # Prisma 마이그레이션 적용 (testdb에 스키마 반영)
 
       - name: Run Tests
-        run: npm run test:deploy # 테스트 실행 (예: Jest, Supertest 등 포함)
+        run: npm run test # 테스트 실행 (예: Jest, Supertest 등 포함)
