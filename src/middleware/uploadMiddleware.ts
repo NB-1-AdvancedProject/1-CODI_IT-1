@@ -7,7 +7,6 @@ const memoryUpload = multer({ storage: multer.memoryStorage() }).single("file");
 
 export const uploadMiddleware: RequestHandler = function (req, res, next) {
   if (environment === "development") {
-    console.log("yes");
     diskUpload(req, res, function (err) {
       if (err) return next(err);
       if (!req.file) {
@@ -23,7 +22,6 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
   }
 
   if (environment === "production") {
-    console.log("yes2");
     memoryUpload(req, res, function (err) {
       if (err) return next(err);
       next();
