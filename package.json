@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/main.js",
-    "test": "dotenv-cli -e .env.test -- npx prisma migrate deploy && dotenv-cli -e .env.test -- npx jest -i --coverage",
+    "test": "npx dotenv-cli -e .env.test -- npx prisma migrate deploy && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy",
