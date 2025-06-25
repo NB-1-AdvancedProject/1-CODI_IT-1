@@ -2,7 +2,11 @@ import { Transaction } from "ioredis/built/transaction";
 import prisma from "../lib/prisma";
 import { OrderItem } from "../types/dashboard";
 import { Prisma, Product, Review } from "@prisma/client";
-import { CreateReviewData, OrderItemWithOrder } from "../lib/dto/reviewDTO";
+import {
+  CreateReviewData,
+  OrderItemWithOrder,
+  UpdateReviewData,
+} from "../lib/dto/reviewDTO";
 
 export async function createReview(
   data: CreateReviewData,
@@ -18,6 +22,23 @@ export async function findReviewByOrderItemId(
 ): Promise<Review | null> {
   const client = tx || prisma;
   return await client.review.findUnique({ where: { orderItemId } });
+}
+
+export async function updateReview(
+  data: UpdateReviewData,
+  reviewId: string,
+  tx?: Prisma.TransactionClient
+): Promise<Review> {
+  const client = tx || prisma;
+  return await client.review.update({ where: { id: reviewId }, data });
+}
+
+export async function findReviewById(
+  reviewId: string,
+  tx?: Prisma.TransactionClient
+): Promise<Review | null> {
+  const client = tx || prisma;
+  return await client.review.findUnique({ where: { id: reviewId } });
 }
 // 정은: 다른 도메인 관련 함수
 export async function updateProduct(

@@ -6,3 +6,7 @@ export const CreateReviewBodyStruct = object({
   content: size(nonempty(string()), 2, 300),
   orderItemId: Cuid,
 });
+
+export const UpdateReviewBodyStruct = object({
+  rating: min(max(number(), 5), 1),
+});

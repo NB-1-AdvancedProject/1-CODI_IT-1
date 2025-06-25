@@ -1,5 +1,9 @@
 import { OrderStatus } from "@prisma/client";
-import { CreateReviewDTO, ReviewDTO } from "../lib/dto/reviewDTO";
+import {
+  CreateReviewDTO,
+  ReviewDTO,
+  UpdateReviewDTO,
+} from "../lib/dto/reviewDTO";
 import prisma from "../lib/prisma";
 import * as reviewRepository from "../repositories/reviewRepository";
 import UnauthError from "../lib/errors/UnauthError";
@@ -57,6 +61,49 @@ export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
       tx
     );
     return createdReview;
+  });
+  return new ReviewDTO(result);
+}
+
+export async function updateReview(dto: UpdateReviewDTO): Promise<ReviewDTO> {
+  const { reviewId, rating, userId } = dto;
+  const result = await prisma.$transaction(async (tx) => {
+    const existingReview = await reviewRepository.findReviewById(reviewId, tx);
+    if (!existingReview) {
+      throw new NotFoundError("Review", reviewId);
+    }
+    if (existingReview.userId !== userId) {
+      throw new UnauthError();
+    }
+    if (existingReview.rating === rating) {
+      return existingReview;
+    }
+    const updatedReview = await reviewRepository.updateReview(
+      { rating },
+      reviewId,
+      tx
+    );
+    // product 의 reviewRating 업데이트
+    const product = await reviewRepository.findProductById(
+      updatedReview.productId,
+      tx
+    );
+    if (!product) {
+      throw new NotFoundError("Product", updatedReview.productId);
+    }
+    const reviewCount = product.reviewsCount ? product.reviewsCount : 0;
+    const previousReviewRating = product.reviewsRating
+      ? product.reviewsRating
+      : 0;
+    const previousReviewRatingSum = reviewCount * previousReviewRating;
+    const newReviewRating =
+      (previousReviewRatingSum - existingReview.rating + rating) / reviewCount;
+    await reviewRepository.updateProduct(
+      { reviewsRating: newReviewRating },
+      product.id,
+      tx
+    );
+    return updatedReview;
   });
   return new ReviewDTO(result);
 }

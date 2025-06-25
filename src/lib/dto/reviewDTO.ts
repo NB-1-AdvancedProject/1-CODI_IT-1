@@ -8,6 +8,13 @@ export type CreateReviewDTO = {
   content: string;
   orderItemId: string;
 };
+
+export type UpdateReviewDTO = {
+  userId: string;
+  rating: number;
+  reviewId: string;
+};
+
 // Response
 export class ReviewDTO {
   id: string;
@@ -39,4 +46,8 @@ export type CreateReviewData = {
 
 export type OrderItemWithOrder = OrderItem & {
   order: Order;
+};
+
+export type UpdateReviewData = {
+  rating: number;
 };

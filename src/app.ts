@@ -29,6 +29,7 @@ app.use("/api/stores", storeRouter);
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/product", reviewRouter);
+app.use("/api/review", reviewRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
