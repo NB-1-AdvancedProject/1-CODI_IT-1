@@ -5,6 +5,7 @@ import * as reviewRepository from "../repositories/reviewRepository";
 import UnauthError from "../lib/errors/UnauthError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import { create } from "superstruct";
+import AlreadyExstError from "../lib/errors/AlreadyExstError";
 
 export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
   const { orderItemId, productId, userId, rating, content } = dto;
@@ -26,6 +27,13 @@ export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
     const product = await reviewRepository.findProductById(productId, tx);
     if (!product) {
       throw new NotFoundError("product", productId);
+    }
+    const existingReview = await reviewRepository.findReviewByOrderItemId(
+      orderItemId,
+      tx
+    );
+    if (existingReview) {
+      throw new AlreadyExstError("Review");
     }
     const createdReview = await reviewRepository.createReview({
       userId,

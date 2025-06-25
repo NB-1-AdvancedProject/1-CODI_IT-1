@@ -13,7 +13,6 @@ import { createReview } from "../controllers/reviewController";
 
 const productRouter = express.Router();
 
-productRouter.post("/:id/reviews", authMiddleware, asyncHandler(createReview));
 productRouter.get("/:id", asyncHandler(getProduct));
 productRouter.get("/", asyncHandler(getProducts));
 productRouter.post("/", authMiddleware, asyncHandler(postProduct));

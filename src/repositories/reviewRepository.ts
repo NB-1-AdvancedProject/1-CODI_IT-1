@@ -12,6 +12,13 @@ export async function createReview(
   return await client.review.create({ data });
 }
 
+export async function findReviewByOrderItemId(
+  orderItemId: string,
+  tx?: Prisma.TransactionClient
+): Promise<Review | null> {
+  const client = tx || prisma;
+  return await client.review.findUnique({ where: { orderItemId } });
+}
 // 정은: 다른 도메인 관련 함수
 export async function updateProduct(
   data: Prisma.ProductUpdateInput,
