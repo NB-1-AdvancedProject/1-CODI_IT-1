@@ -14,6 +14,7 @@ import cartRouter from "./routers/cartRouter";
 import { dashboardRouter } from "./routers/dashboardRouter";
 import uploadRouter from "./routers/uploadRouter";
 import { reviewRouter } from "./routers/reviewRouter";
+import { metadataRouter } from "./routers/metadataRouter";
 
 const app = express();
 app.use(express.json());
@@ -31,6 +32,7 @@ app.use("/api/product", reviewRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
+app.use("/api/metadata", metadataRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
