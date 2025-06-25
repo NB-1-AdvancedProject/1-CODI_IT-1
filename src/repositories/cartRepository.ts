@@ -89,3 +89,34 @@ export async function CartItemSizes(cartId: string, productId: string) {
     },
   });
 }
+
+export async function cartDataFind(params: string) {
+  return await prisma.cartItem.findUnique({
+    where: { id: params },
+    include: {
+      product: {
+        include: {
+          store: true,
+          stocks: {
+            include: {
+              size: true,
+            },
+          },
+        },
+      },
+      cart: true,
+    },
+  });
+}
+
+export async function deleteData(params: string): Promise<void> {
+  await prisma.cartItem.delete({
+    where: { id: params },
+  });
+}
+
+export async function getIdCartItem(params: string) {
+  return prisma.cartItem.findUnique({
+    where: { id: params },
+  });
+}

@@ -9,6 +9,7 @@ import {
   Reply,
   Cart,
   Size,
+  CartItem,
 } from "@prisma/client";
 import { clearDatabase, createTestUser, getAuthenticatedReq } from "./testUtil";
 import {
@@ -215,6 +216,133 @@ describe("카트 API 테스트", () => {
         ],
       });
       expect(response.status).toBe(404);
+    });
+  });
+  describe("DELETE /api/cart/:cartItemId", () => {
+    let cartItem: CartItem;
+    let cartItem1: CartItem;
+    let cart1: Cart;
+    beforeAll(async () => {
+      await prisma.cartItem.deleteMany();
+      await prisma.cart.deleteMany();
+      cart = await prisma.cart.create({
+        data: {
+          userId: buyerUser.id,
+        },
+      });
+
+      cart1 = await prisma.cart.create({
+        data: {
+          userId: buyerUser2.id,
+        },
+      });
+    });
+
+    beforeEach(async () => {
+      cartItem = await prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: product.id,
+          sizeId: size.id,
+          quantity: 0,
+        },
+      });
+      cartItem1 = await prisma.cartItem.create({
+        data: {
+          cartId: cart1.id,
+          productId: product.id,
+          sizeId: size.id,
+          quantity: 0,
+        },
+      });
+    });
+
+    test("카트 아이템 삭제(성공)", async () => {
+      const authReq = await getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.delete(`/api/cart/${cartItem.id}`);
+      expect(response.status).toBe(204);
+    });
+
+    test("카트 아이템 삭제(실패)", async () => {
+      const authReq = await getAuthenticatedReq(buyerUser2.id);
+      const response = await authReq.delete(`/api/cart/${cartItem.id}`);
+      expect(response.status).toBe(403);
+    });
+  });
+
+  describe("GET /api/cart/:cartItemId", () => {
+    let cartItem: CartItem;
+    let cartItem1: CartItem;
+    let cart1: Cart;
+    beforeEach(async () => {
+      await prisma.cartItem.deleteMany();
+      await prisma.cart.deleteMany();
+      cart = await prisma.cart.create({
+        data: {
+          userId: buyerUser.id,
+        },
+      });
+
+      cart1 = await prisma.cart.create({
+        data: {
+          userId: buyerUser2.id,
+        },
+      });
+    });
+
+    beforeEach(async () => {
+      cartItem = await prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: product.id,
+          sizeId: size.id,
+          quantity: 0,
+        },
+      });
+      cartItem1 = await prisma.cartItem.create({
+        data: {
+          cartId: cart1.id,
+          productId: product.id,
+          sizeId: size.id,
+          quantity: 0,
+        },
+      });
+    });
+    test("카트 상세 조회(성공)", async () => {
+      const authReq = await getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("id");
+      expect(response.body).toHaveProperty("cartId");
+      expect(response.body).toHaveProperty("productId");
+      expect(response.body).toHaveProperty("sizeId");
+    });
+    test("카트 상세 조회(없는 userId))", async () => {
+      const invalidUserId = "clabcxyz1234567890abcdefg";
+      const authReq = await getAuthenticatedReq(invalidUserId);
+      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      expect(response.status).toBe(401);
+    });
+    test("카트 없음(실패))", async () => {
+      await prisma.cart.delete({ where: { id: cart.id } });
+      const authReq = await getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      expect(response.status).toBe(404);
+    });
+    test("cartItem 없음 (404)", async () => {
+      const authReq = await getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.get(
+        `/api/cart/${"clabcxyz1234567890abcdefg"}`
+      );
+
+      expect(response.status).toBe(404);
+    });
+    test("cartId 다름 → ForbiddenError (403)", async () => {
+      const authReq = await getAuthenticatedReq(buyerUser2.id);
+
+      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+
+      expect(response.status).toBe(403);
     });
   });
 });
