@@ -2,6 +2,7 @@ import { PaymentStatus } from "@prisma/client";
 import { CreateOrderItemDTO, StockDTO } from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
+import { OrderStatusType } from "../types/order";
 
 async function orderSave(user: Token, order: any) {
   const createOrder = await prisma.order.create({
@@ -62,8 +63,40 @@ async function getStock(orderItems: StockDTO[]) {
   });
 }
 
+async function getOrder(
+  user: Token,
+  status: OrderStatusType,
+  page: number,
+  limit: number,
+  orderBy: string
+) {
+  const order = orderBy === "recent" ? "asc" : "desc";
+
+  return await prisma.order.findMany({
+    where: { userId: user.id, status },
+    orderBy: { createdAt: order },
+    skip: (page - 1) * limit,
+    take: limit,
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            include: {
+              store: true,
+              stocks: { include: { size: true } },
+            },
+          },
+          size: true,
+        },
+      },
+      payment: true,
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
+  getOrder,
   getStock,
 };

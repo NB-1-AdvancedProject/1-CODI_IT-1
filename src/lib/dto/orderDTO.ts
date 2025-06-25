@@ -1,3 +1,4 @@
+
 import { PaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import {
@@ -5,9 +6,8 @@ import {
   OrderItem,
   OrderItemPayment,
   Product,
-  Size,
+  Size
 } from "../../types/order";
-import { string } from "superstruct";
 
 // Request DTO
 export type CreateOrderDTO = {
@@ -52,7 +52,7 @@ export class OrderResDTO {
   name: string;
   phoneNumber: string;
   address: string;
-  subtotal: Decimal;
+  subtotal: string;
   totalQuantity: number;
   usePoint: number;
   createdAt: Date;
@@ -108,7 +108,7 @@ export class OrderResDTO {
     this.name = order.name;
     this.phoneNumber = order.phone;
     this.address = order.address;
-    this.subtotal = order.subtotal;
+    this.subtotal = order.subtotal.toString();
     this.totalQuantity = order.totalQuantity;
     this.usePoint = order.usePoint;
     this.createdAt = order.createdAt;
