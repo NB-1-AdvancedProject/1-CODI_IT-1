@@ -97,21 +97,18 @@ export async function patchCart(
 export async function deleteCartItem(user: string, params: string) {
   const userData = await userRepository.findById(user);
   if (!userData) {
-    console.log("userData 호출");
     throw new NotFoundError("user", user);
   }
 
   const cartData = await cartList(user);
 
   if (!cartData) {
-    console.log("cartData 호출");
     throw new NotFoundError("cart", user);
   }
 
   const cartItemData = await getIdCartItem(params);
 
   if (!cartItemData) {
-    console.log("cartItemData 호출");
     throw new NotFoundError("cartItem", params);
   }
 

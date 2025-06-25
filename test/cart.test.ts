@@ -312,6 +312,10 @@ describe("카트 API 테스트", () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
       const response = await authReq.get(`/api/cart/${cartItem.id}`);
       expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("id");
+      expect(response.body).toHaveProperty("cartId");
+      expect(response.body).toHaveProperty("productId");
+      expect(response.body).toHaveProperty("sizeId");
     });
     test("카트 상세 조회(없는 userId))", async () => {
       const invalidUserId = "clabcxyz1234567890abcdefg";
