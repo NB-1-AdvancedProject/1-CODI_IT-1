@@ -1,10 +1,14 @@
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus, Prisma } from "@prisma/client";
 import { CreateOrderItemDTO, StockDTO } from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 
-async function orderSave(user: Token, order: any) {
-  const createOrder = await prisma.order.create({
+async function orderSave(
+  tx: Prisma.TransactionClient,
+  user: Token,
+  order: any
+) {
+  const createOrder = await tx.order.create({
     data: {
       userId: user.id,
       name: order.name,
@@ -51,15 +55,13 @@ async function getProductById(productId: string) {
   return await prisma.product.findUnique({ where: { id: productId } });
 }
 
-async function getStock(orderItems: StockDTO[]) {
-  return await prisma.stock.findMany({
+async function getStock(tx: Prisma.TransactionClient, item: StockDTO) {
+  return await tx.stock.findFirst({
     where: {
-      OR: orderItems.map((item) => ({
         productId: item.productId,
         sizeId: item.sizeId,
-      })),
-    },
-  });
+      },
+    })
 }
 
 export default {
