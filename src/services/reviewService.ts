@@ -30,9 +30,12 @@ export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
     const createdReview = await reviewRepository.createReview({
       userId,
       productId,
+      orderItemId,
       rating,
       content,
     });
+    // 리뷰가 생길 때마다 product 의 review 관련 필드 업데이트
+    // 정은: 따로 함수로 빼도 좋을 것 같음 (가독성 떨어짐)
     const previousReviewCount = product.reviewsCount ? product.reviewsCount : 0;
     const previousReviewRating = product.reviewsRating
       ? product.reviewsRating

@@ -32,6 +32,7 @@ export class ReviewDTO {
 export type CreateReviewData = {
   userId: string;
   productId: string;
+  orderItemId: string;
   rating: number;
   content: string;
 };
