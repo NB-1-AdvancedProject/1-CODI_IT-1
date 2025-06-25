@@ -7,7 +7,7 @@ export class SizeDTO {
 
   constructor(size: Size) {
     this.id = size.id;
-    this.name = new SizeInfoDTO(size.size).ko;
+    this.name = size.size;
     this.size = new SizeInfoDTO(size.size);
   }
 }
