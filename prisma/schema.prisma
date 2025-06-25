@@ -28,10 +28,9 @@ enum OrderStatus {
 }
 
 enum PaymentStatus {
-  INITIATED
-  SUCCESS
-  FAIL
-  REFUNDED
+  CompletedPayment
+  CancelledPayment
+  WaitingPayment
 }
 
 model User {
@@ -142,6 +141,7 @@ model Category {
 model Order {
   id        String      @id @default(cuid())
   userId    String
+  name      String
   address   String
   phone     String
   status    OrderStatus
@@ -163,10 +163,13 @@ model OrderItem {
   sizeId    String
   quantity  Int
   price     Decimal // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
+  reviewId  String?
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
+
+  Review Review?
 }
 
 model Payment {
@@ -239,16 +242,18 @@ model Reply {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  productId String
-  userId    String
-  content   String
-  rating    Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  productId   String
+  orderItemId String   @unique
+  userId      String
+  content     String
+  rating      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
 }
 
 model FavoriteStore {
