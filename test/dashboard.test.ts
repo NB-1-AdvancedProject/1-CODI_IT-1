@@ -279,6 +279,7 @@ export async function createOrderAndOrderItems(
   return prisma.order.create({
     data: {
       userId: buyer.id,
+      name: "주문",
       address: "테스트 주소",
       phone: "010-1234-5678",
       status: OrderStatus.PAID,

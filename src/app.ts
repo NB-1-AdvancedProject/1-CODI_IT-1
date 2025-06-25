@@ -10,6 +10,7 @@ import inquiryRouter from "./routers/inquiryRouter";
 import { storeRouter } from "./routers/storeRouter";
 import userRouter from "./routers/userRouter";
 import productRouter from "./routers/productRouter";
+import cartRouter from "./routers/cartRouter";
 import { dashboardRouter } from "./routers/dashboardRouter";
 import uploadRouter from "./routers/uploadRouter";
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/stores", storeRouter);
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
+app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
 
