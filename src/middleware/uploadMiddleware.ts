@@ -1,6 +1,7 @@
 import multer from "multer";
 import { RequestHandler } from "express";
 import { environment } from "../lib/constants";
+import EmptyUploadError from "../lib/errors/EmptyUploadError";
 
 const diskUpload = multer({ dest: "uploads/" }).single("file");
 const memoryUpload = multer({ storage: multer.memoryStorage() }).single("file");
@@ -10,7 +11,7 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
     diskUpload(req, res, function (err) {
       if (err) return next(err);
       if (!req.file) {
-        return res.status(400).send("No file uploaded.");
+        throw new EmptyUploadError();
       }
       return res.json({
         message: "이미지 업로드 성공",
