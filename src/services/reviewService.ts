@@ -1,18 +1,19 @@
 import { OrderStatus } from "@prisma/client";
-import {
-  CreateReviewDTO,
-  ReviewDTO,
-  UpdateReviewDTO,
-} from "../lib/dto/reviewDTO";
+import { ReviewDTO } from "../lib/dto/reviewDTO";
 import prisma from "../lib/prisma";
 import * as reviewRepository from "../repositories/reviewRepository";
 import UnauthError from "../lib/errors/UnauthError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import { create } from "superstruct";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
+import { CreateReviewBody, UpdateReviewBody } from "../structs/reviewStructs";
 
-export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
-  const { orderItemId, productId, userId, rating, content } = dto;
+export async function createReview(
+  reviewData: CreateReviewBody,
+  userId: string,
+  productId: string
+): Promise<ReviewDTO> {
+  const { orderItemId, rating, content } = reviewData;
   const allowedStatus: OrderStatus[] = [
     OrderStatus.PAID,
     OrderStatus.DELIVERED,
@@ -39,13 +40,16 @@ export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
     if (existingReview) {
       throw new AlreadyExstError("Review");
     }
-    const createdReview = await reviewRepository.createReview({
-      userId,
-      productId,
-      orderItemId,
-      rating,
-      content,
-    });
+    const createdReview = await reviewRepository.createReview(
+      {
+        userId,
+        productId,
+        orderItemId,
+        rating,
+        content,
+      },
+      tx
+    );
     // 리뷰가 생길 때마다 product 의 review 관련 필드 업데이트
     // 정은: 따로 함수로 빼도 좋을 것 같음 (가독성 떨어짐)
     const previousReviewCount = product.reviewsCount ? product.reviewsCount : 0;
@@ -65,8 +69,12 @@ export async function createReview(dto: CreateReviewDTO): Promise<ReviewDTO> {
   return new ReviewDTO(result);
 }
 
-export async function updateReview(dto: UpdateReviewDTO): Promise<ReviewDTO> {
-  const { reviewId, rating, userId } = dto;
+export async function updateReview(
+  reviewData: UpdateReviewBody,
+  userId: string,
+  reviewId: string
+): Promise<ReviewDTO> {
+  const { rating } = reviewData;
   const result = await prisma.$transaction(async (tx) => {
     const existingReview = await reviewRepository.findReviewById(reviewId, tx);
     if (!existingReview) {

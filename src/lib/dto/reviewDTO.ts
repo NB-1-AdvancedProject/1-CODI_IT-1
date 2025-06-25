@@ -5,15 +5,6 @@ import {
 } from "../../structs/reviewStructs";
 
 // Request
-export type CreateReviewDTO = CreateReviewBody & {
-  productId: string;
-  userId: string;
-};
-
-export type UpdateReviewDTO = UpdateReviewBody & {
-  userId: string;
-  reviewId: string;
-};
 
 // Response
 export class ReviewDTO {
