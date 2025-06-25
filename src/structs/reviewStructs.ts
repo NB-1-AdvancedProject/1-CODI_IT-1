@@ -1,4 +1,13 @@
-import { max, min, nonempty, number, object, size, string } from "superstruct";
+import {
+  Infer,
+  max,
+  min,
+  nonempty,
+  number,
+  object,
+  size,
+  string,
+} from "superstruct";
 import { Cuid } from "./commonStructs";
 
 export const CreateReviewBodyStruct = object({
@@ -7,6 +16,10 @@ export const CreateReviewBodyStruct = object({
   orderItemId: Cuid,
 });
 
+export type CreateReviewBody = Infer<typeof CreateReviewBodyStruct>;
+
 export const UpdateReviewBodyStruct = object({
   rating: min(max(number(), 5), 1),
 });
+
+export type UpdateReviewBody = Infer<typeof UpdateReviewBodyStruct>;

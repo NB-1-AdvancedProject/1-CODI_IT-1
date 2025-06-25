@@ -1,17 +1,17 @@
 import { Order, OrderItem, Review } from "@prisma/client";
+import {
+  CreateReviewBody,
+  UpdateReviewBody,
+} from "../../structs/reviewStructs";
 
 // Request
-export type CreateReviewDTO = {
+export type CreateReviewDTO = CreateReviewBody & {
   productId: string;
   userId: string;
-  rating: number;
-  content: string;
-  orderItemId: string;
 };
 
-export type UpdateReviewDTO = {
+export type UpdateReviewDTO = UpdateReviewBody & {
   userId: string;
-  rating: number;
   reviewId: string;
 };
 
