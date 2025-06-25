@@ -1,15 +1,17 @@
-import { Decimal } from "@prisma/client/runtime/library";
-import { CreateOrderDTO, OrderResDTO, StockDTO } from "../lib/dto/orderDTO";
+import { CreateOrderDTO, OrderResDTO } from "../lib/dto/orderDTO";
 import CommonError from "../lib/errors/CommonError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
 import orderRepository from "../repositories/orderRepository";
+import { OrderStatusType } from "../types/order";
 import { Token } from "../types/user";
 import userRepository from "../repositories/userRepository";
 
 async function create(user: Token, data: CreateOrderDTO) {
   const products = await Promise.all(
-    data.orderItems.map((item) => getProductById(item.productId))
+    data.orderItems.map((item) =>
+      orderRepository.getProductById(item.productId)
+    )
   );
 
   const notFoundProductIds = data.orderItems
@@ -89,10 +91,38 @@ async function create(user: Token, data: CreateOrderDTO) {
   return new OrderResDTO(fullOrderData);
 }
 
-async function getProductById(productId: string) {
-  return await orderRepository.getProductById(productId);
+async function getOrderList(
+  user: Token,
+  status: OrderStatusType,
+  page: number,
+  limit: number,
+  orderBy: string
+) {
+  const orderList = await orderRepository.getOrder(
+    user,
+    status,
+    page,
+    limit,
+    orderBy
+  );
+
+  const orderResList = orderList.map(
+    (order) =>
+      new OrderResDTO({
+        ...order,
+        totalQuantity: order.orderItems.reduce(
+          (acc, item) => acc + item.quantity,
+          0
+        ),
+        orderItems: order.orderItems,
+        payment: order.payment,
+      })
+  );
+
+  return orderResList;
 }
 
 export default {
   create,
+  getOrderList,
 };

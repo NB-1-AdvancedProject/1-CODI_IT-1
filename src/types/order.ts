@@ -1,6 +1,7 @@
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
+export type OrderStatusType = `${OrderStatus}`;
 export interface Order {
   id: string;
   name: string;

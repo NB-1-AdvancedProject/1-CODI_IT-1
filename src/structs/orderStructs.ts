@@ -1,5 +1,17 @@
-import { array, nonempty, number, object, size, string } from "superstruct";
+import {
+  array,
+  enums,
+  nonempty,
+  number,
+  object,
+  size,
+  string,
+  optional,
+} from "superstruct";
 import { phoneNumberRegExp } from "./commonStructs";
+import { OrderStatus } from "@prisma/client";
+
+const orderStatus = enums(Object.values(OrderStatus));
 
 export const CreateOrder = object({
   name: size(nonempty(string()), 2, 10),
@@ -9,4 +21,11 @@ export const CreateOrder = object({
     object({ productId: string(), sizeId: string(), quantity: number() })
   ),
   usePoint: number(),
+});
+
+export const GetOrder = object({
+  status: orderStatus,
+  limit: number(),
+  page: number(),
+  orderBy: optional(enums(["recent", "oldest"])),
 });
