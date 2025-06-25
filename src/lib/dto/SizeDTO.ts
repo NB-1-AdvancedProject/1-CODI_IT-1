@@ -2,10 +2,12 @@ import { Size } from "@prisma/client";
 
 export class SizeDTO {
   id: string;
+  name: string;
   size: SizeInfoDTO;
 
   constructor(size: Size) {
     this.id = size.id;
+    this.name = new SizeInfoDTO(size.size).ko;
     this.size = new SizeInfoDTO(size.size);
   }
 }

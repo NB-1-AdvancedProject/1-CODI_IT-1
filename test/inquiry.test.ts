@@ -309,7 +309,7 @@ describe("문의 API 테스트", () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        message: `Inquiry with id ${"clabcxyz1234567890abcdefg"} not found`,
+        message: `Inquiry with ${"clabcxyz1234567890abcdefg"} not found`,
       });
     });
 
@@ -392,7 +392,7 @@ describe("문의 API 테스트", () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        message: "Reply with id clabcxyz1234567890abcdefg not found",
+        message: "Reply with clabcxyz1234567890abcdefg not found",
       });
     });
   });
@@ -476,7 +476,7 @@ describe("문의 API 테스트", () => {
       const response = await request(app).get(`/api/inquiries/${inquiry1.id}`);
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        message: `Inquiry with id ${inquiry1.id} not found`,
+        message: `Inquiry with ${inquiry1.id} not found`,
       });
     });
   });
@@ -585,7 +585,7 @@ describe("문의 API 테스트", () => {
       );
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        message: `Inquiry with id ${inquiry1.id} not found`,
+        message: `Inquiry with ${inquiry1.id} not found`,
       });
     });
   });
@@ -635,7 +635,7 @@ describe("문의 API 테스트", () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        message: `Product with id ${"clabcxyz1234567890abcdefg"} not found`,
+        message: `Product with ${"clabcxyz1234567890abcdefg"} not found`,
       });
     });
   });
@@ -690,7 +690,7 @@ describe("문의 API 테스트", () => {
       expect(response.status).toBe(404);
       expect(response.body.length).toBeUndefined();
       expect(response.body).toEqual({
-        message: `Product with id ${"clabcxyz1234567890abcdefg"} not found`,
+        message: `Product with ${"clabcxyz1234567890abcdefg"} not found`,
       });
     });
   });
