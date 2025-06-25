@@ -7,7 +7,7 @@ async function orderSave(user: Token, order: any) {
   const createOrder = await prisma.order.create({
     data: {
       userId: user.id,
-      // name: order.name,
+      name: order.name,
       phone: order.phone,
       address: order.address,
       status: order.status,
@@ -23,15 +23,23 @@ async function orderSave(user: Token, order: any) {
       usePoint: order.usePoint,
       payment: {
         create: {
-          status: "SUCCESS" as PaymentStatus,
+          status: "CompletedPayment" as PaymentStatus,
           totalPrice: order.payment.totalPrice,
         },
       },
-      paidAt: new Date(),
+      paidAt: order.payment.status === "CompletedPayment" ? new Date() : null,
     },
     include: {
       orderItems: {
-        include: { product: true, size: { include: { stocks: true } } },
+        include: {
+          product: {
+            include: {
+              store: true,
+              stocks: { include: { size: true } },
+            },
+          },
+          size: true,
+        },
       },
       payment: true,
     },

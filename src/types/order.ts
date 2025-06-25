@@ -12,12 +12,12 @@ export interface Order {
   totalQuantity: number;
   createdAt: Date;
   updatedAt: Date;
-  paidAt: Date;
+  paidAt: Date | null;
 }
 
 export interface OrderItemPayment {
   id: string;
-  price: Decimal;
+  totalPrice: Decimal;
   status: PaymentStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -27,10 +27,7 @@ export interface OrderItemPayment {
 // Size 타입
 export interface Size {
   id: string;
-  size: {
-    en: string;
-    ko: string;
-  };
+  size: string;
 }
 
 // Stock 타입
@@ -39,6 +36,19 @@ export interface Stock {
   productId: string;
   quantity: number;
   size: Size;
+}
+
+// Store 타입
+export interface Store {
+  id: string;
+  userId: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+  content: string;
+  image: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Product 타입
@@ -50,6 +60,8 @@ export interface Product {
   image: string;
   createdAt: Date;
   updatedAt: Date;
+  store: Store;
+  stocks: Stock[];
 }
 
 // OrderItem 타입
@@ -58,7 +70,5 @@ export interface OrderItem {
   price: Decimal;
   quantity: number;
   product: Product;
-  stocks: Stock;
   size: Size;
-  payments: OrderItemPayment;
 }

@@ -42,7 +42,7 @@ async function create(user: Token, data: CreateOrderDTO) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: data.orderItems,
+    orderItems: createOrder.orderItems,
     payment: createOrder.payment,
   };
 
