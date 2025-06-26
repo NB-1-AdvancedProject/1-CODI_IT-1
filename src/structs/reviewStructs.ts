@@ -27,7 +27,7 @@ export type UpdateReviewBody = Infer<typeof UpdateReviewBodyStruct>;
 
 export const GetReviewListPageParamsStruct = object({
   page: defaulted(integerString, 1),
-  limit: defaulted(integerString, 10),
+  limit: defaulted(integerString, 5),
 });
 export type GetReviewListPageParamsType = Infer<
   typeof GetReviewListPageParamsStruct
