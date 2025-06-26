@@ -73,10 +73,7 @@ async function updateStocksForProduct(
       stocksUpdateInput.map((input) => stockRepository.updateStockTx(tx, input))
     );
 
-    return {
-      createdStocks,
-      updatedStocks,
-    };
+    return [...createdStocks, ...updatedStocks];
   });
 }
 

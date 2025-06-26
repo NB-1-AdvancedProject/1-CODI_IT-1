@@ -10,6 +10,7 @@ import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
 import categoryService from "./categoryService";
 import prisma from "../lib/prisma";
+import { StockDTO } from "../lib/dto/stockDTO";
 
 async function createProduct(data: CreateProductBody, userId: string) {
   const store = await storeService.getStoreByUserId(userId);
@@ -21,10 +22,9 @@ async function createProduct(data: CreateProductBody, userId: string) {
     price: data.price,
     content: data.content,
     image: data.image,
-    // discountPrice 스키마 생성시 수정할 예정
-    // discountPrice: data.discountRate
-    //   ? data.price * (100 - data.discountRate)
-    //   : null,
+    discountPrice: data.discountRate
+      ? data.price * (100 - data.discountRate)
+      : null,
     discountRate: data.discountRate || 0,
     discountStartTime: data.discountStartTime || null,
     discountEndTime: data.discountEndTime || null,
@@ -56,7 +56,6 @@ async function createProduct(data: CreateProductBody, userId: string) {
     reviewsCount: product.reviews.length,
     reviews: product.reviews,
     inquiries: product.inquiries,
-    // discountPrice 스키마 생성시 수정할 예정
     discountPrice:
       Number(product.discountRate || 0) > 0
         ? Number(product.price) * (1 - Number(product.discountRate || 0) / 100)
@@ -180,25 +179,24 @@ async function getProducts(params: ProductListParams) {
 
   const products = await productRepository.findAllProducts(prismaParams);
 
-  // 할인 상태 체크 및 업데이트
   const refreshedProducts = await Promise.all(
     products.map((product) =>
       checkAndUpdateDiscountState(product.discountEndTime, product.id)
     )
   );
 
-  // 하나라도 갱신된 게 있다면 최신 데이터로 다시 조회
   const finalProducts = refreshedProducts.some((p) => p !== null)
     ? await productRepository.findAllProducts(prismaParams)
     : products;
 
-  // storeName 붙이기
   const finalResult = await Promise.all(
     finalProducts.map(async (product) => {
       const store = await storeService.getStoreById(product.storeId);
+      const stocks = await stockService.getStocksByProductId(product.id);
       return {
         ...product,
         storeName: store!.name,
+        isSoldOut: checkSoldOut(stocks),
       };
     })
   );
@@ -232,24 +230,26 @@ async function getProduct(productId: string) {
 
 async function updateProduct(data: PatchProductBody, productId: string) {
   const newData = {
-    name: data.name || undefined,
-    price: data.price || undefined,
-    content: data.content || undefined,
-    image: data.image || undefined,
-    discountRate: data.discountRate || undefined,
-    discountStartTime: data.discountStartTime || undefined,
-    discountEndTime: data.discountEndTime || undefined,
+    name: data.name ?? undefined,
+    price: data.price ?? undefined,
+    content: data.content ?? undefined,
+    image: data.image ?? undefined,
+    discountRate: data.discountRate ?? undefined,
+    discountStartTime: data.discountStartTime ?? undefined,
+    discountEndTime: data.discountEndTime ?? undefined,
+    isSoldOut: data.isSoldOut ?? undefined,
   };
 
   let updatedProduct = await prisma.$transaction(async (tx) => {
     if (data.stocks) {
       await stockService.updateStocksForProduct(data.stocks, productId);
     }
-    return await productRepository.updateProductWithStocks(
+    const product = await productRepository.updateProductWithStocks(
       tx,
       newData,
       productId
     );
+    return product;
   });
 
   const refreshedProduct = await checkAndUpdateDiscountState(
@@ -267,8 +267,10 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     reviewsCount: updatedProduct.reviews.length,
     reviews: updatedProduct.reviews,
     inquiries: updatedProduct.inquiries,
-    // 스키마 변경 시 사용예정
-    //discountPrice: refreshedProduct?.discountPrice ?? updatedProduct.discountPrice ?? updatedProduct.price;,
+    discountPrice:
+      refreshedProduct?.discountPrice ??
+      updatedProduct.discountPrice ??
+      updatedProduct.price,
     discountRate:
       refreshedProduct?.discountRate ?? updatedProduct.discountRate ?? 0,
     discountStartTime:
@@ -330,6 +332,13 @@ async function checkAndUpdateDiscountState(
   }
 
   return null;
+}
+
+function checkSoldOut(
+  stocks: { id: string; productId: string; quantity: number; sizeId: string }[]
+) {
+  const isAllSoldOut = stocks.every((stock) => stock.quantity === 0);
+  return isAllSoldOut;
 }
 
 export default {
