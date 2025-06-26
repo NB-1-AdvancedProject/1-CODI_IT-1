@@ -4,10 +4,11 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
 import orderRepository from "../repositories/orderRepository";
 import { OrderStatusType } from "../types/order";
-import { Token } from "../types/user";
+import { Token, User } from "../types/user";
 import userRepository from "../repositories/userRepository";
 import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
+import ForbiddenError from "../lib/errors/ForbiddenError";
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -128,7 +129,7 @@ async function getOrderList(
   orderBy: string,
   status?: OrderStatusType
 ) {
-  const orderList = await orderRepository.getOrder(
+  const orderList = await orderRepository.getOrderList(
     user,
     page,
     limit,
@@ -152,7 +153,30 @@ async function getOrderList(
   return orderResList;
 }
 
+async function getOrder(user: Token, id: string) {
+  const order = await orderRepository.getOrder(user, id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+
+  return new OrderResDTO({
+    ...order,
+    totalQuantity: order.orderItems.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    ),
+    orderItems: order.orderItems,
+    payment: order.payment,
+  });
+}
+
 export default {
   create,
   getOrderList,
+  getOrder,
 };

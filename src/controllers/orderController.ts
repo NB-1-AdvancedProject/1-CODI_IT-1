@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import orderService from "../services/orderService";
 import { create } from "superstruct";
 import { CreateOrder, GetOrder } from "../structs/orderStructs";
+import { IdParamsStruct } from "../structs/commonStructs";
 
 export const createOrder: RequestHandler = async (req, res) => {
   const user = req.user!;
@@ -30,4 +31,13 @@ export const getOrderList: RequestHandler = async (req, res) => {
   );
 
   res.status(200).send(orderList);
+};
+
+export const getOrderDetail: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const { id: orderId } = create(req.params, IdParamsStruct);
+
+  const order = await orderService.getOrder(user, orderId);
+
+  res.status(200).send(order);
 };

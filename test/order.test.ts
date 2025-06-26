@@ -162,57 +162,148 @@ describe("Order API", () => {
 
       expect(response.statusCode).toBe(400);
     });
+  });
 
-    describe("GET /api/order/", () => {
-      beforeEach(async () => {
-        await prisma.order.deleteMany();
-      });
-      test("내 오더 리스트 조회", async () => {
-        const order1 = {
-          name: "김유저",
-          phone: "010-1234-1234",
-          address: "서울시 강남구 대치동",
-          orderItems: [
-            {
-              productId: product.id,
-              sizeId: size.id,
-              quantity: 1,
-            },
-          ],
-          usePoint: 0,
-        };
+  describe("GET /api/order/", () => {
+    beforeEach(async () => {
+      await prisma.order.deleteMany();
+    });
+    test("내 오더 리스트 조회", async () => {
+      const order1 = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
 
-        const order2 = {
-          name: "김유저2",
-          phone: "010-1234-1234",
-          address: "서울시 강남구 대치동",
-          orderItems: [
-            {
-              productId: product2.id,
-              sizeId: size.id,
-              quantity: 2,
-            },
-            {
-              productId: product.id,
-              sizeId: size.id,
-              quantity: 1,
-            },
-          ],
-          usePoint: 0,
-        };
+      const order2 = {
+        name: "김유저2",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product2.id,
+            sizeId: size.id,
+            quantity: 2,
+          },
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
 
-        const authReq = getAuthenticatedReq(buyerUser.id);
-        const res1 = await authReq.post("/api/order").send(order1);
-        expect(res1.status).toBe(201);
-        const res2 = await authReq.post("/api/order").send(order2);
-        expect(res2.status).toBe(201);
-        const response = await authReq.get("/api/order?status=PAID").send();
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const res1 = await authReq.post("/api/order").send(order1);
+      expect(res1.status).toBe(201);
+      const res2 = await authReq.post("/api/order").send(order2);
+      expect(res2.status).toBe(201);
+      const response = await authReq.get("/api/order?status=PAID").send();
 
-        expect(response.status).toBe(200);
-        expect(response.body[1].orderItems[1].product.name).toBe(
-          "테스트 상품2"
-        );
-      });
+      expect(response.status).toBe(200);
+      expect(response.body[1].orderItems[1].product.name).toBe("테스트 상품2");
+    });
+  });
+
+  describe("GET /api/order/:orderId", () => {
+    beforeEach(async () => {
+      await prisma.order.deleteMany();
+    });
+    test("오더 상세 조회", async () => {
+      const order1 = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const res1 = await authReq.post("/api/order").send(order1);
+      expect(res1.status).toBe(201);
+      const response = await authReq.get(`/api/order/${res1.body.id}`).send();
+
+      expect(response.status).toBe(200);
+      expect(response.body.orderItems[0].product.name).toBe("테스트 상품");
+    });
+    test("실패 - 다른 사람의 오더 정보를 불러옴", async () => {
+      const order1 = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const order2 = {
+        name: "김한돌",
+        phone: "010-2345-6789",
+        address: "서울시 대충구 대강동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq1 = getAuthenticatedReq(sellerUser.id);
+      const res1 = await authReq1.post("/api/order").send(order1);
+      expect(res1.status).toBe(201);
+
+      const authReq2 = getAuthenticatedReq(buyerUser.id);
+      const res2 = await authReq2.post("/api/order").send(order2);
+      expect(res2.status).toBe(201);
+      const response = await authReq2.get(`/api/order/${res1.body.id}`).send();
+
+      expect(response.status).toBe(403);
+    });
+    test("실패 - orderId 틀림", async () => {
+      const order1 = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq = getAuthenticatedReq(sellerUser.id);
+      const res1 = await authReq.post("/api/order").send(order1);
+      expect(res1.status).toBe(201);
+      const response = await authReq
+        .get(`/api/order/cmcd0i9l4000pdvfhjo2ax0sn`)
+        .send();
+
+      expect(response.status).toBe(404);
     });
   });
 });

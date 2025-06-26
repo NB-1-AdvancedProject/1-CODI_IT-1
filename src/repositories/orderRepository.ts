@@ -69,7 +69,7 @@ async function getStock(tx: Prisma.TransactionClient, item: StockDTO) {
   });
 }
 
-async function getOrder(
+async function getOrderList(
   user: Token,
   page: number,
   limit: number,
@@ -101,9 +101,30 @@ async function getOrder(
   });
 }
 
+async function getOrder(user: Token, id: string) {
+  return await prisma.order.findUnique({
+    where: { id },
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            include: {
+              store: true,
+              stocks: { include: { size: true } },
+            },
+          },
+          size: true,
+        },
+      },
+      payment: true,
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
+  getOrderList,
   getOrder,
   getStock,
 };
