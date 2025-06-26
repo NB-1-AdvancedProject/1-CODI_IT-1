@@ -19,7 +19,7 @@ export const emailRegExp = pattern(
   /^[\w.-]+@([\w.-]+\.)+[\w]{2,4}$/i
 );
 
-const Cuid = define<string>(
+export const Cuid = define<string>(
   "Cuid",
   (value) => typeof value === "string" && /^c[^\s]{8,}$/.test(value)
 );
