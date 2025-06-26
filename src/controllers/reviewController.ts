@@ -28,3 +28,10 @@ export const getReviewInfo: RequestHandler = async (req, res) => {
   const result = await reviewService.getReviewInfo(reviewId);
   res.status(200).json(result);
 };
+
+export const deleteReview: RequestHandler = async (req, res) => {
+  const { id: reviewId } = create(req.params, IdParamsStruct);
+  const { id: userId } = req.user!;
+  await reviewService.deleteReview(reviewId, userId);
+  res.status(200).json({ message: "리뷰를 삭제했습니다." }); // 정은: swagger 대로 만들었는데, 나중에 수정해야할 듯
+};

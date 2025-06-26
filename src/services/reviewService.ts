@@ -104,6 +104,15 @@ export async function getReviewInfo(reviewId: string): Promise<ReviewDTO> {
   return new ReviewDTO(review);
 }
 
+export async function deleteReview(
+  reviewId: string,
+  userId: string
+): Promise<void> {
+  const review = await reviewRepository.findReviewById(reviewId);
+  if (!review) throw new NotFoundError("Review", reviewId);
+  if (review.userId !== userId) throw new UnauthError();
+  await reviewRepository.deleteReviewById(reviewId);
+}
 // 헬퍼 함수
 async function updateProductReviewFields(
   productId: string,
