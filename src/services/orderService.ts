@@ -14,6 +14,8 @@ import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
+import productRepository from "../repositories/productRepository";
+import stockRepository from "../repositories/stockRepository";
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -89,7 +91,7 @@ async function create(user: Token, data: CreateOrderDTO) {
         throw new CommonError("재고가 부족 합니다.", 400);
       }
 
-      const updateStock = await tx.stock.update({
+      const updateStock = await stockRepository.updateStockTx(tx, {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
