@@ -3,6 +3,7 @@
 
 import { Decimal } from "@prisma/client/runtime/library";
 
+// Entity
 export interface OrderItem {
   id: string;
   orderId: string;
