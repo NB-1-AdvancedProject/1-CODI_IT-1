@@ -9,6 +9,7 @@ import {
 } from "../controllers/productController";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { postQuiryData, getQuiryList } from "../controllers/inquiryController";
+import { createReview } from "../controllers/reviewController";
 
 const productRouter = express.Router();
 
