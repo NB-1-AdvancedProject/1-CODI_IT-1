@@ -6,7 +6,11 @@ import UnauthError from "../lib/errors/UnauthError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import { create } from "superstruct";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
-import { CreateReviewBody, UpdateReviewBody } from "../structs/reviewStructs";
+import {
+  CreateReviewBody,
+  GetReviewListPageParamsType,
+  UpdateReviewBody,
+} from "../structs/reviewStructs";
 import { INITIAL_BACKOFF_MS, MAX_RETRIES } from "../lib/constants";
 import OptimisticLockFailedError from "../lib/errors/OptimisticLockFailedError";
 
@@ -96,6 +100,44 @@ export async function updateReview(
   return new ReviewDTO(result);
 }
 
+export async function getReviewInfo(reviewId: string): Promise<ReviewDTO> {
+  const review = await reviewRepository.findReviewById(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review", reviewId);
+  }
+  return new ReviewDTO(review);
+}
+
+export async function deleteReview(
+  reviewId: string,
+  userId: string
+): Promise<void> {
+  const review = await reviewRepository.findReviewById(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review", reviewId);
+  }
+  if (review.userId !== userId) {
+    throw new UnauthError();
+  }
+  await reviewRepository.deleteReviewById(reviewId);
+}
+
+export async function getReviewList(
+  productId: string,
+  params: GetReviewListPageParamsType
+): Promise<ReviewDTO[]> {
+  const product = await reviewRepository.findProductById(productId);
+  if (!product) {
+    throw new NotFoundError("Review", productId);
+  }
+  const pageParams = { take: params.limit, skip: params.page - 1 };
+  const reviews = await reviewRepository.findReviewsByProductId(
+    productId,
+    pageParams
+  );
+  return reviews.map((review) => new ReviewDTO(review));
+}
+// 헬퍼 함수
 async function updateProductReviewFields(
   productId: string,
   updatedAt: Date,
@@ -108,6 +150,7 @@ async function updateProductReviewFields(
     try {
       const reviews = await reviewRepository.findReviewsByProductId(
         productId,
+        {},
         tx
       );
 
