@@ -1,4 +1,4 @@
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { ReviewDTO } from "../lib/dto/reviewDTO";
 import prisma from "../lib/prisma";
 import * as reviewRepository from "../repositories/reviewRepository";
@@ -7,6 +7,8 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import { create } from "superstruct";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import { CreateReviewBody, UpdateReviewBody } from "../structs/reviewStructs";
+import { INITIAL_BACKOFF_MS, MAX_RETRIES } from "../lib/constants";
+import OptimisticLockFailedError from "../lib/errors/OptimisticLockFailedError";
 
 export async function createReview(
   reviewData: CreateReviewBody,
@@ -33,6 +35,7 @@ export async function createReview(
     if (!product) {
       throw new NotFoundError("product", productId);
     }
+    const updatedAt = product.updatedAt;
     const existingReview = await reviewRepository.findReviewByOrderItemId(
       orderItemId,
       tx
@@ -51,19 +54,7 @@ export async function createReview(
       tx
     );
     // 리뷰가 생길 때마다 product 의 review 관련 필드 업데이트
-    // 정은: 따로 함수로 빼도 좋을 것 같음 (가독성 떨어짐)
-    const previousReviewCount = product.reviewsCount ? product.reviewsCount : 0;
-    const previousReviewRating = product.reviewsRating
-      ? product.reviewsRating
-      : 0;
-    const previousReviewRatingSum = previousReviewCount * previousReviewRating;
-    const newReviewCount = previousReviewCount + 1;
-    const newReviewRating = (previousReviewRatingSum + rating) / newReviewCount;
-    await reviewRepository.updateProduct(
-      { reviewsCount: newReviewCount, reviewsRating: newReviewRating },
-      productId,
-      tx
-    );
+    await updateProductReviewFields(productId, updatedAt, tx);
     return createdReview;
   });
   return new ReviewDTO(result);
@@ -91,7 +82,6 @@ export async function updateReview(
       reviewId,
       tx
     );
-    // product 의 reviewRating 업데이트
     const product = await reviewRepository.findProductById(
       updatedReview.productId,
       tx
@@ -99,19 +89,68 @@ export async function updateReview(
     if (!product) {
       throw new NotFoundError("Product", updatedReview.productId);
     }
-    const reviewCount = product.reviewsCount ? product.reviewsCount : 0;
-    const previousReviewRating = product.reviewsRating
-      ? product.reviewsRating
-      : 0;
-    const previousReviewRatingSum = reviewCount * previousReviewRating;
-    const newReviewRating =
-      (previousReviewRatingSum - existingReview.rating + rating) / reviewCount;
-    await reviewRepository.updateProduct(
-      { reviewsRating: newReviewRating },
-      product.id,
-      tx
-    );
+    const updatedAt = product.updatedAt;
+    await updateProductReviewFields(product.id, updatedAt, tx);
     return updatedReview;
   });
   return new ReviewDTO(result);
+}
+
+async function updateProductReviewFields(
+  productId: string,
+  updatedAt: Date,
+  tx: Prisma.TransactionClient
+): Promise<void> {
+  let retries = 0;
+  let success = false;
+
+  while (retries < MAX_RETRIES && !success) {
+    try {
+      const reviews = await reviewRepository.findReviewsByProductId(
+        productId,
+        tx
+      );
+
+      const newReviewCount = reviews.length;
+      const reviewRatingSum = reviews.reduce(
+        (acc, review) => acc + review.rating,
+        0
+      );
+      const newReviewRating =
+        newReviewCount > 0 ? reviewRatingSum / newReviewCount : 0;
+
+      const updateResult = await reviewRepository.updateProduct(
+        { reviewsCount: newReviewCount, reviewsRating: newReviewRating },
+        productId,
+        updatedAt,
+        tx
+      );
+      if (updateResult.count === 0) {
+        throw new Prisma.PrismaClientKnownRequestError(
+          "Optimistic lock conflict",
+          { code: "P2002", clientVersion: "6.9.0" }
+        );
+      }
+      success = true;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.message.includes("Optimistic lock conflict")
+      ) {
+        retries++;
+        if (retries >= MAX_RETRIES) {
+          throw new OptimisticLockFailedError(
+            `Failed to update product ${productId} after ${MAX_RETRIES} retries.`
+          );
+        }
+        const backoffTime = INITIAL_BACKOFF_MS * Math.pow(2, retries - 1);
+        console.warn(
+          `Optimistic lock conflict for product ${productId}. Retrying (${retries}/${MAX_RETRIES}) in ${backoffTime}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, backoffTime));
+      } else {
+        throw error;
+      }
+    }
+  }
 }

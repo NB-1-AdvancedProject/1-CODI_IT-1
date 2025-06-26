@@ -40,16 +40,27 @@ export async function findReviewById(
   const client = tx || prisma;
   return await client.review.findUnique({ where: { id: reviewId } });
 }
+
+export async function findReviewsByProductId(
+  productId: string,
+  tx?: Prisma.TransactionClient
+): Promise<Review[]> {
+  const client = tx || prisma;
+  return await client.review.findMany({ where: { productId } });
+}
+
 // 정은: 다른 도메인 관련 함수
 export async function updateProduct(
   data: Prisma.ProductUpdateInput,
   productId: string,
+  updatedAt: Date,
   tx?: Prisma.TransactionClient
 ) {
   const client = tx || prisma;
-  return await client.product.update({
+  return await client.product.updateMany({
     where: {
       id: productId,
+      updatedAt,
     },
     data: data,
   });
