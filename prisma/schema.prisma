@@ -97,8 +97,9 @@ model Product {
   discountStartTime DateTime?
   discountEndTime   DateTime?
   sales             Int       @default(0)
-  reviewsCount      Int? // 삭제? 
-  reviewsRating     Float? // 삭제?
+  reviewsCount      Int?
+  reviewsRating     Float?
+  isSoldOut         Boolean   @default(false)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
