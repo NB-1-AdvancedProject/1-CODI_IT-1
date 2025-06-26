@@ -9,6 +9,7 @@ import userRepository from "../repositories/userRepository";
 import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
+import BadRequestError from "../lib/errors/BadRequestError";
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -184,6 +185,10 @@ async function deleteOrder(user: Token, id: string) {
     throw new ForbiddenError();
   }
 
+  if (order.status !== "PENDING") {
+    throw new BadRequestError("잘못된 요청입니다.");
+  }
+
   return await orderRepository.deleteOrder(id);
 }
 
@@ -191,5 +196,5 @@ export default {
   create,
   getOrderList,
   getOrder,
-  deleteOrder
+  deleteOrder,
 };

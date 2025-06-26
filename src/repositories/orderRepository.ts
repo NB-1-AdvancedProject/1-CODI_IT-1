@@ -124,7 +124,7 @@ async function getOrder(id: string) {
 
 async function deleteOrder(id: string) {
   return await prisma.order.delete({
-    where: { id },
+    where: { id, status: "PENDING" },
   });
 }
 
