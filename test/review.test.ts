@@ -184,6 +184,68 @@ describe("PATCH /api/review/:reviewId", () => {
     });
   });
 });
+describe("GET /api/review/:reviewId", () => {
+  let buyerWithPurchase: User;
+  let buyerWithoutPurchase: User;
+  let seller: User;
+  let store: Store;
+  let product1: Product;
+  let orderItem1: OrderItem;
+  let review: Review;
+  beforeAll(async () => {
+    await clearDatabase();
+    buyerWithPurchase = await createTestUser(buyerData1);
+    buyerWithoutPurchase = await createTestUser(buyerData2);
+    seller = await createTestUser(sellerUser);
+    await createTestSizes(sizes);
+    await createTestCategories(categories);
+    store = await createTestStore(store1, seller.id);
+    product1 = await prisma.product.create({
+      data: {
+        ...dummyProduct1,
+        storeId: store.id,
+        reviewsCount: 1,
+        reviewsRating: 5, // 테스트 편의를 위해 미리 저장
+      },
+    });
+    const orderWithOrderItem = await createOrderAndOrderItems(
+      buyerWithPurchase,
+      product1,
+      1
+    );
+    orderItem1 = orderWithOrderItem.orderItems[0];
+    review = await prisma.review.create({
+      data: {
+        userId: buyerWithPurchase.id,
+        productId: product1.id,
+        orderItemId: orderItem1.id,
+        rating: 5,
+        content: "최고예요",
+      },
+    });
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 누구든 리뷰 상세 조회를 할 수 있음", async () => {
+      const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
+      const response = await authReq.get(`/api/review/${review.id}`);
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(review.id);
+      expect(response.body.rating).toBe(review.rating);
+      expect(response.body.userId).toBe(review.userId);
+    });
+  });
+  describe("오류", () => {
+    test("해당 Id 의 review 가 존재하지 않을 시 NotFoundError(404) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
+      const nonExistentReviewId = "creview0000notfoundid0001";
+      const response = await authReq.get(`/api/review/${nonExistentReviewId}`);
+      expect(response.status).toBe(404);
+    });
+  });
+});
 
 // 테스트용 함수들
 async function createTestUser(userData: Prisma.UserUncheckedCreateInput) {
