@@ -148,8 +148,7 @@ describe("Product API 테스트", () => {
     expect(res.body.reviewsRating).toBe(1);
     expect(res.body.storeId).toBe("store1-id");
     expect(res.body.storeName).toBe("Store1");
-    //expect(res.body.discountPrice).toBe("discountPrice");
-    //스키마 변경후에 추가할 예정
+    expect(res.body).toHaveProperty("discountPrice");
     expect(res.body).toHaveProperty("discountRate");
     expect(res.body).toHaveProperty("discountStartTime");
     expect(res.body).toHaveProperty("discountEndTime");
@@ -160,14 +159,15 @@ describe("Product API 테스트", () => {
 
     test("상품 기본 조회 - 페이징 기본값", async () => {
       const res = await request(app).get("/api/products");
+
+      console.log("yes", res.body);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.list)).toBe(true);
       expect(res.body.list[0]).toHaveProperty("id");
       expect(res.body.list[0]).toHaveProperty("storeId");
       expect(res.body.list[0]).toHaveProperty("storeName");
       expect(res.body.list[0]).toHaveProperty("price");
-      //expect(res.body.list[0]).toHaveProperty("discountPrice");
-      //스키마 변경후 다시 주석취소할예정.
+      expect(res.body.list[0]).toHaveProperty("discountPrice");
       expect(res.body.list[0]).toHaveProperty("discountRate");
       expect(res.body.list[0]).toHaveProperty("discountStartTime");
       expect(res.body.list[0]).toHaveProperty("discountEndTime");
@@ -176,7 +176,7 @@ describe("Product API 테스트", () => {
       expect(res.body.list[0]).toHaveProperty("createdAt");
       expect(res.body.list[0]).toHaveProperty("updatedAt");
       expect(res.body.list[0]).toHaveProperty("sales");
-
+      expect(res.body.list[0]).toHaveProperty("isSoldOut");
       expect(typeof res.body.totalCount).toBe("number");
     });
 
