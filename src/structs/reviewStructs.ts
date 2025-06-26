@@ -1,4 +1,5 @@
 import {
+  defaulted,
   Infer,
   max,
   min,
@@ -8,7 +9,7 @@ import {
   size,
   string,
 } from "superstruct";
-import { Cuid } from "./commonStructs";
+import { Cuid, integerString } from "./commonStructs";
 
 export const CreateReviewBodyStruct = object({
   rating: min(max(number(), 5), 1),
@@ -23,3 +24,11 @@ export const UpdateReviewBodyStruct = object({
 });
 
 export type UpdateReviewBody = Infer<typeof UpdateReviewBodyStruct>;
+
+export const GetReviewListPageParamsStruct = object({
+  page: defaulted(integerString, 1),
+  limit: defaulted(integerString, 10),
+});
+export type GetReviewListPageParamsType = Infer<
+  typeof GetReviewListPageParamsStruct
+>;
