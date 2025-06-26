@@ -404,4 +404,129 @@ describe("Order API", () => {
       expect(response.status).toBe(404);
     });
   });
+  describe("PATCH /api/order/:orderId", () => {
+    beforeEach(async () => {
+      await prisma.order.deleteMany();
+    });
+    test("오더 수정", async () => {
+      const order1 = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const data = {
+        name: "강남자",
+        phone: "010-3456-1234",
+        address: "경기도 상황리 은근읍",
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const res1 = await authReq.post("/api/order").send(order1);
+      expect(res1.status).toBe(201);
+      const response = await authReq
+        .patch(`/api/order/${res1.body.id}`)
+        .send(data);
+
+      expect(response.status).toBe(201);
+      expect(response.body.name).toBe("강남자");
+      expect(response.body.phoneNumber).toBe("010-3456-1234");
+      expect(response.body.address).toBe("경기도 상황리 은근읍");
+      expect(response.body).toHaveProperty("subtotal");
+    });
+
+    test("DELIVERED 상태시 수정 불가", async () => {
+      const order = await prisma.order.create({
+        data: {
+          userId: buyerUser.id,
+          name: buyerUser.name,
+          phone: "010-1234-1234",
+          address: "서울시 강남구 대치동",
+          status: "DELIVERED",
+          subtotal: product.price,
+          orderItems: {
+            create: [
+              {
+                productId: product.id,
+                sizeId: size.id,
+                quantity: 1,
+                price: product.price,
+              },
+            ],
+          },
+          usePoint: 0,
+          payment: {
+            create: {
+              status: "CompletedPayment",
+              totalPrice: product.price,
+            },
+          },
+          paidAt: new Date(),
+        },
+      });
+
+      const data = {
+        name: "강남자",
+        phone: "010-3456-1234",
+        address: "경기도 상황리 은근읍",
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.patch(`/api/order/${order.id}`).send(data);
+      expect(response.status).toBe(400);
+    });
+
+    test("다른 사용자의 오더를 수정", async () => {
+      const order = {
+        name: "김한돌",
+        phone: "010-2345-6789",
+        address: "서울시 대충구 대강동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const data = {
+        name: "강남자",
+        phone: "010-3456-1234",
+        address: "경기도 상황리 은근읍",
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const authReq2 = getAuthenticatedReq(sellerUser.id);
+      const res1 = await authReq.post("/api/order").send(order);
+      expect(res1.status).toBe(201);
+      const response = await authReq2
+        .patch(`/api/order/${res1.body.id}`)
+        .send(data);
+      expect(response.status).toBe(403);
+    });
+
+    test("잘못된 id 입력", async () => {
+      const data = {
+        name: "강남자",
+        phone: "010-3456-1234",
+        address: "경기도 상황리 은근읍",
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .patch("/api/order/cmcd0i9l4000pdvfhjo2ax0sn")
+        .send(data);
+      expect(response.status).toBe(404);
+    });
+  });
 });
