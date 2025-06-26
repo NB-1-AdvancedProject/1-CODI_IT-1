@@ -246,6 +246,76 @@ describe("GET /api/review/:reviewId", () => {
     });
   });
 });
+describe("DELETE /api/review/:reviewId", () => {
+  let buyerWithReview: User;
+  let buyerWithoutReview: User;
+  let seller: User;
+  let store: Store;
+  let product1: Product;
+  let orderItem1: OrderItem;
+  let review: Review;
+  beforeEach(async () => {
+    await clearDatabase();
+    buyerWithReview = await createTestUser(buyerData1);
+    buyerWithoutReview = await createTestUser(buyerData2);
+    seller = await createTestUser(sellerUser);
+    await createTestSizes(sizes);
+    await createTestCategories(categories);
+    store = await createTestStore(store1, seller.id);
+    product1 = await prisma.product.create({
+      data: {
+        ...dummyProduct1,
+        storeId: store.id,
+        reviewsCount: 1,
+        reviewsRating: 5, // 테스트 편의를 위해 미리 저장
+      },
+    });
+    const orderWithOrderItem = await createOrderAndOrderItems(
+      buyerWithReview,
+      product1,
+      1
+    );
+    orderItem1 = orderWithOrderItem.orderItems[0];
+    review = await prisma.review.create({
+      data: {
+        userId: buyerWithReview.id,
+        productId: product1.id,
+        orderItemId: orderItem1.id,
+        rating: 5,
+        content: "최고예요",
+      },
+    });
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 리뷰를 작성한 사람은 리뷰를 삭제할 수 있음, 다시 조회시 존재하지 않음", async () => {
+      const authReq = getAuthenticatedReq(buyerWithReview.id);
+      const response = await authReq.delete(`/api/review/${review.id}`);
+      console.warn(response.body);
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("리뷰를 삭제했습니다.");
+      const count = await prisma.review.count({ where: { id: review.id } });
+      expect(count).toBe(0);
+    });
+  });
+  describe("오류", () => {
+    test("해당 Id 의 review 가 존재하지 않을 시 NotFoundError(404) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyerWithReview.id);
+      const nonExistentReviewId = "creview0000notfoundid0001";
+      const response = await authReq.delete(
+        `/api/review/${nonExistentReviewId}`
+      );
+      expect(response.status).toBe(404);
+    });
+    test("자신이 작성하지 않은 review 를 삭제하려고 하면 UnAuthError(401) 발생", async () => {
+      const authReq = getAuthenticatedReq(buyerWithoutReview.id);
+      const response = await authReq.delete(`/api/review/${review.id}`);
+      expect(response.status).toBe(401);
+    });
+  });
+});
 
 // 테스트용 함수들
 async function createTestUser(userData: Prisma.UserUncheckedCreateInput) {
