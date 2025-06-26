@@ -7,7 +7,10 @@ import {
 import { IdParamsStruct } from "../structs/commonStructs";
 import { create } from "superstruct";
 
+const isTestEnv = process.env.NODE_ENV === "test";
+
 export const notificationSSE: RequestHandler = async (req, res) => {
+  console.log("✅ SSE 핸들러 진입", req.user?.id);
   const userId = req.user!.id;
 
   res.set({
@@ -20,7 +23,12 @@ export const notificationSSE: RequestHandler = async (req, res) => {
     const notifications = await getNotifications(userId);
     res.write(`data: ${JSON.stringify(notifications)}\n\n`);
   };
+  await sendNotification();
 
+  if (isTestEnv) {
+    res.end();
+    return;
+  }
   const intervalId = setInterval(() => {
     sendNotification();
   }, 30000);
@@ -29,8 +37,6 @@ export const notificationSSE: RequestHandler = async (req, res) => {
     clearInterval(intervalId);
     res.end();
   });
-
-  await sendNotification();
 };
 
 export const getNotificationList: RequestHandler = async (req, res) => {

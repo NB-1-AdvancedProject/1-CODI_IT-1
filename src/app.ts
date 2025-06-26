@@ -30,7 +30,7 @@ app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
-app.use("notifications", notificationRouter);
+app.use("/api/notifications", notificationRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
