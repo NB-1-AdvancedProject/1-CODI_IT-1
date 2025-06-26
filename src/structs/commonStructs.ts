@@ -1,4 +1,3 @@
-import { Decimal } from "@prisma/client/runtime/library";
 import {
   coerce,
   integer,
@@ -31,11 +30,6 @@ export const integerString = coerce(
   integer(),
   union([string(), number()]),
   (value) => parseInt(value.toString())
-);
-
-export const decimalStruct = coerce(
-  union([string(), number()]),
-  (value) => new Decimal(value)
 );
 
 export const PageParamsStruct = object({
