@@ -1,10 +1,9 @@
 import prisma from "../src/lib/prisma";
 import { clearDatabase, getAuthenticatedReq, createTestUser } from "./testUtil";
-import bcrypt from "bcrypt";
 import { User, Product, Size } from "@prisma/client";
 import { buyerUser as buyer1, sellerUser as seller1 } from "./inquiryDummy";
 
-describe("내 주문 목록 조회", () => {
+describe("Order API", () => {
   let buyerUser: User;
   let product: Product;
   let product2: Product;
@@ -75,14 +74,14 @@ describe("내 주문 목록 조회", () => {
       data: {
         productId: product.id,
         sizeId: size.id,
-        quantity: 10,
+        quantity: 100,
       },
     });
     const stock2 = await prisma.stock.create({
       data: {
         productId: product2.id,
         sizeId: size.id,
-        quantity: 10,
+        quantity: 100,
       },
     });
   });
@@ -91,42 +90,129 @@ describe("내 주문 목록 조회", () => {
     await prisma.$disconnect();
   });
 
-  describe("GET /api/order/", () => {
+  describe("POST /api/order/", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
-    test("내 오더 리스트 조회", async () => {
-      const password = "Password@1234";
-      const passwordHashed = bcrypt.hashSync(password, 10);
-
-      const user = await prisma.user.create({
+    test("오더 생성", async () => {
+      const updatePoint = await prisma.user.update({
+        where: { id: buyerUser.id },
         data: {
-          email: "test2@test.com",
-          password: passwordHashed,
-          name: "홍길자",
-          type: "BUYER",
+          point: 3000,
         },
       });
 
-      const order1 = await prisma.order.create({
-        data: {
-          name: user.name,
-          phone: "010-1234-5678",
-          address: "서울시 강남구",
-          orderItems: {create:[
+      const order = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 1000,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.post("/api/order/").send(order);
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.payments.status).toBe("CompletedPayment");
+    });
+    test("포인트 부족으로 인한 실패", async () => {
+      const order = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 5000,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.post("/api/order").send(order);
+
+      expect(response.statusCode).toBe(400);
+    });
+    test("재고 수량 부족으로 인한 실패", async () => {
+      const order = {
+        name: "김유저",
+        phone: "010-1234-1234",
+        address: "서울시 강남구 대치동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 101,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.post("/api/order").send(order);
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    describe("GET /api/order/", () => {
+      beforeEach(async () => {
+        await prisma.order.deleteMany();
+      });
+      test("내 오더 리스트 조회", async () => {
+        const order1 = {
+          name: "김유저",
+          phone: "010-1234-1234",
+          address: "서울시 강남구 대치동",
+          orderItems: [
             {
               productId: product.id,
               sizeId: size.id,
               quantity: 1,
             },
-            { productId: product2.id, sizeId: size.id, quantity: 2 },
-          ],}
-          userPoint: 0,
-        },
-      });
+          ],
+          usePoint: 0,
+        };
 
-      const authReq = getAuthenticatedReq(user.id);
-      const response = await authReq.get("/api/order/").send();
+        const order2 = {
+          name: "김유저2",
+          phone: "010-1234-1234",
+          address: "서울시 강남구 대치동",
+          orderItems: [
+            {
+              productId: product2.id,
+              sizeId: size.id,
+              quantity: 2,
+            },
+            {
+              productId: product.id,
+              sizeId: size.id,
+              quantity: 1,
+            },
+          ],
+          usePoint: 0,
+        };
+
+        const authReq = getAuthenticatedReq(buyerUser.id);
+        const res1 = await authReq.post("/api/order").send(order1);
+        expect(res1.status).toBe(201);
+        const res2 = await authReq.post("/api/order").send(order2);
+        expect(res2.status).toBe(201);
+        const response = await authReq.get("/api/order?status=PAID").send();
+
+        expect(response.status).toBe(200);
+        expect(response.body[1].orderItems[1].product.name).toBe(
+          "테스트 상품2"
+        );
+      });
     });
   });
 });

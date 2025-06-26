@@ -24,8 +24,8 @@ export const CreateOrder = object({
 });
 
 export const GetOrder = object({
-  status: orderStatus,
-  limit: number(),
-  page: number(),
+  status: optional(orderStatus),
+  limit: optional(number()),
+  page: optional(number()),
   orderBy: optional(enums(["recent", "oldest"])),
 });

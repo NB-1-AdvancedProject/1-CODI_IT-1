@@ -126,17 +126,17 @@ async function create(user: Token, data: CreateOrderDTO) {
 
 async function getOrderList(
   user: Token,
-  status: OrderStatusType,
   page: number,
   limit: number,
-  orderBy: string
+  orderBy: string,
+  status?: OrderStatusType
 ) {
   const orderList = await orderRepository.getOrder(
     user,
-    status,
     page,
     limit,
-    orderBy
+    orderBy,
+    status
   );
 
   const orderResList = orderList.map(

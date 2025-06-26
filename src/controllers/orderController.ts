@@ -15,18 +15,18 @@ export const createOrder: RequestHandler = async (req, res) => {
 export const getOrderList: RequestHandler = async (req, res) => {
   const user = req.user!;
   const {
-    status,
     page = 1,
     limit = 3,
     orderBy = "recent",
-  } = create(req.params, GetOrder);
+    status,
+  } = create(req.query, GetOrder);
 
   const orderList = await orderService.getOrderList(
     user,
-    status,
     page,
     limit,
-    orderBy
+    orderBy,
+    status
   );
 
   res.status(200).send(orderList);
