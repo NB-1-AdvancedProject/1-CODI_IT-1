@@ -13,6 +13,7 @@ import productRouter from "./routers/productRouter";
 import cartRouter from "./routers/cartRouter";
 import { dashboardRouter } from "./routers/dashboardRouter";
 import uploadRouter from "./routers/uploadRouter";
+import notificationRouter from "./routers/notificationRouter";
 
 const app = express();
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
+app.use("notifications", notificationRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
