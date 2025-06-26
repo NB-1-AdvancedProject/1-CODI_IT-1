@@ -63,7 +63,6 @@ async function create(user: Token, data: CreateOrderDTO) {
         point: newPoint,
       },
     });
-    console.log(`${updateUser.id}의 잔여 포인트는 ${updateUser.point}입니다.`);
 
     for (const item of data.orderItems) {
       const stockToUpdate = await orderRepository.getStock(tx, item);
@@ -88,10 +87,6 @@ async function create(user: Token, data: CreateOrderDTO) {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
-
-      console.log(
-        `${updateStock.id}의 잔여 수량은 ${updateStock.quantity}입니다.`
-      );
     }
 
     const orderItems = {
