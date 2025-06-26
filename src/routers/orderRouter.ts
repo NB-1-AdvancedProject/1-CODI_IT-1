@@ -7,3 +7,5 @@ const orderRouter = Router();
 
 orderRouter.post("/", authMiddleware, asyncHandler(createOrder));
 orderRouter.get("/", authMiddleware, asyncHandler(getOrderList));
+
+export default orderRouter;

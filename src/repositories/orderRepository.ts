@@ -1,5 +1,9 @@
 import { PaymentStatus, Prisma } from "@prisma/client";
-import { CreateOrderItemDTO, StockDTO } from "../lib/dto/orderDTO";
+import {
+  CreateOrderData,
+  CreateOrderItemDTO,
+  StockDTO,
+} from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
@@ -7,7 +11,7 @@ import { OrderStatusType } from "../types/order";
 async function orderSave(
   tx: Prisma.TransactionClient,
   user: Token,
-  order: any
+  order: CreateOrderData
 ) {
   const createOrder = await tx.order.create({
     data: {
@@ -15,7 +19,7 @@ async function orderSave(
       name: order.name,
       phone: order.phone,
       address: order.address,
-      status: order.status,
+      status: "PAID" as OrderStatusType,
       subtotal: order.subtotal,
       orderItems: {
         create: order.orderItems.map((item: CreateOrderItemDTO) => ({
@@ -32,7 +36,7 @@ async function orderSave(
           totalPrice: order.payment.totalPrice,
         },
       },
-      paidAt: order.payment.status === "CompletedPayment" ? new Date() : null,
+      paidAt: new Date(),
     },
     include: {
       orderItems: {
@@ -59,10 +63,10 @@ async function getProductById(productId: string) {
 async function getStock(tx: Prisma.TransactionClient, item: StockDTO) {
   return await tx.stock.findFirst({
     where: {
-        productId: item.productId,
-        sizeId: item.sizeId,
-      },
-    })
+      productId: item.productId,
+      sizeId: item.sizeId,
+    },
+  });
 }
 
 async function getOrder(

@@ -1,12 +1,11 @@
-
-import { PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import {
   Order,
   OrderItem,
   OrderItemPayment,
   Product,
-  Size
+  Size,
 } from "../../types/order";
 
 // Request DTO
@@ -23,6 +22,23 @@ export type CreateOrderItemDTO = {
   sizeId: string;
   quantity: number;
   price: Decimal;
+};
+
+export type CreateOrderData = {
+  name: string;
+  phone: string;
+  address: string;
+  subtotal: Decimal;
+  usePoint: number;
+  orderItems: {
+    productId: string;
+    sizeId: string;
+    quantity: number;
+    price: Decimal;
+  }[];
+  payment: {
+    totalPrice: Decimal;
+  };
 };
 
 export type UpdateUserDTO = {

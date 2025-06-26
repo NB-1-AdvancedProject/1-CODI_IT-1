@@ -6,23 +6,42 @@ import orderRepository from "../repositories/orderRepository";
 import { OrderStatusType } from "../types/order";
 import { Token } from "../types/user";
 import userRepository from "../repositories/userRepository";
+import productService from "./productService";
+import { Decimal } from "@prisma/client/runtime/library";
 
-async function create(user: Token, data: CreateOrderDTO) {
+async function findOrderItems(data: CreateOrderDTO) {
+  let subtotal = 0;
   const products = await Promise.all(
-    data.orderItems.map((item) =>
-      orderRepository.getProductById(item.productId)
-    )
+    data.orderItems.map(async (item) => {
+      const product = await orderRepository.getProductById(item.productId);
+      if (!product) {
+        throw new NotFoundError("product", item.productId);
+      }
+
+      const updatedProduct = await productService.checkAndUpdateDiscountState(
+        product.discountEndTime,
+        product.id
+      );
+
+      const finalProduct = updatedProduct || product;
+      const unitPrice = finalProduct.discountPrice ?? finalProduct.price;
+
+      subtotal += unitPrice.toNumber() * item.quantity;
+
+      return {
+        finalProduct,
+        unitPrice,
+        quantity: item.quantity,
+        sizeId: item.sizeId,
+      };
+    })
   );
 
-  const notFoundProductIds = data.orderItems
-    .map((item, idx) => (!products[idx] ? item.productId : null))
-    .filter((id): id is string => id !== null);
+  return { items: products, subtotal };
+}
 
-  if (notFoundProductIds.length > 0) {
-    notFoundProductIds.forEach((id) => {
-      throw new NotFoundError("product", id);
-    });
-  }
+async function create(user: Token, data: CreateOrderDTO) {
+  const orderItemInfo = await findOrderItems(data);
 
   const currentUser = await userRepository.findById(user.id);
   if (!currentUser) {
@@ -58,22 +77,36 @@ async function create(user: Token, data: CreateOrderDTO) {
         throw new CommonError("재고가 부족합니다.", 400);
       }
 
-      const newStockQuamtity = stockToUpdate.quantity - item.quantity;
-      if (newStockQuamtity < 0) {
+      const newStockQuantity = stockToUpdate.quantity - item.quantity;
+      if (newStockQuantity < 0) {
         throw new CommonError("재고가 부족 합니다.", 400);
       }
 
       const updateStock = await tx.stock.update({
         where: { id: stockToUpdate.id },
-        data: { quantity: newStockQuamtity },
+        data: { quantity: newStockQuantity },
       });
 
       console.log(
-        `${updateStock.id}의 잔여 포인트는 ${updateStock.quantity}입니다.`
+        `${updateStock.id}의 잔여 수량은 ${updateStock.quantity}입니다.`
       );
     }
 
-    const createOrder = await orderRepository.orderSave(tx, user, data);
+    const orderItems = {
+      ...data,
+      subtotal: new Decimal(orderItemInfo.subtotal),
+      orderItems: orderItemInfo.items.map((item) => ({
+        productId: item.finalProduct.id,
+        sizeId: item.sizeId,
+        quantity: item.quantity,
+        price: new Decimal(item.unitPrice),
+      })),
+      payment: {
+        totalPrice: new Decimal(orderItemInfo.subtotal - data.usePoint),
+      },
+    };
+
+    const createOrder = await orderRepository.orderSave(tx, user, orderItems);
 
     return createOrder;
   });
