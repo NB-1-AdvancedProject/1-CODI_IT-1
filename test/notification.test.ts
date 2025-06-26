@@ -127,7 +127,6 @@ describe("notification api 테스트", () => {
       const response = await authReq.patch(
         `/api/notifications/${alarm.id}/check`
       );
-      console.log(response.body);
       expect(response.status).toBe(403);
       expect(response.body).toEqual({
         message: "이메일 또는 비밀번호를 확인해주세요.",

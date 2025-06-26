@@ -7,10 +7,9 @@ import {
 import { IdParamsStruct } from "../structs/commonStructs";
 import { create } from "superstruct";
 
-const isTestEnv = process.env.NODE_ENV === "test";
+const isTestEnv = process.env.NODE_ENV !== "production";
 
 export const notificationSSE: RequestHandler = async (req, res) => {
-  console.log("✅ SSE 핸들러 진입", req.user?.id);
   const userId = req.user!.id;
 
   res.set({

@@ -13,12 +13,9 @@ import productRouter from "./routers/productRouter";
 import cartRouter from "./routers/cartRouter";
 import { dashboardRouter } from "./routers/dashboardRouter";
 import uploadRouter from "./routers/uploadRouter";
-<<<<<<< HEAD
 import notificationRouter from "./routers/notificationRouter";
-=======
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
->>>>>>> 6068a8052d83c72f74d2c5ace9055e53d558d346
 
 const app = express();
 app.use(express.json());
@@ -37,11 +34,8 @@ app.use("/api/review", reviewRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
-<<<<<<< HEAD
 app.use("/api/notifications", notificationRouter);
-=======
 app.use("/api/metadata", metadataRouter);
->>>>>>> 6068a8052d83c72f74d2c5ace9055e53d558d346
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
