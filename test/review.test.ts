@@ -1,3 +1,5 @@
+import request from "supertest";
+import app from "../src/app";
 import bcrypt from "bcrypt";
 import {
   clearDatabase,
@@ -317,6 +319,70 @@ describe("DELETE /api/review/:reviewId", () => {
   });
 });
 
+describe("GET /api/product/:productId/reviews", () => {
+  let buyer1: User;
+  let buyer2: User;
+  let seller: User;
+  let store: Store;
+  let product1: Product;
+  let orderItem1: OrderItem;
+  let orderItem2: OrderItem;
+  let review1: Review;
+  let review2: Review;
+  beforeAll(async () => {
+    await clearDatabase();
+    buyer1 = await createTestUser(buyerData1);
+    buyer2 = await createTestUser(buyerData2);
+    seller = await createTestUser(sellerUser);
+    await createTestSizes(sizes);
+    await createTestCategories(categories);
+    store = await createTestStore(store1, seller.id);
+    product1 = await prisma.product.create({
+      data: {
+        ...dummyProduct1,
+        storeId: store.id,
+        reviewsCount: 2,
+        reviewsRating: 5, // 테스트 편의를 위해 미리 저장
+      },
+    });
+    const orderWithOrderItem = await createOrderAndOrderItems(
+      buyer1,
+      product1,
+      1
+    );
+    orderItem1 = orderWithOrderItem.orderItems[0];
+    const orderWithOrderItem2 = await createOrderAndOrderItems(
+      buyer2,
+      product1,
+      1
+    );
+    orderItem2 = orderWithOrderItem2.orderItems[0];
+    review1 = await createTestReview(buyer1.id, product1.id, orderItem1.id);
+    review2 = await createTestReview(buyer2.id, product1.id, orderItem2.id);
+  });
+  afterAll(async () => {
+    await disconnectTestDB();
+  });
+  describe("성공", () => {
+    test("기본동작: 로그인 하지 않아도 확인 가능 ", async () => {
+      const response = await request(app).get(
+        `/api/product/${product1.id}/reviews`
+      );
+      expect(response.status).toBe(200);
+      // 정은 : 어차피 Swagger 가 이상한 것 같아서, 일단 여기까지만 테스트
+    });
+  });
+  describe("오류", () => {
+    test("존재하지 않는 product에 대해 조회시 NotFoundErr(404) 발생", async () => {
+      const nonExistentProductId = "cproduct0000notfoundid0001";
+      const response = await request(app).get(
+        `/api/product/${nonExistentProductId}/reviews`
+      );
+      expect(response.status).toBe(404);
+    });
+  });
+});
+
 // 테스트용 함수들
 async function createTestUser(userData: Prisma.UserUncheckedCreateInput) {
   const plainPassword = userData.password;
@@ -357,21 +423,6 @@ async function createTestStore(
   });
 }
 
-async function createTestFavoriteStore(data: {
-  userId: string;
-  storeId: string;
-  createdAt?: Date;
-}) {
-  return prisma.favoriteStore.create({ data });
-}
-
-async function createTestStocks(data: Prisma.StockCreateManyInput[]) {
-  return prisma.stock.createMany({
-    data: data,
-    skipDuplicates: true,
-  });
-}
-
 async function createOrderAndOrderItems(
   buyer: User,
   product: Product,
@@ -400,5 +451,21 @@ async function createOrderAndOrderItems(
       },
     },
     include: { orderItems: true },
+  });
+}
+
+async function createTestReview(
+  userId: string,
+  productId: string,
+  orderItemId: string
+): Promise<Review> {
+  return await prisma.review.create({
+    data: {
+      userId,
+      productId,
+      orderItemId,
+      rating: 5,
+      content: "최고예요",
+    },
   });
 }
