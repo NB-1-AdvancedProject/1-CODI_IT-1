@@ -24,6 +24,8 @@ export type CreateOrderItemDTO = {
   price: Decimal;
 };
 
+export type UpdateOrderDTO = Partial<CreateOrderDTO>;
+
 export type CreateOrderData = {
   name: string;
   phone: string;

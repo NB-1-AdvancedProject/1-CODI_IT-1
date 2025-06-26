@@ -3,11 +3,11 @@ import {
   CreateOrderData,
   CreateOrderItemDTO,
   StockDTO,
+  UpdateOrderDTO,
 } from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
-import { string } from "superstruct";
 
 async function orderSave(
   tx: Prisma.TransactionClient,
@@ -128,6 +128,32 @@ async function deleteOrder(id: string) {
   });
 }
 
+async function update(id: string, data: UpdateOrderDTO) {
+  const updateOrder = await prisma.order.update({
+    where: { id },
+    data: {
+      name: data.name,
+      phone: data.phone,
+      address: data.address,
+    },
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            include: {
+              store: true,
+              stocks: { include: { size: true } },
+            },
+          },
+          size: true,
+        },
+      },
+      payment: true,
+    },
+  });
+  return updateOrder;
+}
+
 export default {
   orderSave,
   getProductById,
@@ -135,4 +161,5 @@ export default {
   getOrder,
   getStock,
   deleteOrder,
+  update,
 };
