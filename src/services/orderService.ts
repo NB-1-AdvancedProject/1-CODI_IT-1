@@ -10,7 +10,7 @@ import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
 
 async function findOrderItems(data: CreateOrderDTO) {
-  let subtotal = 0;
+  let subtotal = new Decimal(0);
   const products = await Promise.all(
     data.orderItems.map(async (item) => {
       const product = await orderRepository.getProductById(item.productId);
@@ -24,9 +24,11 @@ async function findOrderItems(data: CreateOrderDTO) {
       );
 
       const finalProduct = updatedProduct || product;
-      const unitPrice = finalProduct.discountPrice ?? finalProduct.price;
+      const unitPrice = new Decimal(
+        finalProduct.discountPrice ?? finalProduct.price
+      );
 
-      subtotal += unitPrice.toNumber() * item.quantity;
+      subtotal = subtotal.add(unitPrice.mul(item.quantity));
 
       return {
         finalProduct,
@@ -102,7 +104,7 @@ async function create(user: Token, data: CreateOrderDTO) {
         price: new Decimal(item.unitPrice),
       })),
       payment: {
-        totalPrice: new Decimal(orderItemInfo.subtotal - data.usePoint),
+        totalPrice: orderItemInfo.subtotal.sub(data.usePoint),
       },
     };
 
