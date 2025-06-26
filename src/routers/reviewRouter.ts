@@ -11,3 +11,4 @@ export const reviewRouter = express.Router();
 reviewRouter.post("/:id/reviews", authMiddleware, asyncHandler(createReview));
 reviewRouter.patch("/:id", authMiddleware, asyncHandler(updateReview));
 reviewRouter.get("/:id", asyncHandler(getReviewInfo));
+reviewRouter.delete("/:id", authMiddleware, asyncHandler(getReviewInfo));

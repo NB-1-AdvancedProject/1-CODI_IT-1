@@ -49,6 +49,14 @@ export async function findReviewsByProductId(
   return await client.review.findMany({ where: { productId } });
 }
 
+export async function deleteReviewById(
+  reviewId: string,
+  tx?: Prisma.TransactionClient
+) {
+  const client = tx || prisma;
+  return await client.review.delete({ where: { id: reviewId } });
+}
+
 // 정은: 다른 도메인 관련 함수
 export async function updateProduct(
   data: Prisma.ProductUpdateInput,
