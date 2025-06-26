@@ -22,3 +22,9 @@ export const updateReview: RequestHandler = async (req, res) => {
   const result = await reviewService.updateReview(req.body, userId, reviewId);
   res.status(200).json(result);
 };
+
+export const getReviewInfo: RequestHandler = async (req, res) => {
+  const { id: reviewId } = create(req.params, IdParamsStruct);
+  const result = await reviewService.getReviewInfo(reviewId);
+  res.status(200).json(result);
+};

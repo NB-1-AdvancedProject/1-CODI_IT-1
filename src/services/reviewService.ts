@@ -96,6 +96,15 @@ export async function updateReview(
   return new ReviewDTO(result);
 }
 
+export async function getReviewInfo(reviewId: string): Promise<ReviewDTO> {
+  const review = await reviewRepository.findReviewById(reviewId);
+  if (!review) {
+    throw new NotFoundError("Review", reviewId);
+  }
+  return new ReviewDTO(review);
+}
+
+// 헬퍼 함수
 async function updateProductReviewFields(
   productId: string,
   updatedAt: Date,
