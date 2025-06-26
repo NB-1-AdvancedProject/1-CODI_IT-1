@@ -1,5 +1,6 @@
 import {
   array,
+  boolean,
   date,
   defaulted,
   Infer,
@@ -12,7 +13,7 @@ import { integerString } from "./commonStructs";
 
 export const CreateProductBodyStruct = object({
   name: string(),
-  price: number(),
+  price: integerString,
   content: string(),
   image: string(),
   discountRate: optional(number()),
@@ -22,7 +23,7 @@ export const CreateProductBodyStruct = object({
   stocks: array(
     object({
       sizeId: string(),
-      quantity: number(),
+      quantity: integerString,
     })
   ),
 });
@@ -31,21 +32,22 @@ export type CreateProductBody = Infer<typeof CreateProductBodyStruct>;
 
 export const PatchProductBodyStruct = object({
   name: optional(string()),
-  price: optional(number()),
+  price: optional(integerString),
   content: optional(string()),
   image: optional(string()),
-  discountRate: optional(number()),
-  discountStartTime: optional(date()),
-  discountEndTime: optional(date()),
+  discountRate: optional(integerString),
+  discountStartTime: optional(string()),
+  discountEndTime: optional(string()),
   categoryName: optional(string()),
   stocks: optional(
     array(
       object({
         sizeId: string(),
-        quantity: number(),
+        quantity: integerString,
       })
     )
   ),
+  isSoldOut: optional(boolean()),
 });
 
 export type PatchProductBody = Infer<typeof PatchProductBodyStruct>;

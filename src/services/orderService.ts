@@ -11,7 +11,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 
 async function findOrderItems(data: CreateOrderDTO) {
-  let subtotal = 0;
+  let subtotal = new Decimal(0);
   const products = await Promise.all(
     data.orderItems.map(async (item) => {
       const product = await orderRepository.getProductById(item.productId);
@@ -25,9 +25,11 @@ async function findOrderItems(data: CreateOrderDTO) {
       );
 
       const finalProduct = updatedProduct || product;
-      const unitPrice = finalProduct.discountPrice ?? finalProduct.price;
+      const unitPrice = new Decimal(
+        finalProduct.discountPrice ?? finalProduct.price
+      );
 
-      subtotal += unitPrice.toNumber() * item.quantity;
+      subtotal = subtotal.add(unitPrice.mul(item.quantity));
 
       return {
         finalProduct,
@@ -62,7 +64,6 @@ async function create(user: Token, data: CreateOrderDTO) {
         point: newPoint,
       },
     });
-    console.log(`${updateUser.id}의 잔여 포인트는 ${updateUser.point}입니다.`);
 
     for (const item of data.orderItems) {
       const stockToUpdate = await orderRepository.getStock(tx, item);
@@ -87,10 +88,6 @@ async function create(user: Token, data: CreateOrderDTO) {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
-
-      console.log(
-        `${updateStock.id}의 잔여 수량은 ${updateStock.quantity}입니다.`
-      );
     }
 
     const orderItems = {
@@ -103,7 +100,7 @@ async function create(user: Token, data: CreateOrderDTO) {
         price: new Decimal(item.unitPrice),
       })),
       payment: {
-        totalPrice: new Decimal(orderItemInfo.subtotal - data.usePoint),
+        totalPrice: orderItemInfo.subtotal.sub(data.usePoint),
       },
     };
 

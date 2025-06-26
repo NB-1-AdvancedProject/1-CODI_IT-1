@@ -10,6 +10,8 @@ import {
   pattern,
   size,
   define,
+  union,
+  number,
 } from "superstruct";
 export const emailRegExp = pattern(
   string(),
@@ -24,8 +26,10 @@ export const Cuid = define<string>(
 
 export const phoneNumberRegExp = pattern(string(), /^\d{2,3}-\d{3,4}-\d{4}$/);
 
-export const integerString = coerce(integer(), string(), (value) =>
-  parseInt(value)
+export const integerString = coerce(
+  integer(),
+  union([string(), number()]),
+  (value) => parseInt(value.toString())
 );
 
 export const PageParamsStruct = object({
