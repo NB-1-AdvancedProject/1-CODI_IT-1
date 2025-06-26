@@ -160,7 +160,6 @@ describe("Product API 테스트", () => {
     test("상품 기본 조회 - 페이징 기본값", async () => {
       const res = await request(app).get("/api/products");
 
-      console.log("yes", res.body);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.list)).toBe(true);
       expect(res.body.list[0]).toHaveProperty("id");

@@ -61,7 +61,6 @@ import NotFoundError from "../lib/errors/NotFoundError";
 // }
 
 export const getProduct: RequestHandler = async (req, res) => {
-  console.log("yes");
   const product = await productService.getProduct(req.params.id);
   if (!product) throw new NotFoundError("product", req.params.id);
   res.json(product);
@@ -80,7 +79,6 @@ export const postProduct: RequestHandler = async (req, res) => {
 };
 
 export const patchProduct: RequestHandler = async (req, res) => {
-  console.log("yesyes");
   const productId = req.params.id;
   const sellerId = await productService.getSellerIdByProductId(productId);
   if (sellerId != req.user!.id) {
