@@ -17,7 +17,7 @@ export const emailRegExp = pattern(
   /^[\w.-]+@([\w.-]+\.)+[\w]{2,4}$/i
 );
 
-const Cuid = define<string>(
+export const Cuid = define<string>(
   "Cuid",
   (value) => typeof value === "string" && /^c[^\s]{8,}$/.test(value)
 );
@@ -29,8 +29,6 @@ export const integerString = coerce(integer(), string(), (value) =>
 );
 
 export const PageParamsStruct = object({
-  // 고급프로젝트에선 많이 사용 안되서 삭제 고려중
-  // 정은: 저 쓰고 있어요..! 살려주십쇼
   page: defaulted(integerString, 1),
   pageSize: defaulted(integerString, 10),
   search: optional(string()),

@@ -8,9 +8,7 @@
     "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy",
-    "test:deploy": "npx prisma migrate deploy && npx jest -i",
-    "jest": "jest -i"
+    "prisma:deploy": "npx prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",

@@ -38,7 +38,7 @@ describe("파일 업로드 테스트", () => {
     s3Mock.on(PutObjectCommand).resolves({ ETag: '"abc123"', VersionId: "1" });
   });
 
-  test("파일 업로드 기본 동작 테스트", async () => {
+  test("파일 업로드 기본 동작 흐름 테스트", async () => {
     //multer 업로드 부분 mock 구현 설정
     (uploadMiddleware as jest.Mock).mockImplementationOnce((req, res, next) => {
       req.file = {
