@@ -31,3 +31,9 @@ export async function createAlarmData(userId: string, content: string) {
     },
   });
 }
+
+export async function findAlarmData(alarmId: string) {
+  return prisma.alarm.findUnique({
+    where: { id: alarmId },
+  });
+}
