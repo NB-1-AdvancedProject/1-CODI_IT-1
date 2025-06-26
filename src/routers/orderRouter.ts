@@ -11,6 +11,6 @@ const orderRouter = Router();
 
 orderRouter.post("/", authMiddleware, asyncHandler(createOrder));
 orderRouter.get("/", authMiddleware, asyncHandler(getOrderList));
-orderRouter.get("/id", authMiddleware, asyncHandler(getOrderDetail));
+orderRouter.get("/:id", authMiddleware, asyncHandler(getOrderDetail));
 
 export default orderRouter;
