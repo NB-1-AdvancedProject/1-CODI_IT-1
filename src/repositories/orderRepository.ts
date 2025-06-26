@@ -7,6 +7,7 @@ import {
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
+import { string } from "superstruct";
 
 async function orderSave(
   tx: Prisma.TransactionClient,
@@ -101,7 +102,7 @@ async function getOrderList(
   });
 }
 
-async function getOrder(user: Token, id: string) {
+async function getOrder(id: string) {
   return await prisma.order.findUnique({
     where: { id },
     include: {
@@ -121,10 +122,17 @@ async function getOrder(user: Token, id: string) {
   });
 }
 
+async function deleteOrder(id: string) {
+  return await prisma.order.delete({
+    where: { id },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
   getOrderList,
   getOrder,
   getStock,
+  deleteOrder,
 };

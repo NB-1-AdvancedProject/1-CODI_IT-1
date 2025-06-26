@@ -154,7 +154,7 @@ async function getOrderList(
 }
 
 async function getOrder(user: Token, id: string) {
-  const order = await orderRepository.getOrder(user, id);
+  const order = await orderRepository.getOrder(id);
   if (!order) {
     throw new NotFoundError("order", id);
   }
@@ -162,7 +162,6 @@ async function getOrder(user: Token, id: string) {
   if (order.userId !== user.id) {
     throw new ForbiddenError();
   }
-
 
   return new OrderResDTO({
     ...order,
@@ -175,8 +174,22 @@ async function getOrder(user: Token, id: string) {
   });
 }
 
+async function deleteOrder(user: Token, id: string) {
+  const order = await orderRepository.getOrder(id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+  return await orderRepository.deleteOrder(id);
+}
+
 export default {
   create,
   getOrderList,
   getOrder,
+  deleteOrder
 };

@@ -4,6 +4,7 @@ import {
   createOrder,
   getOrderList,
   getOrderDetail,
+  deleteOrder,
 } from "../controllers/orderController";
 import { authMiddleware } from "../middleware/authMiddleware";
 
@@ -12,5 +13,6 @@ const orderRouter = Router();
 orderRouter.post("/", authMiddleware, asyncHandler(createOrder));
 orderRouter.get("/", authMiddleware, asyncHandler(getOrderList));
 orderRouter.get("/:id", authMiddleware, asyncHandler(getOrderDetail));
+orderRouter.delete("/:id", authMiddleware, asyncHandler(deleteOrder));
 
 export default orderRouter;
