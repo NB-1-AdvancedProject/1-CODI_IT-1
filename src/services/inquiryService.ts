@@ -9,9 +9,15 @@ import {
   inquiryDetail,
   replyDetail,
   inquiryStatus,
+  postData,
+  countData,
+  listQuiries,
 } from "../repositories/inquiryRepository";
-import { updateInquiryType, inquiryType } from "../structs/inquiryStructs";
-import { countData } from "../repositories/inquiryRepository";
+import {
+  updateInquiryType,
+  inquiryType,
+  inquiresType,
+} from "../structs/inquiryStructs";
 import {
   InquiryListResponseDTO,
   InquiryResDTO,
@@ -24,6 +30,8 @@ import userRepository from "../repositories/userRepository";
 import { getStoreById } from "../repositories/storeRepository";
 import { Store } from "../types/storeType";
 import { User } from "@prisma/client";
+import productRepository from "../repositories/productRepository";
+import { createAlarmData } from "../repositories/notificationRepository";
 
 export async function getList(
   params: inquiryType,
@@ -99,6 +107,12 @@ export async function createRepliesData(
   }
 
   const replies = await createReply(user, params, reply);
+
+  if (replies) {
+    const content = "문의 답변이 완료되었습니다.";
+    await createAlarmData(inquiry.userId, content);
+  }
+
   await inquiryStatus(replies.inquiryId);
 
   return new replyResDTO(replies);
@@ -204,4 +218,50 @@ export async function getReply(params: string, user?: string) {
   }
 
   return new GetInquiryResDTO(inquiry);
+}
+
+export async function postQuiry(
+  params: string,
+  quiry: inquiresType,
+  user: string
+): Promise<InquiryResDTO> {
+  const userData = await userRepository.findById(user);
+
+  if (!userData) {
+    throw new NotFoundError("User", user);
+  }
+
+  const product = await productRepository.findProductById(params);
+  if (!product) {
+    throw new NotFoundError("Product", params);
+  }
+
+  if (userData.storeId) {
+    const storeId = await getStoreById(userData.storeId);
+    if (userData.type === "SELLER" && product.storeId === storeId.id) {
+      throw new UnauthError();
+    }
+  }
+
+  const quiryData = await postData(params, quiry, user);
+
+  if (quiryData) {
+    const storeData = await getStoreById(product.storeId);
+    const content = "문의가 등록되었습니다.";
+    await createAlarmData(storeData.userId, content);
+  }
+
+  return new InquiryResDTO(quiryData);
+}
+
+export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
+  const data = await listQuiries(params);
+
+  if (!data || data.length === 0) {
+    throw new NotFoundError("Product", params);
+  }
+
+  return data.map((inquiry) => {
+    return new GetInquiryResDTO(inquiry);
+  });
 }

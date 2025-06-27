@@ -1,0 +1,12 @@
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "buyer@example.com",
+  "password": "password1234"
+}
+
+### SSE 연결 요청 (JWT 필요)
+GET http://localhost:3000/api/notifications/sse
+Accept: text/event-stream
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtY2N3NGcwZzAwMDB2c3ZjMG1nN3gzaHMiLCJpYXQiOjE3NTA5MTI5OTQsImV4cCI6MTc1MDkxNjU5NH0.ZzHq1KLKzVeAtT0e4jY6FmMhvJwBYgkyBFTwZRJ0qEk
