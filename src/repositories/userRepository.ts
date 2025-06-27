@@ -6,6 +6,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 async function findById(id: string) {
   const user = await prisma.user.findUnique({
     where: { id },
+    include: { grade: true },
   });
 
   return user;
@@ -48,6 +49,7 @@ async function updateData(data: UpdateUserDTO) {
       password: data.password,
       image: data.image,
     },
+    include: { grade: true },
   });
 }
 

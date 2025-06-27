@@ -89,7 +89,7 @@ async function create(user: Token, data: CreateOrderDTO) {
   }
 
   const order = await prisma.$transaction(async (tx) => {
-    if (currentUser.point > data.usePoint) {
+    if (currentUser.point < data.usePoint) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
 

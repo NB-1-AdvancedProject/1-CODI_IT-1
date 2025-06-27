@@ -2,6 +2,9 @@ import prisma from "../src/lib/prisma";
 import { clearDatabase, getAuthenticatedReq, createTestUser } from "./testUtil";
 import { User, Product, Size } from "@prisma/client";
 import { buyerUser as buyer1, sellerUser as seller1 } from "./inquiryDummy";
+import { grade } from "./orderDummy";
+import { Grade } from "../src/types/user";
+import { createGrade } from "./orderDummy";
 
 describe("Order API", () => {
   let buyerUser: User;
@@ -9,10 +12,13 @@ describe("Order API", () => {
   let product2: Product;
   let sellerUser: User;
   let size: Size;
+  let gradeData: Grade[];
+
   beforeAll(async () => {
     await clearDatabase();
     buyerUser = await createTestUser(buyer1);
     sellerUser = await createTestUser(seller1);
+    gradeData = await createGrade(grade);
     const store = await prisma.store.create({
       data: {
         name: "테스트 상점",
