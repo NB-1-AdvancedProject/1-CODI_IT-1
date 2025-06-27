@@ -300,6 +300,11 @@ describe("DELETE /api/review/:reviewId", () => {
       expect(response.body.message).toBe("리뷰를 삭제했습니다.");
       const count = await prisma.review.count({ where: { id: review.id } });
       expect(count).toBe(0);
+      const product = await prisma.product.findUnique({
+        where: { id: product1.id },
+      });
+      expect(product?.reviewsCount).toBe(0);
+      expect(product?.reviewsRating).toBe(0);
     });
   });
   describe("오류", () => {
