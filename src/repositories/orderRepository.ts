@@ -3,10 +3,12 @@ import {
   CreateOrderData,
   CreateOrderItemDTO,
   StockDTO,
+  UpdateOrderDTO,
 } from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
+import CommonError from "../lib/errors/CommonError";
 
 async function orderSave(
   tx: Prisma.TransactionClient,
@@ -101,7 +103,7 @@ async function getOrderList(
   });
 }
 
-async function getOrder(user: Token, id: string) {
+async function getOrder(id: string) {
   return await prisma.order.findUnique({
     where: { id },
     include: {
@@ -121,12 +123,64 @@ async function getOrder(user: Token, id: string) {
   });
 }
 
+async function deleteOrder(id: string, userId: string) {
+  const result = await prisma.order.deleteMany({
+    where: { id, userId, status: "PENDING" },
+  });
+
+  if (result.count === 0) {
+    throw new CommonError("주문이 이미 처리 중이거나 삭제할 수 없습니다.", 400);
+  }
+
+  return true;
+}
+
 async function getOrderItem(productId: string) {
-  return prisma.orderItem.findMany({
+  return await prisma.orderItem.findMany({
     where: { productId: productId },
     include: {
       order: true,
     },
+  });
+}
+
+async function update(id: string, data: UpdateOrderDTO) {
+  return await prisma.$transaction(async (tx) => {
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+
+    if (
+      !existing ||
+      !["PAID", "PENDING", "REFUNDED"].includes(existing.status)
+    ) {
+      throw new Error("수정 불가능한 상태입니다.");
+    }
+
+    const updateOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              include: {
+                store: true,
+                stocks: { include: { size: true } },
+              },
+            },
+            size: true,
+          },
+        },
+        payment: true,
+      },
+    });
+    return updateOrder;
   });
 }
 
@@ -136,5 +190,7 @@ export default {
   getOrderList,
   getOrder,
   getStock,
+  deleteOrder,
+  update,
   getOrderItem,
 };

@@ -7,6 +7,7 @@ import {
   size,
   string,
   optional,
+  partial,
 } from "superstruct";
 import { phoneNumberRegExp } from "./commonStructs";
 import { OrderStatus } from "@prisma/client";
@@ -22,6 +23,8 @@ export const CreateOrder = object({
   ),
   usePoint: number(),
 });
+
+export const UpdateOrder = partial(CreateOrder);
 
 export const GetOrder = object({
   status: optional(orderStatus),
