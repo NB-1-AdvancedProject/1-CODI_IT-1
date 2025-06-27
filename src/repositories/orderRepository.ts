@@ -145,29 +145,43 @@ async function getOrderItem(productId: string) {
 }
 
 async function update(id: string, data: UpdateOrderDTO) {
-  const updateOrder = await prisma.order.update({
-    where: { id, status: { in: ["PAID", "PENDING", "REFUNDED"] } },
-    data: {
-      name: data.name,
-      phone: data.phone,
-      address: data.address,
-    },
-    include: {
-      orderItems: {
-        include: {
-          product: {
-            include: {
-              store: true,
-              stocks: { include: { size: true } },
-            },
-          },
-          size: true,
-        },
+  return await prisma.$transaction(async (tx) => {
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+
+    if (
+      !existing ||
+      !["PAID", "PENDING", "REFUNDED"].includes(existing.status)
+    ) {
+      throw new Error("수정 불가능한 상태입니다.");
+    }
+
+    const updateOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
       },
-      payment: true,
-    },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              include: {
+                store: true,
+                stocks: { include: { size: true } },
+              },
+            },
+            size: true,
+          },
+        },
+        payment: true,
+      },
+    });
+    return updateOrder;
   });
-  return updateOrder;
 }
 
 export default {
