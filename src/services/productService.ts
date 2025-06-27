@@ -262,13 +262,15 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     const isSoldOut = true;
     await productRepository.update({ isSoldOut }, updatedProduct.id);
     const order = await orderRepository.getOrderItem(updatedProduct.id);
-    const orderIds = order.map((o) => o.order.userId);
+    const orderIds = order
+      .filter((o) => o.order.status === "PENDING")
+      .map((o) => o.order.userId);
     const cart = await getItem(updatedProduct.id);
     const cartIds = cart.map((c) => c.cart.userId);
     const userIdSet = new Set([
       ...orderIds,
       ...cartIds,
-      updatedProduct.store.userId,
+      ...(data.isSoldOut ? [] : [updatedProduct.store.userId]),
     ]);
     const content = "상품이 품절 되었습니다.";
 
