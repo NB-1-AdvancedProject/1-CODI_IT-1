@@ -7,7 +7,7 @@ import {
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
-import { string } from "superstruct";
+
 
 async function orderSave(
   tx: Prisma.TransactionClient,
@@ -128,6 +128,15 @@ async function deleteOrder(id: string) {
   });
 }
 
+async function getOrderItem(productId: string) {
+  return prisma.orderItem.findMany({
+    where: { productId: productId },
+    include: {
+      order: true,
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -135,4 +144,5 @@ export default {
   getOrder,
   getStock,
   deleteOrder,
+  getOrderItem,
 };
