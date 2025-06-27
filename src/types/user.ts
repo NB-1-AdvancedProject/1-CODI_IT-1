@@ -8,7 +8,7 @@ export interface User {
   password: string;
   type: UserType;
   point: number;
-  grade?: Grade | null;
+  gradeId: string | null;
   image?: string | null;
   totalAmount: Decimal;
   createdAt: Date;

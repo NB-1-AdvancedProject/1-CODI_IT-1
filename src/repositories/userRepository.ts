@@ -1,5 +1,7 @@
+import { Prisma } from "@prisma/client";
 import { CreateUserDTO, UpdateUserDTO } from "../lib/dto/userDTO";
 import prisma from "../lib/prisma";
+import { Decimal } from "@prisma/client/runtime/library";
 
 async function findById(id: string) {
   const user = await prisma.user.findUnique({
@@ -24,7 +26,7 @@ async function save(data: CreateUserDTO) {
     create: {
       id: "grade_green",
       name: "green",
-      pointRate: 2,
+      pointRate: 1,
       minAmount: 100000,
     },
   });
@@ -67,4 +69,29 @@ async function getFavorite(id: string) {
   });
 }
 
-export default { findById, findByEmail, save, updateData, deletedUser, getFavorite };
+async function updateGrade(
+  tx: Prisma.TransactionClient,
+  id: string,
+  currentPoint: number,
+  totalAmount: Decimal,
+  gradeId: string
+) {
+  return await tx.user.update({
+    where: { id },
+    data: {
+      point: currentPoint,
+      totalAmount,
+      gradeId,
+    },
+  });
+}
+
+export default {
+  findById,
+  findByEmail,
+  save,
+  updateData,
+  deletedUser,
+  getFavorite,
+  updateGrade,
+};

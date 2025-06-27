@@ -154,6 +154,10 @@ async function update(id: string, data: UpdateOrderDTO) {
   return updateOrder;
 }
 
+async function getGrade() {
+  return await prisma.grade.findMany({ orderBy: { minAmount: "desc" } });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -162,4 +166,5 @@ export default {
   getStock,
   deleteOrder,
   update,
+  getGrade,
 };

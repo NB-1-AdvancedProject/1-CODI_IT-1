@@ -8,13 +8,12 @@ import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
 import orderRepository from "../repositories/orderRepository";
 import { OrderStatusType } from "../types/order";
-import { Token, User } from "../types/user";
+import { Token } from "../types/user";
 import userRepository from "../repositories/userRepository";
 import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
-import productRepository from "../repositories/productRepository";
 import stockRepository from "../repositories/stockRepository";
 
 async function findOrderItems(data: CreateOrderDTO) {
@@ -50,6 +49,24 @@ async function findOrderItems(data: CreateOrderDTO) {
   return { items: products, subtotal };
 }
 
+async function calculateUserGrade(totalAmount: Decimal) {
+  const gradeTires = await orderRepository.getGrade();
+
+  for (const tier of gradeTires) {
+    if (totalAmount >= new Decimal(tier.minAmount)) {
+      return tier.id;
+    }
+  }
+  return "grade_green";
+}
+
+async function updateUserGrade(user: Token, subtotal: Decimal) {
+  const totalAmount = new Decimal(user.totalAmount).plus(subtotal);
+  const newGrade = await calculateUserGrade(totalAmount);
+
+  return { totalAmount, newGrade };
+}
+
 async function create(user: Token, data: CreateOrderDTO) {
   const orderItemInfo = await findOrderItems(data);
 
@@ -59,18 +76,9 @@ async function create(user: Token, data: CreateOrderDTO) {
   }
 
   const order = await prisma.$transaction(async (tx) => {
-    const newPoint = currentUser.point - data.usePoint;
-
-    if (newPoint < 0) {
+    if (currentUser.point > data.usePoint) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
-
-    const updateUser = await tx.user.update({
-      where: { id: user.id },
-      data: {
-        point: newPoint,
-      },
-    });
 
     for (const item of data.orderItems) {
       const stockToUpdate = await orderRepository.getStock(tx, item);
@@ -110,6 +118,22 @@ async function create(user: Token, data: CreateOrderDTO) {
         totalPrice: orderItemInfo.subtotal.sub(data.usePoint),
       },
     };
+
+    const currentPoint = currentUser.point - data.usePoint;
+
+    if (currentPoint < 0) {
+      throw new CommonError("포인트가 부족합니다.", 400);
+    }
+
+    const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
+
+    const updateUser = await userRepository.updateGrade(
+      tx,
+      currentUser.id,
+      currentPoint,
+      grade.totalAmount,
+      grade.newGrade
+    );
 
     const createOrder = await orderRepository.orderSave(tx, user, orderItems);
 
