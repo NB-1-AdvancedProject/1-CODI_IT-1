@@ -189,7 +189,7 @@ async function deleteOrder(user: Token, id: string) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
-  return await orderRepository.deleteOrder(id);
+  return await orderRepository.deleteOrder(id, user.id);
 }
 
 export default {

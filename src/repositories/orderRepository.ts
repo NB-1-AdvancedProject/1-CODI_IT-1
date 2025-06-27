@@ -7,7 +7,7 @@ import {
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
-
+import CommonError from "../lib/errors/CommonError";
 
 async function orderSave(
   tx: Prisma.TransactionClient,
@@ -122,14 +122,20 @@ async function getOrder(id: string) {
   });
 }
 
-async function deleteOrder(id: string) {
-  return await prisma.order.delete({
-    where: { id, status: "PENDING" },
+async function deleteOrder(id: string, userId: string) {
+  const result = await prisma.order.deleteMany({
+    where: { id, userId, status: "PENDING" },
   });
+
+  if (result.count === 0) {
+    throw new CommonError("주문이 이미 처리 중이거나 삭제할 수 없습니다.", 400);
+  }
+
+  return true;
 }
 
 async function getOrderItem(productId: string) {
-  return prisma.orderItem.findMany({
+  prisma.orderItem.findMany({
     where: { productId: productId },
     include: {
       order: true,
