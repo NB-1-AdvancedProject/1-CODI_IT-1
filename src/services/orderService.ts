@@ -50,9 +50,9 @@ async function findOrderItems(data: CreateOrderDTO) {
 }
 
 async function calculateUserGrade(totalAmount: Decimal) {
-  const gradeTires = await orderRepository.getGrade();
+  const gradeTiers = await orderRepository.getGrade();
 
-  for (const tier of gradeTires) {
+  for (const tier of gradeTiers) {
     if (totalAmount >= new Decimal(tier.minAmount)) {
       return tier.id;
     }
