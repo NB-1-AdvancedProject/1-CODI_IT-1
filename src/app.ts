@@ -13,8 +13,10 @@ import productRouter from "./routers/productRouter";
 import cartRouter from "./routers/cartRouter";
 import { dashboardRouter } from "./routers/dashboardRouter";
 import uploadRouter from "./routers/uploadRouter";
+import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
+import orderRouter from "./routers/orderRouter";
 
 const app = express();
 app.use(express.json());
@@ -33,7 +35,9 @@ app.use("/api/review", reviewRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/s3", uploadRouter);
+app.use("/api/notifications", notificationRouter);
 app.use("/api/metadata", metadataRouter);
+app.use("/api/order", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
