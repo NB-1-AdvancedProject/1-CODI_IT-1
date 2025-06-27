@@ -192,43 +192,6 @@ async function getByGradeId(id: string) {
   return await prisma.grade.findUnique({ where: { id } });
 }
 
-async function createGrade() {
-  return await prisma.grade.createMany({
-    data: [
-      {
-        id: "grade_vip",
-        name: "VIP",
-        pointRate: 10,
-        minAmount: 1000000,
-      },
-      {
-        id: "grade_black",
-        name: "BLACK",
-        pointRate: 7,
-        minAmount: 500000,
-      },
-      {
-        id: "grade_red",
-        name: "RED",
-        pointRate: 5,
-        minAmount: 300000,
-      },
-      {
-        id: "grade_orange",
-        name: "Orange",
-        pointRate: 3,
-        minAmount: 100000,
-      },
-      {
-        id: "grade_green",
-        name: "Green",
-        pointRate: 1,
-        minAmount: 0,
-      },
-    ],
-  });
-}
-
 export default {
   orderSave,
   getProductById,
