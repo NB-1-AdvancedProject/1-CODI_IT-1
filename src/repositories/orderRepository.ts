@@ -10,7 +10,6 @@ import { Token } from "../types/user";
 import { OrderStatusType } from "../types/order";
 import CommonError from "../lib/errors/CommonError";
 
-
 async function orderSave(
   tx: Prisma.TransactionClient,
   user: Token,
@@ -147,7 +146,7 @@ async function getOrderItem(productId: string) {
 
 async function update(id: string, data: UpdateOrderDTO) {
   const updateOrder = await prisma.order.update({
-    where: { id },
+    where: { id, status: { in: ["PAID", "PENDING", "REFUNDED"] } },
     data: {
       name: data.name,
       phone: data.phone,
