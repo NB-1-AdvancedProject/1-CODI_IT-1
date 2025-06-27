@@ -10,12 +10,10 @@ import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
 import categoryService from "./categoryService";
 import prisma from "../lib/prisma";
-import {
-  createAlarmData,
-  createManyAlarm,
-} from "../repositories/notificationRepository";
+import { createAlarmData } from "../repositories/notificationRepository";
 import orderRepository from "../repositories/orderRepository";
 import { getItem } from "../repositories/cartRepository";
+import uploadService from "../services/uploadService";
 
 async function createProduct(data: CreateProductBody, userId: string) {
   const store = await storeService.getStoreByUserId(userId);
@@ -244,6 +242,13 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     discountEndTime: data.discountEndTime ?? undefined,
     isSoldOut: data.isSoldOut ?? undefined,
   };
+  const existedProduct = await productRepository.findProductById(productId);
+
+  if (!existedProduct) throw new NotFoundError("product", productId);
+
+  if (newData.image && existedProduct.image !== newData.image) {
+    await uploadService.deleteFileFromS3(existedProduct.image);
+  }
 
   let updatedProduct = await prisma.$transaction(async (tx) => {
     if (data.stocks) {
@@ -327,6 +332,7 @@ async function deleteProduct(productId: string, userId: string) {
   if (product.storeId !== store.id) {
     throw new BadRequestError("Product does not belong to your store");
   }
+  await uploadService.deleteFileFromS3(product.image);
   await productRepository.deleteById(productId);
 }
 
