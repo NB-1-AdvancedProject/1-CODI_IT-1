@@ -240,7 +240,7 @@ async function deleteOrder(user: Token, id: string) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
-  return await orderRepository.deleteOrder(id);
+  return await orderRepository.deleteOrder(id, user.id);
 }
 
 async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
@@ -253,7 +253,7 @@ async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
     throw new ForbiddenError();
   }
 
-  if (["DELIVERED", "SHIPPED"].includes(order.status)) {
+  if (["DELIVERED", "SHIPPED", "CANCELLED"].includes(order.status)) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
