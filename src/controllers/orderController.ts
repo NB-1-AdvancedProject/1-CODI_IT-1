@@ -41,3 +41,12 @@ export const getOrderDetail: RequestHandler = async (req, res) => {
 
   res.status(200).send(order);
 };
+
+export const deleteOrder: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const { id: orderId } = create(req.params, IdParamsStruct);
+
+  await orderService.deleteOrder(user, orderId);
+
+  res.status(201).send({ message: "요청하신 주문이 삭제하였습니다." });
+};

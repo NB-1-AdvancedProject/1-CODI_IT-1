@@ -306,4 +306,102 @@ describe("Order API", () => {
       expect(response.status).toBe(404);
     });
   });
+
+  describe("DELETE /api/order/:id", () => {
+    beforeEach(async () => {
+      await prisma.order.deleteMany();
+    });
+
+    test("주문 대기시 삭제 성공", async () => {
+      const order = await prisma.order.create({
+        data: {
+          userId: buyerUser.id,
+          name: buyerUser.name,
+          phone: "010-1234-1234",
+          address: "서울시 강남구 대치동",
+          status: "PENDING",
+          subtotal: product.price,
+          orderItems: {
+            create: [
+              {
+                productId: product.id,
+                sizeId: size.id,
+                quantity: 1,
+                price: product.price,
+              },
+            ],
+          },
+          usePoint: 0,
+          payment: {
+            create: {
+              status: "CompletedPayment",
+              totalPrice: product.price,
+            },
+          },
+          paidAt: new Date(),
+        },
+      });
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq.delete(`/api/order/${order.id}`).send();
+      expect(response.status).toBe(201);
+    });
+
+    test("paid 상태시 삭제 불가", async () => {
+      const order = {
+        name: "김한돌",
+        phone: "010-2345-6789",
+        address: "서울시 대충구 대강동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const res1 = await authReq.post("/api/order").send(order);
+      expect(res1.status).toBe(201);
+      const response = await authReq
+        .delete(`/api/order/${res1.body.id}`)
+        .send();
+      expect(response.status).toBe(400);
+    });
+
+    test("다른 사용자의 오더를 삭제", async () => {
+      const order = {
+        name: "김한돌",
+        phone: "010-2345-6789",
+        address: "서울시 대충구 대강동",
+        orderItems: [
+          {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: 1,
+          },
+        ],
+        usePoint: 0,
+      };
+
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const authReq2 = getAuthenticatedReq(sellerUser.id);
+      const res1 = await authReq.post("/api/order").send(order);
+      expect(res1.status).toBe(201);
+      const response = await authReq2
+        .delete(`/api/order/${res1.body.id}`)
+        .send();
+      expect(response.status).toBe(403);
+    });
+
+    test("잘못된 id 입력", async () => {
+      const authReq = getAuthenticatedReq(buyerUser.id);
+      const response = await authReq
+        .delete("/api/order/cmcd0i9l4000pdvfhjo2ax0sn")
+        .send();
+      expect(response.status).toBe(404);
+    });
+  });
 });
