@@ -120,3 +120,12 @@ export async function getIdCartItem(params: string) {
     where: { id: params },
   });
 }
+
+export async function getItem(productId: string) {
+  return prisma.cartItem.findMany({
+    where: { id: productId },
+    include: {
+      cart: true,
+    },
+  });
+}
