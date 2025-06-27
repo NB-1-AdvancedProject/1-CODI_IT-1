@@ -27,7 +27,7 @@ export async function createAlarmData(userId: string, content: string) {
   return prisma.alarm.create({
     data: {
       userId: userId,
-      content: "문의가 등록되었습니다.",
+      content: content,
     },
   });
 }
@@ -35,5 +35,29 @@ export async function createAlarmData(userId: string, content: string) {
 export async function findAlarmData(alarmId: string) {
   return prisma.alarm.findUnique({
     where: { id: alarmId },
+  });
+}
+
+export async function createManyAlarm(
+  productUserId: string,
+  orderUserId: string,
+  cartUserId: string,
+  content: string
+) {
+  return prisma.alarm.createMany({
+    data: [
+      {
+        userId: productUserId,
+        content: content,
+      },
+      {
+        userId: orderUserId,
+        content: content,
+      },
+      {
+        userId: cartUserId,
+        content: content,
+      },
+    ],
   });
 }

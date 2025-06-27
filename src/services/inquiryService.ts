@@ -110,7 +110,7 @@ export async function createRepliesData(
 
   if (replies) {
     const content = "문의 답변이 완료되었습니다.";
-    await createAlarmData(replies.user.id, content);
+    await createAlarmData(inquiry.userId, content);
   }
 
   await inquiryStatus(replies.inquiryId);

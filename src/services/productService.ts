@@ -10,7 +10,12 @@ import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
 import categoryService from "./categoryService";
 import prisma from "../lib/prisma";
-import { StockDTO } from "../lib/dto/stockDTO";
+import {
+  createAlarmData,
+  createManyAlarm,
+} from "../repositories/notificationRepository";
+import orderRepository from "../repositories/orderRepository";
+import { getItem } from "../repositories/cartRepository";
 
 async function createProduct(data: CreateProductBody, userId: string) {
   const store = await storeService.getStoreByUserId(userId);
@@ -249,8 +254,28 @@ async function updateProduct(data: PatchProductBody, productId: string) {
       newData,
       productId
     );
+
     return product;
   });
+
+  if (updatedProduct.isSoldOut || checkSoldOut(updatedProduct.stocks)) {
+    const isSoldOut = true;
+    await productRepository.update({ isSoldOut }, updatedProduct.id);
+    const order = await orderRepository.getOrderItem(updatedProduct.id);
+    const orderIds = order.map((o) => o.order.userId);
+    const cart = await getItem(updatedProduct.id);
+    const cartIds = cart.map((c) => c.cart.userId);
+    const userIdSet = new Set([
+      ...orderIds,
+      ...cartIds,
+      updatedProduct.store.userId,
+    ]);
+    const content = "상품이 품절 되었습니다.";
+
+    for (const userId of userIdSet) {
+      await createAlarmData(userId, content);
+    }
+  }
 
   const refreshedProduct = await checkAndUpdateDiscountState(
     updatedProduct.discountEndTime,

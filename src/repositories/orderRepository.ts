@@ -121,10 +121,20 @@ async function getOrder(user: Token, id: string) {
   });
 }
 
+async function getOrderItem(productId: string) {
+  return prisma.orderItem.findMany({
+    where: { productId: productId },
+    include: {
+      order: true,
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
   getOrderList,
   getOrder,
   getStock,
+  getOrderItem,
 };
