@@ -135,7 +135,7 @@ async function deleteOrder(id: string, userId: string) {
 }
 
 async function getOrderItem(productId: string) {
-  prisma.orderItem.findMany({
+  return await prisma.orderItem.findMany({
     where: { productId: productId },
     include: {
       order: true,
