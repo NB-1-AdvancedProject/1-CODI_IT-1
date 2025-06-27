@@ -31,6 +31,7 @@ import { getStoreById } from "../repositories/storeRepository";
 import { Store } from "../types/storeType";
 import { User } from "@prisma/client";
 import productRepository from "../repositories/productRepository";
+import { createAlarmData } from "../repositories/notificationRepository";
 
 export async function getList(
   params: inquiryType,
@@ -106,6 +107,12 @@ export async function createRepliesData(
   }
 
   const replies = await createReply(user, params, reply);
+
+  if (replies) {
+    const content = "문의 답변이 완료되었습니다.";
+    await createAlarmData(inquiry.userId, content);
+  }
+
   await inquiryStatus(replies.inquiryId);
 
   return new replyResDTO(replies);
@@ -238,13 +245,17 @@ export async function postQuiry(
 
   const quiryData = await postData(params, quiry, user);
 
+  if (quiryData) {
+    const storeData = await getStoreById(product.storeId);
+    const content = "문의가 등록되었습니다.";
+    await createAlarmData(storeData.userId, content);
+  }
+
   return new InquiryResDTO(quiryData);
 }
 
 export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
   const data = await listQuiries(params);
-
-  console.log("product가 있어?", data);
 
   if (!data || data.length === 0) {
     throw new NotFoundError("Product", params);
