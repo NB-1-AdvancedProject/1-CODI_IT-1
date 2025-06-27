@@ -158,6 +158,10 @@ async function getGrade() {
   return await prisma.grade.findMany({ orderBy: { minAmount: "desc" } });
 }
 
+async function getByGradeId(id: string) {
+  return await prisma.grade.findUnique({ where: { id } });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -167,4 +171,5 @@ export default {
   deleteOrder,
   update,
   getGrade,
+  getByGradeId
 };

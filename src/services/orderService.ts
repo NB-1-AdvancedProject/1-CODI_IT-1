@@ -60,6 +60,19 @@ async function calculateUserGrade(totalAmount: Decimal) {
   return "grade_green";
 }
 
+async function calculateExpectedPoint(user: Token, subtotal: Decimal) {
+  if (!user.gradeId) return 0;
+
+  const grade = await orderRepository.getByGradeId(user.gradeId);
+
+  if (!grade || !grade.pointRate) return 0;
+
+  const rate = new Decimal(grade?.pointRate).dividedBy(100);
+  const expectedPoint = new Decimal(subtotal).times(rate);
+
+  return expectedPoint.toDecimalPlaces(0).toNumber();
+}
+
 async function updateUserGrade(user: Token, subtotal: Decimal) {
   const totalAmount = new Decimal(user.totalAmount).plus(subtotal);
   const newGrade = await calculateUserGrade(totalAmount);
@@ -125,12 +138,20 @@ async function create(user: Token, data: CreateOrderDTO) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
 
+    const point = await calculateExpectedPoint(
+      currentUser,
+      orderItemInfo.subtotal
+    );
+
+    console.log("point: ", point);
+    const finalPoint = currentPoint + point;
+    console.log("finalPoint: ", finalPoint);
     const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
 
     const updateUser = await userRepository.updateGrade(
       tx,
       currentUser.id,
-      currentPoint,
+      finalPoint,
       grade.totalAmount,
       grade.newGrade
     );
