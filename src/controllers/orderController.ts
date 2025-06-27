@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import orderService from "../services/orderService";
 import { create } from "superstruct";
-import { CreateOrder, GetOrder } from "../structs/orderStructs";
+import { CreateOrder, GetOrder, UpdateOrder } from "../structs/orderStructs";
 import { IdParamsStruct } from "../structs/commonStructs";
 
 export const createOrder: RequestHandler = async (req, res) => {
@@ -49,4 +49,14 @@ export const deleteOrder: RequestHandler = async (req, res) => {
   await orderService.deleteOrder(user, orderId);
 
   res.status(201).send({ message: "요청하신 주문이 삭제하였습니다." });
+};
+
+export const patchOrder: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const { id: orderId } = create(req.params, IdParamsStruct);
+  const data = create(req.body, UpdateOrder);
+
+  const order = await orderService.updateOrder(user, orderId, data);
+
+  res.status(201).send(order);
 };

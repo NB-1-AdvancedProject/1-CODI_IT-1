@@ -3,6 +3,7 @@ import {
   CreateOrderData,
   CreateOrderItemDTO,
   StockDTO,
+  UpdateOrderDTO,
 } from "../lib/dto/orderDTO";
 import prisma from "../lib/prisma";
 import { Token } from "../types/user";
@@ -143,6 +144,46 @@ async function getOrderItem(productId: string) {
   });
 }
 
+async function update(id: string, data: UpdateOrderDTO) {
+  return await prisma.$transaction(async (tx) => {
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+
+    if (
+      !existing ||
+      !["PAID", "PENDING", "REFUNDED"].includes(existing.status)
+    ) {
+      throw new Error("수정 불가능한 상태입니다.");
+    }
+
+    const updateOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              include: {
+                store: true,
+                stocks: { include: { size: true } },
+              },
+            },
+            size: true,
+          },
+        },
+        payment: true,
+      },
+    });
+    return updateOrder;
+  });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -150,5 +191,6 @@ export default {
   getOrder,
   getStock,
   deleteOrder,
+  update,
   getOrderItem,
 };

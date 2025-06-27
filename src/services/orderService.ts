@@ -1,4 +1,8 @@
-import { CreateOrderDTO, OrderResDTO } from "../lib/dto/orderDTO";
+import {
+  CreateOrderDTO,
+  OrderResDTO,
+  UpdateOrderDTO,
+} from "../lib/dto/orderDTO";
 import CommonError from "../lib/errors/CommonError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
@@ -192,9 +196,37 @@ async function deleteOrder(user: Token, id: string) {
   return await orderRepository.deleteOrder(id, user.id);
 }
 
+async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
+  const order = await orderRepository.getOrder(id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+  if (["DELIVERED", "SHIPPED", "CANCELLED"].includes(order.status)) {
+    throw new BadRequestError("잘못된 요청입니다.");
+  }
+
+  const updatedOrder = await orderRepository.update(id, data);
+
+  return new OrderResDTO({
+    ...updatedOrder,
+    totalQuantity: updatedOrder.orderItems.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    ),
+    orderItems: updatedOrder.orderItems,
+    payment: updatedOrder.payment,
+  });
+}
+
 export default {
   create,
   getOrderList,
   getOrder,
   deleteOrder,
+  updateOrder,
 };
