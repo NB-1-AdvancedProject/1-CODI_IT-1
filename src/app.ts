@@ -17,9 +17,12 @@ import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
 import orderRouter from "./routers/orderRouter";
+import passport from "passport";
 
 const app = express();
 app.use(express.json());
+
+app.use(passport.initialize());
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
@@ -41,6 +44,7 @@ app.use("/api/order", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
+
 // swagger
 if (process.env.NODE_ENV !== "production") {
   const swaggerDocument = YAML.load("./swagger/swagger.yaml");

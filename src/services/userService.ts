@@ -118,6 +118,21 @@ async function getFavoriteStore(userId: string) {
   return store.map((store) => new FavoriteResDTO(userId, store));
 }
 
+async function oauthCreateOrUpdate(
+  provider: string,
+  providerId: string,
+  email: string,
+  name: string
+) {
+  const user = await userRepository.creatOrUpdate(
+    provider,
+    providerId,
+    email,
+    name
+  );
+  return filterSensitiveUserData(user);
+}
+
 export default {
   getUser,
   getById,
@@ -127,4 +142,5 @@ export default {
   updateUser,
   deletedUser,
   getFavoriteStore,
+  oauthCreateOrUpdate,
 };

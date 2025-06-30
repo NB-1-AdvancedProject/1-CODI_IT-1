@@ -13,3 +13,5 @@ export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "";
 export const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "";
 export const MAX_RETRIES = 5;
 export const INITIAL_BACKOFF_MS = 100;
+export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
