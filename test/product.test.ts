@@ -28,6 +28,11 @@ import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import app from "../src/app";
 import request from "supertest";
+import uploadService from "../src/services/uploadService";
+
+jest.mock("../src/services/uploadService", () => ({
+  deleteFileFromS3: jest.fn(),
+}));
 
 describe("Product API 테스트", () => {
   let sellerUser1: User;
@@ -92,7 +97,6 @@ describe("Product API 테스트", () => {
 
     const body = response.body;
 
-    // 기본 필드
     expect(body.name).toBe("가디건");
     expect(body.image).toBe("https://s3-URL");
     expect(body.content).toBe("상품 상세 설명");
@@ -109,22 +113,18 @@ describe("Product API 테스트", () => {
     expect(body).toHaveProperty("discountEndTime");
     expect(body).toHaveProperty("reviewsCount");
 
-    // reviews 배열
     expect(body).toHaveProperty("reviews");
     expect(Array.isArray(body.reviews)).toBe(true);
 
-    // inquiries 배열
     expect(body).toHaveProperty("inquiries");
     expect(Array.isArray(body.inquiries)).toBe(true);
 
-    // category 배열
     expect(body).toHaveProperty("category");
     expect(Array.isArray(body.category)).toBe(true);
     const category = body.category[0];
     expect(category).toHaveProperty("id");
     expect(category.name).toBe("clothing");
 
-    // stocks 배열
     expect(body).toHaveProperty("stocks");
     expect(Array.isArray(body.stocks)).toBe(true);
     const stock = body.stocks[0];
@@ -269,6 +269,18 @@ describe("Product API 테스트", () => {
   });
   describe("PATCH /products/:id - 상품 수정", () => {
     test("기본 수정 테스트", async () => {
+      //uploadService.deleteFileFromS3 가 리턴하는 예시값
+      (uploadService.deleteFileFromS3 as jest.Mock).mockResolvedValue({
+        $metadata: {
+          httpStatusCode: 204,
+          requestId: "NYP3WZSRC5GP0NCE",
+          extendedRequestId:
+            "/KMcozw+cGAMxisc2+hN2suEl7H53DxdxAn5O6l4yaFh5WQ+BV3kOr2W2zUNA9Os4fWhubAkZqEIL2Np3oDtWMJSOzTJE9yD9SifTN9JIpc=",
+          attempts: 1,
+          totalRetryDelay: 0,
+        },
+      });
+
       const authReq = getAuthenticatedReq(sellerUser1.id);
       const response = await authReq.patch("/api/products/product1-id").send({
         name: "Updated Product",
@@ -288,6 +300,7 @@ describe("Product API 테스트", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe("Updated Product");
       expect(response.body.stocks.length).toBeGreaterThan(0);
+      expect(uploadService.deleteFileFromS3).toHaveBeenCalled();
     });
 
     test("일부 필드만 수정", async () => {
@@ -316,9 +329,27 @@ describe("Product API 테스트", () => {
       });
       expect(response.status).toBe(401);
     });
+    test("존재 하지않는 상품ID 를 입력했을경우 Not Found Error 반환함", async () => {
+      const authReq = getAuthenticatedReq(sellerUser1.id);
+      const response = await authReq
+        .patch("/api/products/product10-id")
+        .send({});
+      expect(response.status).toBe(404);
+    });
   });
   describe("DELETE /api/products/:id - 상품 삭제", () => {
     test("기본 삭제 테스트", async () => {
+      //uploadService.deleteFileFromS3 가 리턴하는 예시값
+      (uploadService.deleteFileFromS3 as jest.Mock).mockResolvedValue({
+        $metadata: {
+          httpStatusCode: 204,
+          requestId: "NYP3WZSRC5GP0NCE",
+          extendedRequestId:
+            "/KMcozw+cGAMxisc2+hN2suEl7H53DxdxAn5O6l4yaFh5WQ+BV3kOr2W2zUNA9Os4fWhubAkZqEIL2Np3oDtWMJSOzTJE9yD9SifTN9JIpc=",
+          attempts: 1,
+          totalRetryDelay: 0,
+        },
+      });
       const authReq = getAuthenticatedReq(sellerUser1.id);
 
       const deleteResponse = await authReq.delete("/api/products/product1-id");

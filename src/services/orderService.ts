@@ -1,13 +1,23 @@
-import { CreateOrderDTO, OrderResDTO } from "../lib/dto/orderDTO";
+
+import {
+  CreateOrderDTO,
+  OrderResDTO,
+  UpdateOrderDTO,
+} from "../lib/dto/orderDTO";
 import CommonError from "../lib/errors/CommonError";
 import NotFoundError from "../lib/errors/NotFoundError";
 import prisma from "../lib/prisma";
-
+import orderRepository from "../repositories/orderRepository";
 import { OrderStatusType } from "../types/order";
 import { Token } from "../types/user";
 import userRepository from "../repositories/userRepository";
 import productService from "./productService";
 import { Decimal } from "@prisma/client/runtime/library";
+
+import ForbiddenError from "../lib/errors/ForbiddenError";
+import BadRequestError from "../lib/errors/BadRequestError";
+import stockRepository from "../repositories/stockRepository";
+
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -42,6 +52,38 @@ async function findOrderItems(data: CreateOrderDTO) {
   return { items: products, subtotal };
 }
 
+async function calculateUserGrade(totalAmount: Decimal) {
+  const gradeTiers = await orderRepository.getGrade();
+
+  for (const tier of gradeTiers) {
+    if (totalAmount >= new Decimal(tier.minAmount)) {
+      return tier.id;
+    }
+  }
+  return "grade_green";
+}
+
+async function calculateExpectedPoint(user: Token, subtotal: Decimal) {
+  if (!user.gradeId) return 0;
+
+  const grade = await orderRepository.getByGradeId(user.gradeId);
+
+  if (!grade || !grade.pointRate) return 0;
+
+  const rate = new Decimal(grade?.pointRate).dividedBy(100);
+  const expectedPoint = new Decimal(subtotal).times(rate);
+
+  return expectedPoint.toDecimalPlaces(0).toNumber();
+}
+
+async function updateUserGrade(user: Token, subtotal: Decimal) {
+  const totalAmount = new Decimal(user.totalAmount).plus(subtotal);
+  const newGrade = await calculateUserGrade(totalAmount);
+
+  return { totalAmount, newGrade };
+}
+
+
 async function create(user: Token, data: CreateOrderDTO) {
   const orderItemInfo = await findOrderItems(data);
 
@@ -51,19 +93,9 @@ async function create(user: Token, data: CreateOrderDTO) {
   }
 
   const order = await prisma.$transaction(async (tx) => {
-    const newPoint = currentUser.point - data.usePoint;
-
-    if (newPoint < 0) {
+    if (currentUser.point < data.usePoint) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
-
-    const updateUser = await tx.user.update({
-      where: { id: user.id },
-      data: {
-        point: newPoint,
-      },
-    });
-    console.log(`${updateUser.id}의 잔여 포인트는 ${updateUser.point}입니다.`);
 
     for (const item of data.orderItems) {
       const stockToUpdate = await orderRepository.getStock(tx, item);
@@ -84,14 +116,10 @@ async function create(user: Token, data: CreateOrderDTO) {
         throw new CommonError("재고가 부족 합니다.", 400);
       }
 
-      const updateStock = await tx.stock.update({
+      const updateStock = await stockRepository.updateStockTx(tx, {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
-
-      console.log(
-        `${updateStock.id}의 잔여 수량은 ${updateStock.quantity}입니다.`
-      );
     }
 
     const orderItems = {
@@ -107,6 +135,28 @@ async function create(user: Token, data: CreateOrderDTO) {
         totalPrice: orderItemInfo.subtotal.sub(data.usePoint),
       },
     };
+
+    const currentPoint = currentUser.point - data.usePoint;
+
+    if (currentPoint < 0) {
+      throw new CommonError("포인트가 부족합니다.", 400);
+    }
+
+    const point = await calculateExpectedPoint(
+      currentUser,
+      orderItemInfo.subtotal
+    );
+
+    const finalPoint = currentPoint + point;
+    const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
+
+    const updateUser = await userRepository.updateGrade(
+      tx,
+      currentUser.id,
+      finalPoint,
+      grade.totalAmount,
+      grade.newGrade
+    );
 
     const createOrder = await orderRepository.orderSave(tx, user, orderItems);
 
@@ -133,7 +183,7 @@ async function getOrderList(
   orderBy: string,
   status?: OrderStatusType
 ) {
-  const orderList = await orderRepository.getOrder(
+  const orderList = await orderRepository.getOrderList(
     user,
     page,
     limit,
@@ -157,7 +207,75 @@ async function getOrderList(
   return orderResList;
 }
 
+async function getOrder(user: Token, id: string) {
+  const order = await orderRepository.getOrder(id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+  return new OrderResDTO({
+    ...order,
+    totalQuantity: order.orderItems.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    ),
+    orderItems: order.orderItems,
+    payment: order.payment,
+  });
+}
+
+async function deleteOrder(user: Token, id: string) {
+  const order = await orderRepository.getOrder(id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+  if (order.status !== "PENDING") {
+    throw new BadRequestError("잘못된 요청입니다.");
+  }
+
+  return await orderRepository.deleteOrder(id, user.id);
+}
+
+async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
+  const order = await orderRepository.getOrder(id);
+  if (!order) {
+    throw new NotFoundError("order", id);
+  }
+
+  if (order.userId !== user.id) {
+    throw new ForbiddenError();
+  }
+
+  if (["DELIVERED", "SHIPPED", "CANCELLED"].includes(order.status)) {
+    throw new BadRequestError("잘못된 요청입니다.");
+  }
+
+  const updatedOrder = await orderRepository.update(id, data);
+
+  return new OrderResDTO({
+    ...updatedOrder,
+    totalQuantity: updatedOrder.orderItems.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    ),
+    orderItems: updatedOrder.orderItems,
+    payment: updatedOrder.payment,
+  });
+}
+
 export default {
   create,
   getOrderList,
+  getOrder,
+  deleteOrder,
+  updateOrder,
 };

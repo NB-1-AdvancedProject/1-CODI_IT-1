@@ -10,7 +10,10 @@ import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
 import categoryService from "./categoryService";
 import prisma from "../lib/prisma";
-import { StockDTO } from "../lib/dto/stockDTO";
+import { createAlarmData } from "../repositories/notificationRepository";
+import orderRepository from "../repositories/orderRepository";
+import { getItem } from "../repositories/cartRepository";
+import uploadService from "../services/uploadService";
 
 async function createProduct(data: CreateProductBody, userId: string) {
   const store = await storeService.getStoreByUserId(userId);
@@ -239,6 +242,13 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     discountEndTime: data.discountEndTime ?? undefined,
     isSoldOut: data.isSoldOut ?? undefined,
   };
+  const existedProduct = await productRepository.findProductById(productId);
+
+  if (!existedProduct) throw new NotFoundError("product", productId);
+
+  if (newData.image && existedProduct.image !== newData.image) {
+    await uploadService.deleteFileFromS3(existedProduct.image);
+  }
 
   let updatedProduct = await prisma.$transaction(async (tx) => {
     if (data.stocks) {
@@ -249,8 +259,30 @@ async function updateProduct(data: PatchProductBody, productId: string) {
       newData,
       productId
     );
+
     return product;
   });
+
+  if (updatedProduct.isSoldOut || checkSoldOut(updatedProduct.stocks)) {
+    const isSoldOut = true;
+    await productRepository.update({ isSoldOut }, updatedProduct.id);
+    const order = await orderRepository.getOrderItem(updatedProduct.id);
+    const orderIds = order
+      .filter((o) => o.order.status === "PENDING")
+      .map((o) => o.order.userId);
+    const cart = await getItem(updatedProduct.id);
+    const cartIds = cart.map((c) => c.cart.userId);
+    const userIdSet = new Set([
+      ...orderIds,
+      ...cartIds,
+      ...(data.isSoldOut ? [] : [updatedProduct.store.userId]),
+    ]);
+    const content = "상품이 품절 되었습니다.";
+
+    for (const userId of userIdSet) {
+      await createAlarmData(userId, content);
+    }
+  }
 
   const refreshedProduct = await checkAndUpdateDiscountState(
     updatedProduct.discountEndTime,
@@ -300,6 +332,7 @@ async function deleteProduct(productId: string, userId: string) {
   if (product.storeId !== store.id) {
     throw new BadRequestError("Product does not belong to your store");
   }
+  await uploadService.deleteFileFromS3(product.image);
   await productRepository.deleteById(productId);
 }
 
