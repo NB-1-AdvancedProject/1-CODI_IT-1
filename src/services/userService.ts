@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
-import { User } from "../types/user";
+import { Token, User } from "../types/user";
 import {
   CreateUserDTO,
   UpdateUserDTO,
@@ -17,7 +17,7 @@ async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
 
-function filterSensitiveUserData(user: User) {
+function filterSensitiveUserData(user: User): Token {
   const { password, ...rest } = user;
   return rest;
 }

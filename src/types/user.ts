@@ -9,7 +9,7 @@ export interface User {
   type: UserType;
   point: number;
   gradeId: string | null;
-  grace?: string | null;
+  grade?: Grade | null;
   image?: string | null;
   totalAmount: Decimal;
   createdAt: Date;

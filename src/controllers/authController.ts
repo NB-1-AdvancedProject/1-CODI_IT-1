@@ -51,3 +51,15 @@ export const refreshToken: RequestHandler = async (req, res) => {
     refreshToken: update.refreshToken,
   });
 };
+
+export const googleToken: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const accessToken = await authService.createToken(user, "access");
+  const refreshToken = await authService.createToken(user, "refresh");
+
+  await authService.saveToken(user.id, refreshToken);
+
+  res.status(200).json({
+    accessToken: accessToken,
+  });
+};
