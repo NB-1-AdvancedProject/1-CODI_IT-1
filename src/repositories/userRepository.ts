@@ -91,7 +91,6 @@ async function updateGrade(
 async function creatOrUpdate(
   provider: string,
   providerId: string,
-  email: string,
   name: string
 ) {
   return await prisma.user.upsert({
@@ -99,10 +98,9 @@ async function creatOrUpdate(
       provider,
       providerId,
     },
-    update: { email, name },
-    create: { provider, providerId, email, name },
+    update: { name },
+    create: { provider, providerId, name },
   });
-
 }
 
 export default {
@@ -113,5 +111,5 @@ export default {
   deletedUser,
   getFavorite,
   updateGrade,
-  creatOrUpdate
+  creatOrUpdate,
 };

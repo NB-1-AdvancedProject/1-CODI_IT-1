@@ -25,6 +25,25 @@ export const login: RequestHandler = async (req, res) => {
   });
 };
 
+export const oauthLogin: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const accessToken = await authService.createToken(user, "access");
+  const refreshToken = await authService.createToken(user, "refresh");
+
+  await authService.saveToken(user.id, refreshToken);
+
+  res.status(200).json({
+    user: {
+      id: user.id,
+      email: user.email,
+      type: user.type,
+      points: user.point,
+    },
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  });
+};
+
 export const logout: RequestHandler = async (req, res) => {
   const userId = req.user!.id;
   await authService.logout(userId);

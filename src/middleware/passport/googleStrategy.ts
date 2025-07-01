@@ -6,7 +6,7 @@ import { Request } from "express";
 const googleStrategyOptions = {
   clientID: GOOGLE_CLIENT_ID!,
   clientSecret: GOOGLE_CLIENT_SECRET!,
-  callbackURL: "/auth/google",
+  callbackURL: "/auth/google/callback",
   passReqToCallback: true as const,  //ture 로 인식을 못해서 강제 인식
 };
 
@@ -20,7 +20,6 @@ async function verity(
   const user = await userService.oauthCreateOrUpdate(
     profile.provider,
     profile.id,
-    profile.emails[0].value,
     profile.displayName
   );
   done(null, user);

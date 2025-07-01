@@ -15,3 +15,5 @@ export const MAX_RETRIES = 5;
 export const INITIAL_BACKOFF_MS = 100;
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+export const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
+export const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
