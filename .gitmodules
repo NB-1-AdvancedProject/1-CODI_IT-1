@@ -1,0 +1,3 @@
+[submodule "dist"]
+	path = dist
+	url = https://github.com/NB-1-AdvancedProject/1-CODI_IT-1-Build.git
