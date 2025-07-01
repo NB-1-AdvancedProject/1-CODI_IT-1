@@ -35,6 +35,19 @@ authRouter.get(
   }),
   oauthLogin
 );
+
+authRouter.get(
+  "/auth/naver",
+  passport.authenticate("naver", { failureRedirect: "#!/login" })
+);
+authRouter.get(
+  "/auth/naver/callback",
+  passport.authenticate("naver", {
+    failureRedirect: "#!/login",
+    session: false,
+  }),
+  oauthLogin
+);
 authRouter.post("/login", asyncHandler(login));
 authRouter.post("/logout", authMiddleware, asyncHandler(logout));
 authRouter.post("/refresh", asyncHandler(refreshToken));

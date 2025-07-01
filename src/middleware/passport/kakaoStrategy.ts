@@ -2,6 +2,8 @@ import { KAKAO_CLIENT_ID, KAKAO_CLIENT_SECRET } from "../../lib/constants";
 import { Strategy as KakaoStrategy } from "passport-kakao";
 import userService from "../../services/userService";
 import { Request } from "express";
+import { VerifyCallback } from "passport-google-oauth20";
+import { Profile as PassportProfile } from "passport";
 
 const kakaoStrategyOptions = {
   clientID: KAKAO_CLIENT_ID!,
@@ -14,8 +16,8 @@ async function kakaoverity(
   req: Request,
   accessToken: string,
   refreshToken: string,
-  profile: any,
-  done: any
+  profile: PassportProfile & { _json?: any },
+  done: VerifyCallback
 ) {
   const kakaoName = profile._json.properties?.nickname || "Unknown";
   const user = await userService.oauthCreateOrUpdate(

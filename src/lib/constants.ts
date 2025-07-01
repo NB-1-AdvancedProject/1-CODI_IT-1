@@ -17,3 +17,5 @@ export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 export const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
 export const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
+export const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+export const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;

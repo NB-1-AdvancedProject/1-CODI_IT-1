@@ -2,20 +2,22 @@ import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../../lib/constants";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import userService from "../../services/userService";
 import { Request } from "express";
+import { VerifyCallback } from "passport-google-oauth20";
+import { Profile as PassportProfile } from "passport";
 
 const googleStrategyOptions = {
   clientID: GOOGLE_CLIENT_ID!,
   clientSecret: GOOGLE_CLIENT_SECRET!,
   callbackURL: "/auth/google/callback",
-  passReqToCallback: true as const,  //ture 로 인식을 못해서 강제 인식
+  passReqToCallback: true as const, //ture 로 인식을 못해서 강제 인식
 };
 
 async function verity(
   req: Request,
   accessToken: string,
   refreshToken: string,
-  profile: any,
-  done: any
+  profile: PassportProfile & { _json?: any },
+  done: VerifyCallback
 ) {
   const user = await userService.oauthCreateOrUpdate(
     profile.provider,
