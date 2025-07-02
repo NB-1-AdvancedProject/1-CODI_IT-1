@@ -23,7 +23,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
     "redis": "^5.5.6",
-    "superstruct": "^2.0.2"
+    "superstruct": "^2.0.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -33,6 +34,7 @@
     "@types/multer": "^1.4.13",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/winston": "^2.4.4",
     "@types/yamljs": "^0.2.34",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0",
