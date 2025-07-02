@@ -30,6 +30,6 @@ jobs:
             git pull origin main # 코드 최신화
             npm install
             npx prisma generate
-            npx prisma:deploy
+            npm run prisma:deploy
             pm2 reload npm # PM2로 재실행
             echo "Deployment successful!"
