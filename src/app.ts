@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  res.status(200).json({ status: "ok", version: "1.0.0" });
 });
 
 app.use("/api/inquiries", inquiryRouter);
