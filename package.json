@@ -8,7 +8,7 @@
     "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed:deploy"
+    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed"
   },
   "author": "",
   "license": "ISC",
@@ -49,7 +49,6 @@
     "yamljs": "^0.3.0"
   },
   "prisma": {
-    "seed": "ts-node prisma/seedDeploy.ts",
-    "seed:deploy": "node dist/src/seedDeploy.js"
+    "seed": "ts-node prisma/seedDeploy.ts"
   }
 }
