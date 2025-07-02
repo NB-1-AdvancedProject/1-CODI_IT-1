@@ -43,14 +43,6 @@ export type CreateOrderData = {
   };
 };
 
-export type UpdateUserDTO = {
-  id: string;
-  name?: string;
-  password?: string;
-  image?: string | null;
-  currentPassword: string;
-};
-
 export type StockDTO = {
   productId: string;
   sizeId: string;

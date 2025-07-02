@@ -20,31 +20,31 @@ export const GradeMocks: GradeMock[] = [
   {
     id: "grade_vip",
     name: "VIP",
-    pointRate: 1,
+    pointRate: 10,
     minAmount: 1000000,
   },
   {
     id: "grade_black",
     name: "BLACK",
-    pointRate: 2,
+    pointRate: 7,
     minAmount: 500000,
   },
   {
     id: "grade_red",
     name: "RED",
-    pointRate: 3,
+    pointRate: 5,
     minAmount: 300000,
   },
   {
     id: "grade_orange",
     name: "Orange",
-    pointRate: 4,
+    pointRate: 3,
     minAmount: 100000,
   },
   {
     id: "grade_green",
     name: "Green",
-    pointRate: 5,
+    pointRate: 1,
     minAmount: 0,
   },
 ];

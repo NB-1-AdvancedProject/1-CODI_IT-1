@@ -35,14 +35,16 @@ enum PaymentStatus {
 
 model User {
   id          String    @id @default(cuid())
-  email       String    @unique
-  password    String
+  email       String?   @unique
+  password    String?
   name        String
   type        UserType  @default(BUYER)
   point       Int       @default(0)
   grade       Grade?    @relation(fields: [gradeId], references: [id])
   gradeId     String?
   image       String?
+  provider    String    @default("local")
+  providerId  String?   @unique
   totalAmount Decimal   @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
