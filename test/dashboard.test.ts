@@ -70,6 +70,10 @@ describe("GET /api/dashboard", () => {
   });
   describe("성공", () => {
     test("기본동작: 판매자는 대시보드 데이터를 성공적으로 잘 가져옴", async () => {
+      const fixedDate = new Date("2025-07-25T00:00:00Z");
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] });
+      jest.setSystemTime(fixedDate);
+
       const now = new Date();
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
@@ -196,6 +200,7 @@ describe("GET /api/dashboard", () => {
       expect(response.body.priceRange[3].priceRange).toBe("십만원 초과");
       expect(response.body.priceRange[3].totalSales).toBe(150000);
       expect(response.body.priceRange[3].percentage).toBe(36);
+      jest.useRealTimers();
     });
   });
   describe("오류", () => {
