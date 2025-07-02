@@ -3,9 +3,9 @@ import { Decimal } from "@prisma/client/runtime/library";
 
 export interface User {
   id: string;
-  email: string;
+  email?: string | null;
   name: string;
-  password: string;
+  password?: string | null;
   type: UserType;
   point: number;
   gradeId: string | null;

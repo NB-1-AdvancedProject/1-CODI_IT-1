@@ -12,6 +12,7 @@ import {
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import UnauthError from "../lib/errors/UnauthError";
 import { StoreResDTO } from "../lib/dto/storeDTO";
+import BadRequestError from "../lib/errors/BadRequestError";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -46,6 +47,10 @@ async function getUser(email: string, password: string) {
 
   if (!user || user.deletedAt) {
     throw new NotFoundError("User", email);
+  }
+
+  if (!user.password || !user.email) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
   }
 
   await authService.verifyPassword(password, user.password);
@@ -86,6 +91,10 @@ async function updateUser(data: UpdateUserDTO) {
 
   const hashedPassword = await hashingPassword(data.currentPassword);
 
+  if (!user.password) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
+  }
+
   if (!(await bcrypt.compare(data.currentPassword, user.password))) {
     throw new UnauthError();
   }
@@ -123,11 +132,7 @@ async function oauthCreateOrUpdate(
   providerId: string,
   name: string
 ) {
-  const user = await userRepository.creatOrUpdate(
-    provider,
-    providerId,
-    name
-  );
+  const user = await userRepository.creatOrUpdate(provider, providerId, name);
   return filterSensitiveUserData(user);
 }
 
