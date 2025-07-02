@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node --max-old-space-size=2048 ./node_modules/.bin/tsc",
     "start": "node dist/src/main.js",
     "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed"
+    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed:deploy"
   },
   "author": "",
   "license": "ISC",
@@ -49,6 +49,7 @@
     "yamljs": "^0.3.0"
   },
   "prisma": {
-    "seed": "ts-node prisma/seedDeploy.ts"
+    "seed": "ts-node prisma/seedDeploy.ts",
+    "seed:deploy": "node dist/src/seedDeploy.js"
   }
 }
