@@ -149,7 +149,7 @@ def main():
             
             # 추천 아이템 목록을 JSON 형식으로 준비
             recommended_items_list = [
-                {"id": int(rec_id), "score": round(float(score), 4)} 
+                {"id": rec_id, "score": round(float(score), 4)} 
                 for rec_id, score in top_5_recs.items() if score > 0
             ]
             
@@ -172,11 +172,11 @@ def main():
         # ON CONFLICT (item_id) DO UPDATE: item_id가 이미 존재하면 업데이트, 없으면 삽입
         # 정은 Todo : schema 에 Recommendation 이라는 모델을 추가해야 함!
         insert_update_query = """
-            INSERT INTO "Recommendation" (productId, recommendedItems, updatedAt)
+            INSERT INTO "Recommendation" ("productId", recommendations, "updatedAt")
             VALUES (%s, %s, %s)
-            ON CONFLICT (item_id) DO UPDATE SET
-                recommendedItems = EXCLUDED.recommendedItems,
-                updatedAt = EXCLUDED.updatedAt;
+            ON CONFLICT ("productId") DO UPDATE SET
+                recommendations = EXCLUDED.recommendations,
+                "updatedAt" = EXCLUDED."updatedAt";
         """
         cursor.executemany(insert_update_query, recommendations_for_db)
         conn.commit()
