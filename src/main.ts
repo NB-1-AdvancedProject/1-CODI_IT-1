@@ -1,4 +1,6 @@
 import "./utils/logger";
+
+import "./utils/tracing";
 import app from "./app";
 
 app.listen(3000, () => {

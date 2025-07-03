@@ -99,6 +99,18 @@ services:
     networks:
       - observability-net
 
+  grafana-agent:
+    image: grafana/agent:latest
+    container_name: grafana-agent
+    volumes:
+      - ./observability/agent/agent.yaml:/etc/agent.yaml
+    command: ["agent", "run", "--config.file=/etc/agent.yaml"]
+    ports:
+      - "4318:4318"
+      - "12345:12345"
+    networks:
+      - observability-net
+
 networks:
   observability-net:
 

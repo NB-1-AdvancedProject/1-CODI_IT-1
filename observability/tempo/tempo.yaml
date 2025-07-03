@@ -5,7 +5,9 @@ distributor: # 트레이싱 데이터를 수신하고 처리하는 역할
     otlp: # OpenTelemetry Protocol (OTLP)기반으로 데이터 받음
       protocols: # 어떤 방식으로 받을지(여기서는 grpc 와 http 둘 다 허용)
         grpc:
+          endpoint: 0.0.0.0:4317
         http:
+          endpoint: 0.0.0.0:4318
 
 storage: # 트레이싱 데이터를 저장하는 방식 설정
   trace: # 트레이싱 데이터 저장소 설정

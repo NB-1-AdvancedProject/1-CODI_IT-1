@@ -1,0 +1,19 @@
+server:
+  log_level: info # 로그 레벨 (info/ debug/ error 등)
+  http_listen_port: 12345 # Agent 자체의 상태를 확인할 수 있는 포
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318" #OpenTelemetry SDK에서 전송하는 트레이스를 HTTP로 수신
+
+exporters:
+  tempo:
+    endpoint: "http://tempo:4317" # 수신된 트레이스를 Tempo 컨테이너로 전달 (gRPC 포트)
+
+service:
+  pipelines:
+    traces: # "traces"용 파이프라인 (metrics도 가능)
+      receivers: [otlp] #위에서 정의한 OTLP 수신기로부터 받고
+      exporters: [tempo] #위에서 정의한 Tempo로 내보냄
