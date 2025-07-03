@@ -4,7 +4,7 @@ import prisma from "../src/lib/prisma";
 import bcrypt from "bcrypt";
 import { clearDatabase, getAuthenticatedReq } from "./testUtil";
 import authService from "../src/services/authService";
-import { connectRedis, getRedisClient } from "../src/utils/redis";
+import { connectRedis, getRedisClient } from "../src/lib/redis";
 import { User } from "../src/types/user";
 
 describe("로그인 테스트", () => {

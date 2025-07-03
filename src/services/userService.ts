@@ -130,9 +130,15 @@ async function getFavoriteStore(userId: string) {
 async function oauthCreateOrUpdate(
   provider: string,
   providerId: string,
-  name: string
+  name: string,
+  email?: string
 ) {
-  const user = await userRepository.creatOrUpdate(provider, providerId, name);
+  const user = await userRepository.creatOrUpdate(
+    provider,
+    providerId,
+    name,
+    email
+  );
   return filterSensitiveUserData(user);
 }
 

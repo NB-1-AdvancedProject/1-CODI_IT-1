@@ -4,11 +4,12 @@ import { NAVER_CLIENT_ID, NAVER_CLIENT_SECRET } from "../../lib/constants";
 import userService from "../../services/userService";
 import { VerifyCallback } from "passport-google-oauth20";
 import { Profile as PassportProfile } from "passport";
+import BadRequestError from "../../lib/errors/BadRequestError";
 
 const naverStrategyOptions = {
   clientID: NAVER_CLIENT_ID!,
   clientSecret: NAVER_CLIENT_SECRET!,
-  callbackURL: "/auth/naver/callback",
+  callbackURL: "http://localhost:3000/api/auth/naver/callback",
   passReqToCallback: true as const,
 };
 
@@ -19,10 +20,14 @@ async function naverVerity(
   profile: PassportProfile & { _json?: any },
   done: VerifyCallback
 ) {
+  const email = profile.emails?.[0]?.value;
+  const userName = profile?.displayName ?? "Guest";
+
   const user = await userService.oauthCreateOrUpdate(
     profile.provider,
     profile.id,
-    profile.displayName
+    userName,
+    email
   );
   done(null, user);
 }

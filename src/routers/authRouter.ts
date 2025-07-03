@@ -7,16 +7,16 @@ import {
 } from "../controllers/authController";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { asyncHandler } from "../middleware/asyncHandler";
-import passport from "passport";
+import passport from "../lib/passport";
 
 const authRouter = Router();
 
 authRouter.get(
-  "/auth/google",
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 authRouter.get(
-  "/auth/google/callback",
+  "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "#!/login",
     session: false,
@@ -24,11 +24,11 @@ authRouter.get(
   oauthLogin
 );
 authRouter.get(
-  "/auth/kakao",
+  "/kakao",
   passport.authenticate("kakao", { failureRedirect: "#!/login" })
 );
 authRouter.get(
-  "/auth/kakao/callback",
+  "/kakao/callback",
   passport.authenticate("kakao", {
     failureRedirect: "#!/login",
     session: false,
@@ -37,11 +37,11 @@ authRouter.get(
 );
 
 authRouter.get(
-  "/auth/naver",
+  "/naver",
   passport.authenticate("naver", { failureRedirect: "#!/login" })
 );
 authRouter.get(
-  "/auth/naver/callback",
+  "/naver/callback",
   passport.authenticate("naver", {
     failureRedirect: "#!/login",
     session: false,

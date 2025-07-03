@@ -91,15 +91,31 @@ async function updateGrade(
 async function creatOrUpdate(
   provider: string,
   providerId: string,
-  name: string
+  name: string,
+  email?: string
 ) {
+  const grade = await prisma.grade.upsert({
+    where: { id: "grade_green" },
+    update: {},
+    create: {
+      id: "grade_green",
+      name: "green",
+      pointRate: 1,
+      minAmount: 100000,
+    },
+  });
   return await prisma.user.upsert({
     where: {
-      provider,
       providerId,
     },
-    update: { name },
-    create: { provider, providerId, name },
+    update: { name, ...(email && { email }) },
+    create: {
+      provider,
+      providerId,
+      name,
+      gradeId: grade.id,
+      ...(email && { email }),
+    },
   });
 }
 

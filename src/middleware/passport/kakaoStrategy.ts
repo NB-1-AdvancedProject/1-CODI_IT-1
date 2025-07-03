@@ -4,11 +4,12 @@ import userService from "../../services/userService";
 import { Request } from "express";
 import { VerifyCallback } from "passport-google-oauth20";
 import { Profile as PassportProfile } from "passport";
+import BadRequestError from "../../lib/errors/BadRequestError";
 
 const kakaoStrategyOptions = {
   clientID: KAKAO_CLIENT_ID!,
   clientSecret: KAKAO_CLIENT_SECRET!,
-  callbackURL: "/auth/kakao/callback",
+  callbackURL: "http://localhost:3000/api/auth/kakao/callback",
   passReqToCallback: true as const,
 };
 
@@ -22,7 +23,7 @@ async function kakaoverity(
   const kakaoName = profile._json.properties?.nickname || "Unknown";
   const user = await userService.oauthCreateOrUpdate(
     profile.provider,
-    profile.id,
+    String(profile.id),
     kakaoName
   );
   done(null, user);
