@@ -4,16 +4,18 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build:deploy": "node --max-old-space-size=2048 ./node_modules/.bin/tsc",
     "start": "node dist/src/main.js",
-    "test": "dotenv -e .env.test -- npm run prisma:migrate && dotenv -e .env.test -- jest -i --coverage",
+    "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy"
+    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.832.0",
     "@prisma/client": "^6.9.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
@@ -33,6 +35,8 @@
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
+    "aws-sdk-client-mock": "^4.1.0",
+    "aws-sdk-client-mock-jest": "^4.1.0",
     "dotenv-cli": "^8.0.0",
     "jest": "^30.0.0",
     "nodemon": "^3.1.10",
@@ -44,5 +48,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "yamljs": "^0.3.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seedDeploy.ts"
   }
 }

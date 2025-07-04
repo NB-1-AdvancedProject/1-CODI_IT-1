@@ -45,28 +45,6 @@ export const category1 = {
   name: "의류",
 };
 
-export const fullProduct = {
-  id: "product1-id",
-  name: "가디건",
-  price: 100,
-  image: "https://s3-url",
-  content: "상품 상세 설명",
-  category: {
-    connect: { id: "category1-id" },
-  },
-  store: {
-    connect: { id: "store1-id" },
-  },
-  stocks: {
-    create: [
-      {
-        size: { connect: { id: "size1-id" } },
-        quantity: 10,
-      },
-    ],
-  },
-};
-
 export const seller2 = {
   id: "seller2-id",
   email: "seller2@example.com",
@@ -117,10 +95,36 @@ export const store3 = {
   updatedAt: new Date(),
 };
 
+export const fullProduct = {
+  id: "product1-id",
+  name: "가디건",
+  price: 100,
+  image: "https://s3-url",
+  content: "상품 상세 설명",
+  category: {
+    connect: { id: "category1-id" },
+  },
+  store: {
+    connect: { id: "store1-id" },
+  },
+  sales: 1,
+  reviewsCount: 1,
+  reviewsRating: 1,
+  createdAt: new Date("2023-01-01T00:00:00Z"),
+  stocks: {
+    create: [
+      {
+        size: { connect: { id: "size1-id" } },
+        quantity: 10,
+      },
+    ],
+  },
+};
+
 export const fullProduct2 = {
   id: "product2-id",
   name: "반팔 티셔츠",
-  price: new Prisma.Decimal(15000),
+  price: 15000,
   image: "https://s3-url-2",
   content: "반팔 상세 설명",
   category: { connect: { id: "category2-id" } },
@@ -137,7 +141,7 @@ export const fullProduct2 = {
 export const fullProduct3 = {
   id: "product3-id",
   name: "청바지",
-  price: new Prisma.Decimal(30000),
+  price: 30000,
   image: "https://s3-url-3",
   content: "청바지 상세 설명",
   category: { connect: { id: "category1-id" } },
@@ -154,7 +158,7 @@ export const fullProduct3 = {
 export const fullProduct4 = {
   id: "product4-id",
   name: "후드티",
-  price: new Prisma.Decimal(20000),
+  price: 1,
   image: "https://s3-url-4",
   content: "후드티 상세 설명",
   category: { connect: { id: "category2-id" } },
@@ -171,7 +175,7 @@ export const fullProduct4 = {
 export const fullProduct5 = {
   id: "product5-id",
   name: "운동화",
-  price: new Prisma.Decimal(50000),
+  price: 50000,
   image: "https://s3-url-5",
   content: "운동화 상세 설명",
   category: { connect: { id: "category3-id" } },
@@ -179,7 +183,7 @@ export const fullProduct5 = {
   sales: 10,
   reviewsCount: 2,
   reviewsRating: 3.5,
-  createdAt: new Date("2023-02-15T00:00:00Z"),
+  createdAt: new Date("2999-02-15T00:00:00Z"),
   stocks: {
     create: [{ size: { connect: { id: "size4-id" } }, quantity: 30 }],
   },

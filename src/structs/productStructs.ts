@@ -1,5 +1,6 @@
 import {
   array,
+  boolean,
   date,
   defaulted,
   Infer,
@@ -12,7 +13,7 @@ import { integerString } from "./commonStructs";
 
 export const CreateProductBodyStruct = object({
   name: string(),
-  price: number(),
+  price: integerString,
   content: string(),
   image: string(),
   discountRate: optional(number()),
@@ -22,12 +23,34 @@ export const CreateProductBodyStruct = object({
   stocks: array(
     object({
       sizeId: string(),
-      quantity: number(),
+      quantity: integerString,
     })
   ),
 });
 
 export type CreateProductBody = Infer<typeof CreateProductBodyStruct>;
+
+export const PatchProductBodyStruct = object({
+  name: optional(string()),
+  price: optional(integerString),
+  content: optional(string()),
+  image: optional(string()),
+  discountRate: optional(integerString),
+  discountStartTime: optional(string()),
+  discountEndTime: optional(string()),
+  categoryName: optional(string()),
+  stocks: optional(
+    array(
+      object({
+        sizeId: string(),
+        quantity: integerString,
+      })
+    )
+  ),
+  isSoldOut: optional(boolean()),
+});
+
+export type PatchProductBody = Infer<typeof PatchProductBodyStruct>;
 
 export const ProductListParamsStruct = object({
   page: defaulted(integerString, 1),
@@ -35,8 +58,8 @@ export const ProductListParamsStruct = object({
   search: optional(string()),
   searchBy: optional(string()),
   sort: optional(string()),
-  priceMin: optional(number()),
-  priceMax: optional(number()),
+  priceMin: defaulted(integerString, 0),
+  priceMax: defaulted(integerString, 2147483647),
   favoriteStore: optional(string()),
   size: optional(string()),
   categoryName: optional(string()),

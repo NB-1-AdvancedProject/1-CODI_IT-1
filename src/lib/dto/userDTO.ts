@@ -1,5 +1,5 @@
 import { UserType } from "@prisma/client";
-import { User } from "../../types/user";
+import { Grade, User } from "../../types/user";
 import { Decimal } from "@prisma/client/runtime/library";
 import { StoreResDTO } from "./storeDTO";
 
@@ -37,7 +37,7 @@ export class UserResDTO {
   } | null;
   image: string;
 
-  constructor(user: User) {
+  constructor(user: User & { grade: Grade | null }) {
     this.id = user.id;
     this.name = user.name;
     this.email = user.email;
