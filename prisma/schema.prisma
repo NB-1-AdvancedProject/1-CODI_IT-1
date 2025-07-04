@@ -99,8 +99,8 @@ model Product {
   discountStartTime DateTime?
   discountEndTime   DateTime?
   sales             Int       @default(0)
-  reviewsCount      Int?
-  reviewsRating     Float?
+  reviewsCount      Int       @default(0)
+  reviewsRating     Float     @default(0)
   isSoldOut         Boolean   @default(false)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

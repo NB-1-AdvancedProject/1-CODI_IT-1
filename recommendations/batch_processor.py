@@ -31,7 +31,6 @@ def get_redis_connection():
     """Redis 서버 연결을 설정하고 반환합니다. Redis URL을 지원합니다."""
     try:
         if not REDIS_URL:
-  
             raise ValueError("REDIS_URL 환경 변수가 설정되지 않았습니다. crontab 설정을 확인해주세요.")
             
         r = redis.from_url(
@@ -137,20 +136,20 @@ def main():
         # 3.3. 유사도 계산 (미리 만들어준 자카드 알고리즘으로 보정된 매트릭스)
         similarity_matrix = calculate_jaccard_similarity(co_occurrence_matrix, product_counts)
         
-        # 3.4. 각 아이템별 Top 5 추천 아이템 선정
+        # 3.4. 각 아이템별 Top 10 추천 아이템 선정
         recommendations_for_db = []  # DB 에도, Redis 에도 추천목록을 저장할겁니다   
         recommendations_for_redis = {}  
 
         for item_id in all_product_ids_list:
             # 해당 item_id와 다른 아이템들 간의 유사도 점수 가져오기
             # .drop(item_id, errors='ignore')는 자기 자신과의 유사도(주로 1.0)를 제외
-            # .nlargest(5)로 가장 큰 값 5개
-            top_5_recs = similarity_matrix.loc[item_id].drop(item_id, errors='ignore').nlargest(5)
+            # .nlargest(5)로 가장 큰 값 10개
+            top_10_recs = similarity_matrix.loc[item_id].drop(item_id, errors='ignore').nlargest(10)
             
             # 추천 아이템 목록을 JSON 형식으로 준비
             recommended_items_list = [
                 {"id": rec_id, "score": round(float(score), 4)} 
-                for rec_id, score in top_5_recs.items() if score > 0
+                for rec_id, score in top_10_recs.items() if score > 0
             ]
             
             # DB 저장을 위한 형식 (item_id, JSON 문자열, 현재 시간)
@@ -163,7 +162,7 @@ def main():
             # Redis 저장을 위한 형식 (item_id: JSON 문자열)
             recommendations_for_redis[f"item:recommendation:{item_id}"] = json.dumps({"items": recommended_items_list})
 
-        print(f"[{datetime.now()}] 각 아이템별 Top 5 추천 아이템 선정 완료.")
+        print(f"[{datetime.now()}] 각 아이템별 Top 10 추천 아이템 선정 완료.")
 
         # 3.5. PostgreSQL에 추천 결과 저장 (UPSERT)
         # item_recommendations 테이블에 데이터 삽입 또는 업데이트
