@@ -35,5 +35,5 @@ jobs:
             npm run build:deploy
             npx prisma generate
             npm run prisma:deploy
-            pm2 reload npm # PM2로 재실행
+            pm2 reload CODI_IT # PM2로 재실행
             echo "Deployment successful!"
