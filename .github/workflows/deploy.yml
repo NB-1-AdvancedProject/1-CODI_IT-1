@@ -26,11 +26,14 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: 22
           script: |
+            set -e
+            sudo swapoff /swapfile
+            sudo swapon /swapfile
             cd 1-CODI_IT-1 # EC2 인스턴스 내 프로젝트 경로로 진입
             git pull origin main # 코드 최신화
             npm install
             npm run build:deploy
             npx prisma generate
             npm run prisma:deploy
-            pm2 reload npm # PM2로 재실행
+            pm2 reload CODI_IT # PM2로 재실행
             echo "Deployment successful!"
