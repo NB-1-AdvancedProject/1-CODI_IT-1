@@ -1,6 +1,7 @@
 import YAML from "yamljs";
 import SwaggerUi from "swagger-ui-express";
 import express from "express";
+import passport from "passport";
 import {
   defaultNotFoundHandler,
   globalErrorHandler,
@@ -17,7 +18,8 @@ import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
 import orderRouter from "./routers/orderRouter";
-import passport from "passport";
+
+import { recommendationRouter } from "./routers/recommendationRouter";
 
 const app = express();
 app.use(express.json());
@@ -41,6 +43,7 @@ app.use("/api/s3", uploadRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/metadata", metadataRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/recommendations", recommendationRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
