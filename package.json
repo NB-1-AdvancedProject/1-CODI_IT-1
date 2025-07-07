@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build:deploy": "node --max-old-space-size=2048 ./node_modules/.bin/tsc",
     "start": "node dist/src/main.js",
     "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
