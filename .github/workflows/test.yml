@@ -68,7 +68,7 @@ jobs:
       - name: Set up Python #  Python 환경 설정
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Create Python Virtual Environment #  Python 가상 환경 생성
         run: |
