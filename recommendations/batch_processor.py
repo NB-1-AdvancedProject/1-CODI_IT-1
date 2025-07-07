@@ -143,7 +143,7 @@ def main():
         for item_id in all_product_ids_list:
             # 해당 item_id와 다른 아이템들 간의 유사도 점수 가져오기
             # .drop(item_id, errors='ignore')는 자기 자신과의 유사도(주로 1.0)를 제외
-            # .nlargest(5)로 가장 큰 값 10개
+            # .nlargest(10)로 가장 큰 값 10개
             top_10_recs = similarity_matrix.loc[item_id].drop(item_id, errors='ignore').nlargest(10)
             
             # 추천 아이템 목록을 JSON 형식으로 준비
