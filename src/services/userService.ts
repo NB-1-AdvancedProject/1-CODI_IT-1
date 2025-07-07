@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import NotFoundError from "../lib/errors/NotFoundError";
 import userRepository from "../repositories/userRepository";
 import authService from "./authService";
-import { User } from "../types/user";
+import { Token, User } from "../types/user";
 import {
   CreateUserDTO,
   UpdateUserDTO,
@@ -12,12 +12,13 @@ import {
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import UnauthError from "../lib/errors/UnauthError";
 import { StoreResDTO } from "../lib/dto/storeDTO";
+import BadRequestError from "../lib/errors/BadRequestError";
 
 async function hashingPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
 
-function filterSensitiveUserData(user: User) {
+function filterSensitiveUserData(user: User): Token {
   const { password, ...rest } = user;
   return rest;
 }
@@ -46,6 +47,10 @@ async function getUser(email: string, password: string) {
 
   if (!user || user.deletedAt) {
     throw new NotFoundError("User", email);
+  }
+
+  if (!user.password || !user.email) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
   }
 
   await authService.verifyPassword(password, user.password);
@@ -86,6 +91,10 @@ async function updateUser(data: UpdateUserDTO) {
 
   const hashedPassword = await hashingPassword(data.currentPassword);
 
+  if (!user.password) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
+  }
+
   if (!(await bcrypt.compare(data.currentPassword, user.password))) {
     throw new UnauthError();
   }
@@ -118,6 +127,21 @@ async function getFavoriteStore(userId: string) {
   return store.map((store) => new FavoriteResDTO(userId, store));
 }
 
+async function oauthCreateOrUpdate(
+  provider: string,
+  providerId: string,
+  name: string,
+  email?: string
+) {
+  const user = await userRepository.creatOrUpdate(
+    provider,
+    providerId,
+    name,
+    email
+  );
+  return filterSensitiveUserData(user);
+}
+
 export default {
   getUser,
   getById,
@@ -127,4 +151,5 @@ export default {
   updateUser,
   deletedUser,
   getFavoriteStore,
+  oauthCreateOrUpdate,
 };

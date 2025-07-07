@@ -40,7 +40,7 @@ export class UserResDTO {
   constructor(user: User & { grade: Grade | null }) {
     this.id = user.id;
     this.name = user.name;
-    this.email = user.email;
+    this.email = user.email ?? "";
     this.type = user.type;
     this.points = user.point;
     this.createdAt = user.createdAt;

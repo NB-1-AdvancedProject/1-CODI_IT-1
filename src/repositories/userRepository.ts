@@ -88,6 +88,38 @@ async function updateGrade(
   });
 }
 
+async function creatOrUpdate(
+  provider: string,
+  providerId: string,
+  name: string,
+  email?: string
+) {
+  const grade = await prisma.grade.upsert({
+    where: { id: "grade_green" },
+    update: {},
+    create: {
+      id: "grade_green",
+      name: "green",
+      pointRate: 1,
+      minAmount: 100000,
+    },
+  });
+  
+  return await prisma.user.upsert({
+    where: {
+      providerId,
+    },
+    update: { name, ...(email && { email }) },
+    create: {
+      provider,
+      providerId,
+      name,
+      gradeId: grade.id,
+      ...(email && { email }),
+    },
+  });
+}
+
 export default {
   findById,
   findByEmail,
@@ -96,4 +128,5 @@ export default {
   deletedUser,
   getFavorite,
   updateGrade,
+  creatOrUpdate,
 };
