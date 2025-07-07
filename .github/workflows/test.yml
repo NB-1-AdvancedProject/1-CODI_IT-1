@@ -9,6 +9,7 @@ on:
     branches:
       - main # main 브랜치로 향하는 Pull Request가 생성 또는 업데이트될 때 실행
       - develop
+      - sandbox
 
 jobs:
   test:
