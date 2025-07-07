@@ -4,7 +4,6 @@ import userService from "../../services/userService";
 import { Request } from "express";
 import { VerifyCallback } from "passport-google-oauth20";
 import { Profile as PassportProfile } from "passport";
-import BadRequestError from "../../lib/errors/BadRequestError";
 
 const googleStrategyOptions = {
   clientID: GOOGLE_CLIENT_ID!,
@@ -21,9 +20,14 @@ async function verity(
   done: VerifyCallback
 ) {
   const email = profile.emails?.[0]?.value;
+  const providerId = profile.id ?? profile._json?.id;
+
+  if (!providerId) {
+    return done(new Error("Google 프로필 ID가 없습니다."));
+  }
   const user = await userService.oauthCreateOrUpdate(
     profile.provider,
-    profile.id,
+    providerId,
     profile.displayName,
     email
   );

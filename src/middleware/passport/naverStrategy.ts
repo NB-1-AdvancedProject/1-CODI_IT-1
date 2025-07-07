@@ -4,7 +4,6 @@ import { NAVER_CLIENT_ID, NAVER_CLIENT_SECRET } from "../../lib/constants";
 import userService from "../../services/userService";
 import { VerifyCallback } from "passport-google-oauth20";
 import { Profile as PassportProfile } from "passport";
-import BadRequestError from "../../lib/errors/BadRequestError";
 
 const naverStrategyOptions = {
   clientID: NAVER_CLIENT_ID!,

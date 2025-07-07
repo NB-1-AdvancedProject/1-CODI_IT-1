@@ -104,6 +104,7 @@ async function creatOrUpdate(
       minAmount: 100000,
     },
   });
+  
   return await prisma.user.upsert({
     where: {
       providerId,
