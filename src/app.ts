@@ -1,6 +1,7 @@
 import YAML from "yamljs";
 import SwaggerUi from "swagger-ui-express";
 import express from "express";
+import passport from "passport";
 import {
   defaultNotFoundHandler,
   globalErrorHandler,
@@ -20,6 +21,8 @@ import orderRouter from "./routers/orderRouter";
 
 const app = express();
 app.use(express.json());
+
+app.use(passport.initialize());
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", version: "1.0.0" });
@@ -41,6 +44,7 @@ app.use("/api/order", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
+
 // swagger
 if (process.env.NODE_ENV !== "production") {
   const swaggerDocument = YAML.load("./swagger/swagger.yaml");

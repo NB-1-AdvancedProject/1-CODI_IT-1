@@ -3,7 +3,8 @@ import request from "supertest";
 import app from "../src/app";
 import bcrypt from "bcrypt";
 import { User } from "../src/types/user";
-import { createAccessToken } from "../src/utils/jwt";
+import { createAccessToken } from "../src/lib/jwt";
+import BadRequestError from "../src/lib/errors/BadRequestError";
 
 export async function clearDatabase() {
   await prisma.reply.deleteMany();
@@ -31,6 +32,9 @@ export async function disconnectTestDB() {
 
 export async function createTestUser(userData: Omit<User, "id">) {
   const plainPassword = userData.password;
+  if (!plainPassword) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
+  }
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
   return prisma.user.create({
