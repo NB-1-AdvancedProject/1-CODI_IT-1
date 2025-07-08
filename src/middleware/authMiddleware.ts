@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyAccessToken } from "../utils/jwt";
+import { verifyAccessToken } from "../lib/jwt";
 import UnauthError from "../lib/errors/UnauthError";
 import userService from "../services/userService";
 

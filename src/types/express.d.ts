@@ -3,8 +3,9 @@ import { Token } from "./user";
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: Token;
-    }
+    // interface Request {
+    //   user?: Token;
+    // }
+    interface User extends Token {}
   }
 }

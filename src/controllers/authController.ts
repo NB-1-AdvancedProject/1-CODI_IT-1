@@ -2,12 +2,31 @@ import { RequestHandler } from "express";
 import userService from "../services/userService";
 import authService from "../services/authService";
 import BadRequestError from "../lib/errors/BadRequestError";
-import { verifyRefreshToken } from "../utils/jwt";
+import { verifyRefreshToken } from "../lib/jwt";
 
 export const login: RequestHandler = async (req, res) => {
   const { email, password } = req.body;
   const user = await userService.getUser(email, password);
 
+  const accessToken = await authService.createToken(user, "access");
+  const refreshToken = await authService.createToken(user, "refresh");
+
+  await authService.saveToken(user.id, refreshToken);
+
+  res.status(200).json({
+    user: {
+      id: user.id,
+      email: user.email,
+      type: user.type,
+      points: user.point,
+    },
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  });
+};
+
+export const oauthLogin: RequestHandler = async (req, res) => {
+  const user = req.user!;
   const accessToken = await authService.createToken(user, "access");
   const refreshToken = await authService.createToken(user, "refresh");
 
@@ -49,5 +68,17 @@ export const refreshToken: RequestHandler = async (req, res) => {
   res.status(200).json({
     accessToken: update.accessToken,
     refreshToken: update.refreshToken,
+  });
+};
+
+export const googleToken: RequestHandler = async (req, res) => {
+  const user = req.user!;
+  const accessToken = await authService.createToken(user, "access");
+  const refreshToken = await authService.createToken(user, "refresh");
+
+  await authService.saveToken(user.id, refreshToken);
+
+  res.status(200).json({
+    accessToken: accessToken,
   });
 };

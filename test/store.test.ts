@@ -24,6 +24,7 @@ import { Prisma, Product } from "@prisma/client";
 import { User } from "../src/types/user";
 import { Store } from "../src/types/storeType";
 import { Decimal } from "@prisma/client/runtime/library";
+import BadRequestError from "../src/lib/errors/BadRequestError";
 
 describe("POST /api/stores", () => {
   let buyerUser: User;
@@ -400,6 +401,10 @@ export async function createTestUser(
   userData: Prisma.UserUncheckedCreateInput
 ) {
   const plainPassword = userData.password;
+
+  if (!plainPassword || !userData.email) {
+    throw new BadRequestError("필수값이 입력되지 않았습니다.");
+  }
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
   return prisma.user.create({
