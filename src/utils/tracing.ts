@@ -12,7 +12,7 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
 //OTLP 트레이스 익스포터 설정(Tempo가 수신)
 const traceExporter = new OTLPTraceExporter({
-  url: "http://localhost:4318/v1/traces", // default collector 엔드포인트
+  url: "http://localhost:4319/v1/traces", // default collector 엔드포인트
 });
 /* OTLP Trace Exporter 생성
 Tempo와 통신할 OTLP exporter 인스턴스 생성

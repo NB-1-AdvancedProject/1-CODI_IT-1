@@ -80,6 +80,7 @@ services:
     image: grafana/tempo:latest
     ports:
       - "3200:3200"
+      - "4317:4317"
     command: -config.file=/etc/tempo/tempo.yaml
     volumes:
       - ./observability/tempo/tempo.yaml:/etc/tempo/tempo.yaml
@@ -104,13 +105,21 @@ services:
     container_name: grafana-agent
     volumes:
       - ./observability/agent/agent.yaml:/etc/agent.yaml
-    command: ["agent", "run", "--config.file=/etc/agent.yaml"]
+    command: -config.file=/etc/agent.yaml
     ports:
-      - "4318:4318"
+      - "4319:4319"
       - "12345:12345"
     networks:
       - observability-net
 
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - observability-net
+  # node-exporter는 cpu, 메모리, 디스크, 네트워크 등 서버의 하드웨어/시스템 상태를 프로메테우스가 수집 할 수 있게 해주는 에이언트입니다.
 networks:
   observability-net:
 

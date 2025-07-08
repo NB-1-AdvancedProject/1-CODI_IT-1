@@ -22,3 +22,7 @@ scrape_configs: # 프로메테우스가 데이터를 수집할 타겟 목록
   - job_name: "tempo"
     static_configs:
       - targets: ["tempo:3200"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
