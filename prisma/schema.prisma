@@ -70,16 +70,17 @@ model Grade {
 }
 
 model Store {
-  id          String    @id @default(cuid())
-  name        String
-  address     String
-  phoneNumber String
-  content     String
-  userId      String    @unique
-  image       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id            String    @id @default(cuid())
+  name          String
+  address       String
+  detailAddress String?
+  phoneNumber   String
+  content       String
+  userId        String    @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
 
   products Product[]
   likedBy  FavoriteStore[]

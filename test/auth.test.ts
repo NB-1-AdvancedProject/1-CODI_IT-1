@@ -19,7 +19,7 @@ describe("로그인 테스트", () => {
     await prisma.$disconnect();
   });
 
-  describe("POST/api/auth/login", () => {
+  describe("POST /auth/login", () => {
     test("로그인", async () => {
       const email = "test1@test.com";
       const name = "김이박";
@@ -32,7 +32,7 @@ describe("로그인 테스트", () => {
       });
 
       const response = await request(app)
-        .post("/api/auth/login")
+        .post("/auth/login")
         .send({ email, password });
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("accessToken");
@@ -52,7 +52,7 @@ describe("로그인 테스트", () => {
       });
 
       const response = await request(app)
-        .post("/api/auth/login")
+        .post("/auth/login")
         .send({ email: "test2@test.com", password: "안녕하세여!!1234" });
       expect(response.status).toBe(403);
     });
@@ -70,12 +70,12 @@ describe("로그인 테스트", () => {
     });
 
     const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send({ email, password });
     expect(response.status).toBe(404);
   });
 
-  describe("POST/api/auth/logout", () => {
+  describe("POST /auth/logout", () => {
     test("로그아웃", async () => {
       const email = "test4@test.com";
       const name = "김갑수";
@@ -84,12 +84,12 @@ describe("로그인 테스트", () => {
       });
 
       const authReq = getAuthenticatedReq(logoutUser.id);
-      const response = await authReq.post("/api/auth/logout").send({});
+      const response = await authReq.post("/auth/logout").send({});
       expect(response.status).toBe(200);
     });
   });
 
-  describe("POST/api/auth/refresh", () => {
+  describe("POST /auth/refresh", () => {
     let redis: ReturnType<typeof getRedisClient>;
     let createUser: User;
     let initialRefreshToken: string;
@@ -133,13 +133,13 @@ describe("로그인 테스트", () => {
 
     test("리프레시 토큰 정상 재발행", async () => {
       const response = await request(app)
-        .post("/api/auth/refresh")
+        .post("/auth/refresh")
         .send({ refreshToken: initialRefreshToken })
         .expect(200);
     });
 
     test("리프레시 토큰 없으면 에러", async () => {
-      const response = await request(app).post("/api/auth/refresh").send({});
+      const response = await request(app).post("/auth/refresh").send({});
 
       expect(response.status).toBe(400);
     });

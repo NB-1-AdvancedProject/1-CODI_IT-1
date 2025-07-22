@@ -75,7 +75,7 @@ describe("문의 API 테스트", () => {
         },
       });
     }
-    await request(app).post("/api/auth/login").send({
+    await request(app).post("/auth/login").send({
       email: buyer1.email,
       password: buyer1.password,
     });
@@ -85,10 +85,10 @@ describe("문의 API 테스트", () => {
     await prisma.$disconnect();
   });
 
-  describe("GET api/inquiries", () => {
+  describe("GET /inquiries", () => {
     test("내가 작성한 모든 문의를 조회할 수 있다.(페이지네이션 x)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/inquiries");
+      const response = await authReq.get("/inquiries");
 
       expect(response.body.totalCount).toBe(20);
       expect(response.body.list.length).toBe(10);
@@ -102,7 +102,7 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 모든 문의를 조회할 수 있다.(page)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/inquiries?page=2");
+      const response = await authReq.get("/inquiries?page=2");
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
         title: `상품 문의합니다.9`,
@@ -114,7 +114,7 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 모든 문의를 조회할 수 있다.(pageSize)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/inquiries?pageSize=5");
+      const response = await authReq.get("/inquiries?pageSize=5");
       expect(response.body.list.length).toBe(5);
       expect(response.body.list[4]).toMatchObject({
         title: `상품 문의합니다.15`,
@@ -127,9 +127,7 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 모든 문의를 조회할 수 있다.(status)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(
-        "/api/inquiries?status=completedAnswer"
-      );
+      const response = await authReq.get("/inquiries?status=completedAnswer");
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
         title: `상품 문의합니다.19`,
@@ -146,7 +144,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("PATCH api/inquiries/:id", () => {
+  describe("PATCH inquiries/:id", () => {
     let inquiry: Inquiry;
     beforeAll(async () => {
       inquiry = await prisma.inquiry.create({
@@ -167,13 +165,11 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 수정할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq
-        .patch(`/api/inquiries/${inquiry.id}`)
-        .send({
-          title: "상품 문의합니다.",
-          content: "문의 내용입니다.",
-          isSecret: false,
-        });
+      const response = await authReq.patch(`/inquiries/${inquiry.id}`).send({
+        title: "상품 문의합니다.",
+        content: "문의 내용입니다.",
+        isSecret: false,
+      });
 
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -186,7 +182,7 @@ describe("문의 API 테스트", () => {
     test("내가 작성한 문의를 수정할 수 있다.(문의 조회 실패))", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .patch(`/api/inquiries/${"clabcxyz1234567890abcdefg"}`)
+        .patch(`/inquiries/${"clabcxyz1234567890abcdefg"}`)
         .send({
           title: "상품 문의합니다.",
           content: "문의 내용입니다.",
@@ -198,20 +194,18 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 수정할 수 있다.(내가 작성한 문의 x)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq
-        .patch(`/api/inquiries/${inquiry.id}`)
-        .send({
-          title: "상품 문의합니다.",
-          content: "문의 내용입니다.",
-          isSecret: false,
-        });
+      const response = await authReq.patch(`/inquiries/${inquiry.id}`).send({
+        title: "상품 문의합니다.",
+        content: "문의 내용입니다.",
+        isSecret: false,
+      });
 
       expect(response.body).toEqual({ message: "Unauthorized" });
       expect(response.status).toBe(401);
     });
   });
 
-  describe("DELETE api/inquiries/:id", () => {
+  describe("DELETE /inquiries/:id", () => {
     let inquiry: Inquiry;
     beforeAll(async () => {
       inquiry = await prisma.inquiry.create({
@@ -232,13 +226,11 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 삭제 할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq
-        .patch(`/api/inquiries/${inquiry.id}`)
-        .send({
-          title: "상품 문의합니다.",
-          content: "문의 내용입니다.",
-          isSecret: false,
-        });
+      const response = await authReq.patch(`/inquiries/${inquiry.id}`).send({
+        title: "상품 문의합니다.",
+        content: "문의 내용입니다.",
+        isSecret: false,
+      });
 
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -251,7 +243,7 @@ describe("문의 API 테스트", () => {
     test("내가 작성한 문의를 삭제 할 수 있다.(문의 조회 실패))", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq.delete(
-        `/api/inquiries/${"clabcxyz1234567890abcdefg"}`
+        `/inquiries/${"clabcxyz1234567890abcdefg"}`
       );
 
       expect(response.status).toBe(404);
@@ -259,14 +251,14 @@ describe("문의 API 테스트", () => {
 
     test("내가 작성한 문의를 수정할 수 있다.(내가 작성한 문의 x)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.delete(`/api/inquiries/${inquiry.id}`);
+      const response = await authReq.delete(`/inquiries/${inquiry.id}`);
 
       expect(response.body).toEqual({ message: "Unauthorized" });
       expect(response.status).toBe(401);
     });
   });
 
-  describe("POST api/inquiries/:id/replies", () => {
+  describe("POST inquiries/:id/replies", () => {
     let inquiry: Inquiry;
     beforeAll(async () => {
       inquiry = await prisma.inquiry.create({
@@ -288,7 +280,7 @@ describe("문의 API 테스트", () => {
     test("문의에 답변 할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq
-        .post(`/api/inquiries/${inquiry.id}/replies`)
+        .post(`/inquiries/${inquiry.id}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -302,7 +294,7 @@ describe("문의 API 테스트", () => {
     test("문의에 답변 할 수 있다.(실패 - 문의 없음)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq
-        .post(`/api/inquiries/${"clabcxyz1234567890abcdefg"}/replies`)
+        .post(`/inquiries/${"clabcxyz1234567890abcdefg"}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -316,7 +308,7 @@ describe("문의 API 테스트", () => {
     test("문의에 답변 할 수 있다.(실패 - seller 아님)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .post(`/api/inquiries/${inquiry.id}/replies`)
+        .post(`/inquiries/${inquiry.id}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -326,7 +318,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("PATCH api/inquiries/:id/replies", () => {
+  describe("PATCH inquiries/:id/replies", () => {
     let inquiry: Inquiry;
     let replay: Reply;
     beforeAll(async () => {
@@ -359,7 +351,7 @@ describe("문의 API 테스트", () => {
     test("문의 답변을 수정 할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq
-        .patch(`/api/inquiries/${replay.id}/replies`)
+        .patch(`/inquiries/${replay.id}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -373,7 +365,7 @@ describe("문의 API 테스트", () => {
     test("문의 답변을 수정 할 수 있다.(실패- 권한없음)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .patch(`/api/inquiries/${replay.id}/replies`)
+        .patch(`/inquiries/${replay.id}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -385,7 +377,7 @@ describe("문의 API 테스트", () => {
     test("문의 답변을 수정 할 수 있다.(reply 없음)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq
-        .patch(`/api/inquiries/${"clabcxyz1234567890abcdefg"}/replies`)
+        .patch(`/inquiries/${"clabcxyz1234567890abcdefg"}/replies`)
         .send({
           content: "답변 내용입니다.",
         });
@@ -397,7 +389,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("GET api/inquiries/:id", () => {
+  describe("GET inquiries/:id", () => {
     let inquiry1: Inquiry;
     let inquiry2: Inquiry;
 
@@ -435,7 +427,7 @@ describe("문의 API 테스트", () => {
 
     test("문의를 상세 조회 할 수 있다.(로그인 조회)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
+      const response = await authReq.get(`/inquiries/${inquiry1.id}`);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -445,7 +437,7 @@ describe("문의 API 테스트", () => {
     });
 
     test("문의를 상세 조회 할 수 있다.(비로그인 조회)", async () => {
-      const response = await request(app).get(`/api/inquiries/${inquiry2.id}`);
+      const response = await request(app).get(`/inquiries/${inquiry2.id}`);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -456,7 +448,7 @@ describe("문의 API 테스트", () => {
 
     test("문의를 상세 조회 할 수 있다.(판매자 문의 조회)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
+      const response = await authReq.get(`/inquiries/${inquiry1.id}`);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         title: `상품 문의합니다.`,
@@ -467,13 +459,13 @@ describe("문의 API 테스트", () => {
 
     test("문의를 상세 조회 할 수 있다.(다른 유저 문의 조회)", async () => {
       const authReq = getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.get(`/api/inquiries/${inquiry1.id}`);
+      const response = await authReq.get(`/inquiries/${inquiry1.id}`);
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Unauthorized" });
     });
 
     test("문의를 상세 조회 할 수 있다.(isSecret =true , 비로그인 테스트)", async () => {
-      const response = await request(app).get(`/api/inquiries/${inquiry1.id}`);
+      const response = await request(app).get(`/inquiries/${inquiry1.id}`);
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
         message: `Inquiry with ${inquiry1.id} not found`,
@@ -481,7 +473,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("GET api/inquiries/:id/replies", () => {
+  describe("GET inquiries/:id/replies", () => {
     let inquiry1: Inquiry;
     let inquiry2: Inquiry;
     let reply1: Reply;
@@ -549,7 +541,7 @@ describe("문의 API 테스트", () => {
 
     test("문의답변을 상세 조회 할 수 있다.(로그인 조회)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.get(`/api/inquiries/${reply1.id}/replies`);
+      const response = await authReq.get(`/inquiries/${reply1.id}/replies`);
       expect(response.status).toBe(200);
       expect(response.body.reply).toMatchObject({
         content: "이 제품은 재입고 예정입니다.",
@@ -558,7 +550,7 @@ describe("문의 API 테스트", () => {
 
     test("문의답변을 상세 조회 할 수 있다.(로그인 조회 문의자)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/inquiries/${reply1.id}/replies`);
+      const response = await authReq.get(`/inquiries/${reply1.id}/replies`);
       expect(response.status).toBe(200);
       expect(response.body.reply).toMatchObject({
         content: "이 제품은 재입고 예정입니다.",
@@ -567,21 +559,21 @@ describe("문의 API 테스트", () => {
 
     test("문의답변을 상세 조회 할 수 있다.(비로그인 조회)", async () => {
       const response = await request(app).get(
-        `/api/inquiries/${reply2.id}/replies`
+        `/inquiries/${reply2.id}/replies`
       );
       expect(response.status).toBe(200);
     });
 
     test("문의답변을 상세 조회 할 수 있다.(로그인 권한 실패)", async () => {
       const authReq = getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.get(`/api/inquiries/${reply1.id}/replies`);
+      const response = await authReq.get(`/inquiries/${reply1.id}/replies`);
       expect(response.status).toBe(401);
       expect(response.body).toEqual({ message: "Unauthorized" });
     });
 
     test("문의답변을 상세 조회 할 수 있다.(비로그인 secret true 조회)", async () => {
       const response = await request(app).get(
-        `/api/inquiries/${reply1.id}/replies`
+        `/inquiries/${reply1.id}/replies`
       );
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
@@ -590,11 +582,11 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("POST api/products/:id/inquiries", () => {
+  describe("POST products/:id/inquiries", () => {
     test("상품에 대한 문의를 생성할 수 있다(성공)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .post(`/api/products/${product.id}/inquiries`)
+        .post(`/products/${product.id}/inquiries`)
         .send({
           title: " 상품 문의합니다.",
           content: "문의 내용입니다.",
@@ -612,7 +604,7 @@ describe("문의 API 테스트", () => {
     test("상품에 대한 문의를 판매자가 올릴 수 없다.(실패-판매자 문의)", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
       const response = await authReq
-        .post(`/api/products/${product.id}/inquiries`)
+        .post(`/products/${product.id}/inquiries`)
         .send({
           title: " 상품 문의합니다.",
           content: "문의 내용입니다.",
@@ -626,7 +618,7 @@ describe("문의 API 테스트", () => {
     test("상품이 없음(실패-상품 X)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .post(`/api/products/${"clabcxyz1234567890abcdefg"}/inquiries`)
+        .post(`/products/${"clabcxyz1234567890abcdefg"}/inquiries`)
         .send({
           title: " 상품 문의합니다.",
           content: "문의 내용입니다.",
@@ -640,7 +632,7 @@ describe("문의 API 테스트", () => {
     });
   });
 
-  describe("GET api/products/:id/inquiries", () => {
+  describe("GET products/:id/inquiries", () => {
     beforeAll(async () => {
       await prisma.reply.deleteMany({});
       await prisma.inquiry.deleteMany({});
@@ -667,7 +659,7 @@ describe("문의 API 테스트", () => {
 
     test("문의 전체 조회 단 isSecret 제외", async () => {
       const response = await request(app).get(
-        `/api/products/${product.id}/inquiries`
+        `/products/${product.id}/inquiries`
       );
       expect(response.status).toBe(200);
       expect(response.body[0]).toMatchObject({
@@ -684,7 +676,7 @@ describe("문의 API 테스트", () => {
 
     test("문의 전체 조회 단 isSecret 제외(product 자체가 없음 실패", async () => {
       const response = await request(app).get(
-        `/api/products/${"clabcxyz1234567890abcdefg"}/inquiries`
+        `/products/${"clabcxyz1234567890abcdefg"}/inquiries`
       );
 
       expect(response.status).toBe(404);

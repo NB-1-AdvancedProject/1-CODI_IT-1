@@ -15,7 +15,7 @@ describe("metadata API 테스트", () => {
     await prisma.grade.create({ data: grade1 });
   });
   test("metadata Size 기본 조회 테스트", async () => {
-    const res = await request(app).get("/api/metadata/size");
+    const res = await request(app).get("/metadata/size");
 
     expect(res.body[0]).toHaveProperty("name");
     expect(res.body[0]).toHaveProperty("id");
@@ -23,13 +23,13 @@ describe("metadata API 테스트", () => {
     expect(res.body[0].size).toHaveProperty("en");
   });
   test("metadata Category 기본 조회 테스트", async () => {
-    const res = await request(app).get("/api/metadata/category/의류");
+    const res = await request(app).get("/metadata/category/의류");
 
     expect(res.body[0].name).toBe("의류");
     expect(res.body[0]).toHaveProperty("id");
   });
   test("metadata Grade 기본 조회 테스트", async () => {
-    const res = await request(app).get("/api/metadata/grade");
+    const res = await request(app).get("/metadata/grade");
 
     expect(res.body[0].name).toBe("green");
     expect(res.body[0].id).toBe("grade_green");

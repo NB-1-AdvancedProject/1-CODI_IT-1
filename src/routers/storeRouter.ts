@@ -10,8 +10,12 @@ import {
 } from "../controllers/storeController";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
+import multer from "multer";
 
 export const storeRouter = express.Router();
+
+const upload = multer({ dest: "uploads/" }); // 또는 memoryStorage()
 
 storeRouter.get("/detail/my", authMiddleware, asyncHandler(getMyStoreInfo));
 storeRouter.get(
@@ -30,5 +34,15 @@ storeRouter.delete(
   asyncHandler(deleteFavoriteStore)
 );
 storeRouter.get("/:id", asyncHandler(getStoreInfo));
-storeRouter.patch("/:id", authMiddleware, asyncHandler(updateMyStore));
-storeRouter.post("/", authMiddleware, asyncHandler(createStore));
+storeRouter.patch(
+  "/:id",
+  authMiddleware,
+  uploadMiddleware,
+  asyncHandler(updateMyStore)
+);
+storeRouter.post(
+  "/",
+  authMiddleware,
+  uploadMiddleware,
+  asyncHandler(createStore)
+);
