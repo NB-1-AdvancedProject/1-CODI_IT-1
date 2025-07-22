@@ -20,7 +20,7 @@ describe("유저 생성 기능", () => {
   describe("POST /users", () => {
     test("회원 가입", async () => {
       const email = "test@test.com";
-      const password = "Password@1234";
+      const password = "Password1234";
       const name = "홍길자";
 
       const response = await request(app)
@@ -32,7 +32,7 @@ describe("유저 생성 기능", () => {
     });
 
     test("중복 이메일 회원 가입", async () => {
-      const password = "Password@1234";
+      const password = "Password1234";
       const passwordHashed = bcrypt.hashSync(password, 10);
 
       const user1 = await prisma.user.create({
@@ -74,7 +74,7 @@ describe("내 정보 조회", () => {
     });
     describe("성공", () => {
       test("로그인시 내 정보 조회 가능", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -113,7 +113,7 @@ describe("내 정보 수정", () => {
     });
     describe("성공", () => {
       test("내 정보 수정", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -127,7 +127,7 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          password: "Password!2345",
+          password: "Password2345",
           currentPassword: password,
         };
 
@@ -140,7 +140,7 @@ describe("내 정보 수정", () => {
 
     describe("실패", () => {
       test("틀린 비밀번호 입력", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -154,8 +154,8 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          password: "Password!2345",
-          currentPassword: "password@1234~~",
+          password: "Password2345",
+          currentPassword: "password1234~",
         };
 
         const authReq = getAuthenticatedReq(user.id);
@@ -184,7 +184,7 @@ describe("회원 탈퇴", () => {
     });
     describe("성공", () => {
       test("회원 탈퇴", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -223,7 +223,7 @@ describe("내 관심 매장 조회", () => {
     });
     describe("성공", () => {
       test("관심 목록 조회", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
