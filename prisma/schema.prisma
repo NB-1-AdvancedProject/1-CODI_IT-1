@@ -43,6 +43,8 @@ model User {
   grade       Grade?    @relation(fields: [gradeId], references: [id])
   gradeId     String?
   image       String?
+  provider    String    @default("local")
+  providerId  String?   @unique
   totalAmount Decimal   @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
