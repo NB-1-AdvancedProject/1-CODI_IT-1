@@ -46,6 +46,10 @@ export async function getList(
 
   const inquiries = await listData(params, userId);
 
+  if (inquiries.length === 0) {
+    return { list: [], totalCount: 0 };
+  }
+
   const list = inquiries.map((inquiry) => new InquiryItem(inquiry));
 
   const totalCount = await countData(userId);
