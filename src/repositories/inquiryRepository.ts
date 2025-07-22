@@ -29,6 +29,11 @@ export async function listData(params: inquiryType, userId: string) {
           },
         },
       },
+      user: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 }
