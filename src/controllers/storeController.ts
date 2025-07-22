@@ -15,15 +15,12 @@ import { IdParamsStruct, PageParamsStruct } from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, CreateStoreBodyStruct);
-  const protocol = req.protocol;
-  const host = req.get("host");
+  const { url } = (req as any).uploadedImage || {};
   const dto: CreateStoreDTO = {
     userId: req.user!.id,
     userType: req.user!.type,
     ...req.body,
-    image: req.file
-      ? `${protocol}://${host}/uploads/${req.file.filename}`
-      : undefined,
+    image: url,
   };
   const result: StoreResDTO = await storeService.createStore(dto);
   res.status(201).json(result);
