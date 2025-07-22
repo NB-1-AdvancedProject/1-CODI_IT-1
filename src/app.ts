@@ -18,9 +18,17 @@ import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
 import orderRouter from "./routers/orderRouter";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(passport.initialize());
 
@@ -28,19 +36,19 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", version: "1.0.0" });
 });
 
-app.use("/api/inquiries", inquiryRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/stores", storeRouter);
-app.use("/api/users", userRouter);
-app.use("/api/products", productRouter);
-app.use("/api/product", reviewRouter);
-app.use("/api/review", reviewRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/dashboard", dashboardRouter);
-app.use("/api/s3", uploadRouter);
-app.use("/api/notifications", notificationRouter);
-app.use("/api/metadata", metadataRouter);
-app.use("/api/order", orderRouter);
+app.use("/inquiries", inquiryRouter);
+app.use("/auth", authRouter);
+app.use("/stores", storeRouter);
+app.use("/users", userRouter);
+app.use("/products", productRouter);
+app.use("/product", reviewRouter);
+app.use("/review", reviewRouter);
+app.use("/cart", cartRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/s3", uploadRouter);
+app.use("/notifications", notificationRouter);
+app.use("/metadata", metadataRouter);
+app.use("/order", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);

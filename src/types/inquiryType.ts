@@ -41,3 +41,28 @@ export interface InReplyType {
     name: string;
   };
 }
+
+export interface StoreInquiryType {
+  id: string;
+  name: string;
+}
+
+export interface ProductInquiryType {
+  id: string;
+  name: string;
+  image: string;
+  store: StoreInquiryType;
+}
+
+export interface InquiryType {
+  id: string;
+  title: string;
+  isSecret: boolean;
+  status: InquiryStatus;
+  product: ProductInquiryType;
+  user: {
+    name: string;
+  };
+  createdAt: Date;
+  content: string;
+}

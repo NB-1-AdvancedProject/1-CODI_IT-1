@@ -9,7 +9,7 @@ services:
         NODE_VERSION: 20.13.1
     container_name: app-server
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - SERVER_PORT=3000
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_DB_PORT}/${POSTGRES_DB}?schema=public

@@ -43,7 +43,7 @@ describe("로그인 테스트", () => {
     await prisma.$disconnect();
   });
 
-  describe("POST/api/auth/login", () => {
+  describe("POST/auth/login", () => {
     test("로그인", async () => {
       const email = "test1@test.com";
       const name = "김이박";
@@ -56,7 +56,7 @@ describe("로그인 테스트", () => {
       });
 
       const response = await request(app)
-        .post("/api/auth/login")
+        .post("/auth/login")
         .send({ email, password });
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("accessToken");
@@ -76,7 +76,7 @@ describe("로그인 테스트", () => {
       });
 
       const response = await request(app)
-        .post("/api/auth/login")
+        .post("/auth/login")
         .send({ email: "test2@test.com", password: "안녕하세여!!1234" });
       expect(response.status).toBe(403);
     });
@@ -94,14 +94,14 @@ describe("로그인 테스트", () => {
     });
 
     const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send({ email, password });
     expect(response.status).toBe(404);
   });
 
-  describe("GET/api/auth/google - OAuth 시작", () => {
+  describe("GET/auth/google - OAuth 시작", () => {
     test("Google 인증 페이지로 리다이렉트", async () => {
-      const response = await request(app).get("/api/auth/google");
+      const response = await request(app).get("/auth/google");
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toContain(
@@ -117,7 +117,7 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("GET /api/auth/google/callback - OAuth 콜백 처리", () => {
+  describe("GET /auth/google/callback - OAuth 콜백 처리", () => {
     const mockAuthCode = "mock_auth_code_from_google";
     const mockAccessToken = "mock_google_access_token";
     const mockRefreshToken = "mock_google_refresh_token";
@@ -144,7 +144,7 @@ describe("로그인 테스트", () => {
         .reply(200, mockGoogleProfile);
 
       const response = await request(app).get(
-        `/api/auth/google/callback?code=${mockAuthCode}`
+        `/auth/google/callback?code=${mockAuthCode}`
       );
 
       expect(response.status).toBe(200);
@@ -163,9 +163,9 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("GET/api/auth/kakao - KAKAO", () => {
+  describe("GET/auth/kakao - KAKAO", () => {
     test("kakao 인증 페이지로 리다이렉트", async () => {
-      const response = await request(app).get("/api/auth/kakao");
+      const response = await request(app).get("/auth/kakao");
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toContain(
@@ -181,7 +181,7 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("GET /api/auth/kakao/callback - OAuth 콜백 처리", () => {
+  describe("GET /auth/kakao/callback - OAuth 콜백 처리", () => {
     const mockAuthCode = "mock_auth_code_from_kakao";
     const mockAccessToken = "mock_kakao_access_token";
     const mockRefreshToken = "mock_kakao_refresh_token";
@@ -212,7 +212,7 @@ describe("로그인 테스트", () => {
         .reply(200, mockKakaoProfile);
 
       const response = await request(app).get(
-        `/api/auth/kakao/callback?code=${mockAuthCode}`
+        `/auth/kakao/callback?code=${mockAuthCode}`
       );
 
       expect(response.status).toBe(200);
@@ -232,9 +232,9 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("GET/api/auth/naver - Naver", () => {
+  describe("GET/auth/naver - Naver", () => {
     test("Naver 인증 페이지로 리다이렉트", async () => {
-      const response = await request(app).get("/api/auth/naver");
+      const response = await request(app).get("/auth/naver");
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toContain(
@@ -250,7 +250,7 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("GET /api/auth/naver/callback - OAuth 콜백 처리", () => {
+  describe("GET /auth/naver/callback - OAuth 콜백 처리", () => {
     const mockAuthCode = "mock_auth_code_from_naver";
     const mockAccessToken = "mock_naver_access_token";
     const mockRefreshToken = "mock_naver_refresh_token";
@@ -282,7 +282,7 @@ describe("로그인 테스트", () => {
         });
 
       const response = await request(app).get(
-        `/api/auth/naver/callback?code=${mockAuthCode}`
+        `/auth/naver/callback?code=${mockAuthCode}`
       );
 
       expect(response.status).toBe(200);
@@ -300,7 +300,7 @@ describe("로그인 테스트", () => {
     });
   });
 
-  describe("POST/api/auth/logout", () => {
+  describe("POST/auth/logout", () => {
     test("로그아웃", async () => {
       const email = "test4@test.com";
       const name = "김갑수";
@@ -309,12 +309,12 @@ describe("로그인 테스트", () => {
       });
 
       const authReq = getAuthenticatedReq(logoutUser.id);
-      const response = await authReq.post("/api/auth/logout").send({});
+      const response = await authReq.post("/auth/logout").send({});
       expect(response.status).toBe(200);
     });
   });
 
-  describe("POST/api/auth/refresh", () => {
+  describe("POST/auth/refresh", () => {
     let redis: ReturnType<typeof getRedisClient>;
     let createUser: User;
     let initialRefreshToken: string;
@@ -358,13 +358,13 @@ describe("로그인 테스트", () => {
 
     test("리프레시 토큰 정상 재발행", async () => {
       const response = await request(app)
-        .post("/api/auth/refresh")
+        .post("/auth/refresh")
         .send({ refreshToken: initialRefreshToken })
         .expect(200);
     });
 
     test("리프레시 토큰 없으면 에러", async () => {
-      const response = await request(app).post("/api/auth/refresh").send({});
+      const response = await request(app).post("/auth/refresh").send({});
 
       expect(response.status).toBe(400);
     });
