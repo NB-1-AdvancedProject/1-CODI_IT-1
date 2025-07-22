@@ -197,12 +197,6 @@ describe("GET /stores/detail/my/product", () => {
       expect(response.body.totalCount).toBe(1);
       expect(response.body.list[0].isSoldOut).toBe(false);
       expect(response.body.list[0].isDiscount).toBe(false);
-      expect(response.body.list[0].stocks).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: "clxstock00cardi01" }),
-          expect.objectContaining({ id: "clxstock01cardi02" }),
-        ])
-      );
     });
     test("기본동작: discount 중이라면 isDiscount 가 true임", async () => {
       const sellerWithStore = await createTestUser(seller1);

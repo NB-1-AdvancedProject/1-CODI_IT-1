@@ -198,6 +198,7 @@ async function getProducts(params: ProductListParams) {
       const stocks = await stockService.getStocksByProductId(product.id);
       return {
         ...product,
+        discountPrice: product.discountPrice ?? product.price,
         storeName: store!.name,
         isSoldOut: checkSoldOut(stocks),
       };
@@ -227,6 +228,7 @@ async function getProduct(productId: string) {
 
   return {
     ...finalProduct,
+    discountPrice: finalProduct.discountPrice ?? finalProduct.price,
     storeName: store!.name,
   };
 }

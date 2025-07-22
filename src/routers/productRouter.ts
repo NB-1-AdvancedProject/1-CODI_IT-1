@@ -10,12 +10,18 @@ import {
 import { authMiddleware } from "../middleware/authMiddleware";
 import { postQuiryData, getQuiryList } from "../controllers/inquiryController";
 import { createReview } from "../controllers/reviewController";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
 
 const productRouter = express.Router();
 
 productRouter.get("/:id", asyncHandler(getProduct));
 productRouter.get("/", asyncHandler(getProducts));
-productRouter.post("/", authMiddleware, asyncHandler(postProduct));
+productRouter.post(
+  "/",
+  authMiddleware,
+  uploadMiddleware,
+  asyncHandler(postProduct)
+);
 productRouter.patch("/:id", authMiddleware, asyncHandler(patchProduct));
 productRouter.delete("/:id", authMiddleware, asyncHandler(deleteProduct));
 productRouter.post(

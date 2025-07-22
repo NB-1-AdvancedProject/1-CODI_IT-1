@@ -25,7 +25,7 @@ export type PriceRange = {
 
 export type TopSale = {
   totalOrders: number;
-  product: {
+  products: {
     id: string;
     name: string;
     price: number;
