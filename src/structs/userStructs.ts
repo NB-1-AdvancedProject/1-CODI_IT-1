@@ -1,12 +1,4 @@
-import {
-  object,
-  string,
-  coerce,
-  pattern,
-  optional,
-  enums,
-  partial,
-} from "superstruct";
+import { object, string, coerce, pattern, optional, enums } from "superstruct";
 import { emailRegExp } from "./commonStructs";
 
 const nameRegex = /^[a-zA-Z0-9가-힣]+$/;
