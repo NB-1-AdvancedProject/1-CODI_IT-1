@@ -21,12 +21,12 @@ const memoryUpload = multer({ storage: multer.memoryStorage() }).single(
 );
 
 export const uploadMiddleware: RequestHandler = function (req, res, next) {
-  if (environment === "development") {
-    diskUpload(req, res, function (err) {
-      if (err) return next(err);
-      next();
-    });
-    return;
+  const isMultipart = req.headers["content-type"]?.includes(
+    "multipart/form-data"
+  );
+
+  if (!isMultipart) {
+    return next();
   }
 
   if (environment === "production") {
