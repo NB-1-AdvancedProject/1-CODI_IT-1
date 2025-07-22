@@ -31,7 +31,7 @@ export async function getDashboard(
   const year = await getYearPeriodStats(store.id);
 
   const topSalesProducts = await dashboardRepository.getTopSales(store.id);
-  const topSales = mapToTopSales(topSalesProducts);
+  let topSales = mapToTopSales(topSalesProducts);
 
   const ranges = [
     { priceRange: "만원 미만", minPrice: 0, maxPrice: 10000 },
@@ -172,16 +172,14 @@ function calculateChangeRate(current: SalesSummary, previous: SalesSummary) {
 }
 
 function mapToTopSales(products: Product[]): TopSale[] {
-  const topSales = products.map((p) => {
-    const totalOrders = p.sales;
-    const product = {
+  return products.map((p) => ({
+    totalOrders: p.sales,
+    products: {
       id: p.id,
       name: p.name,
       price: p.price.toNumber(),
-    };
-    return { totalOrders, product };
-  });
-  return topSales;
+    },
+  }));
 }
 
 async function getTotalSalesByPriceRange(
