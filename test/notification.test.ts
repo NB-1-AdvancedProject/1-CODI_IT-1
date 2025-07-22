@@ -69,12 +69,12 @@ describe("notification api 테스트", () => {
     await prisma.$disconnect();
   });
 
-  describe("GET /api/notifications/sse SSE연결", () => {
+  describe("GET /notifications/sse SSE연결", () => {
     test("SSE 연결 테스트", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
 
       const response = await authReq
-        .get("/api/notifications/sse")
+        .get("/notifications/sse")
         .set("Accept", "text/event-stream")
         .expect("Content-Type", /text\/event-stream/)
         .expect(200);
@@ -84,10 +84,10 @@ describe("notification api 테스트", () => {
     }, 5000);
   });
 
-  describe("GET /api/notifications 조회", () => {
+  describe("GET /notifications 조회", () => {
     test("알림을 조회할 수 있다.", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/notifications");
+      const response = await authReq.get("/notifications");
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -96,18 +96,16 @@ describe("notification api 테스트", () => {
     test("알림을 조회할 수 있다(없는 userId).", async () => {
       const invalidUserId = "clabcxyz1234567890abcdefg";
       const authReq = getAuthenticatedReq(invalidUserId);
-      const response = await authReq.get("/api/notifications");
+      const response = await authReq.get("/notifications");
 
       expect(response.status).toBe(401);
     });
   });
 
-  describe("PATCH /api/notifications/alarmId/check 읽음처리", () => {
+  describe("PATCH /notifications/alarmId/check 읽음처리", () => {
     test("알림을 읽음처리 할 수 있다.(성공)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.patch(
-        `/api/notifications/${alarm.id}/check`
-      );
+      const response = await authReq.patch(`/notifications/${alarm.id}/check`);
 
       expect(response.status).toBe(200);
     });
@@ -115,18 +113,14 @@ describe("notification api 테스트", () => {
     test("알림을 읽음처리 할 수 있다.(없는 유저)", async () => {
       const invalidUserId = "clabcxyz1234567890abcdefg";
       const authReq = getAuthenticatedReq(invalidUserId);
-      const response = await authReq.patch(
-        `/api/notifications/${alarm.id}/check`
-      );
+      const response = await authReq.patch(`/notifications/${alarm.id}/check`);
 
       expect(response.status).toBe(401);
     });
 
     test("알림을 읽음처리 할 수 있다.(ForbiddenError)", async () => {
       const authReq = getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.patch(
-        `/api/notifications/${alarm.id}/check`
-      );
+      const response = await authReq.patch(`/notifications/${alarm.id}/check`);
       expect(response.status).toBe(403);
       expect(response.body).toEqual({
         message: "이메일 또는 비밀번호를 확인해주세요.",

@@ -42,6 +42,7 @@ export class StoreResDTO {
   updatedAt: Date;
   userId: string;
   address: string;
+  detailAddress: string;
   phoneNumber: string;
   content: string;
   image: string;
@@ -53,6 +54,7 @@ export class StoreResDTO {
     this.updatedAt = store.updatedAt;
     this.userId = store.userId;
     this.address = store.address;
+    this.detailAddress = store.detailAddress ? store.detailAddress : "";
     this.phoneNumber = store.phoneNumber;
     this.content = store.content;
     this.image = store.image || "";
@@ -97,12 +99,14 @@ export class MyStoreDTO {
   favoriteCount: number;
   productCount: number;
   monthFavoriteCount: number;
+  totalSoldCount: number;
 
   constructor(
     store: Store,
     favoriteCount: number,
     productCount: number,
-    monthFavoriteCount: number
+    monthFavoriteCount: number,
+    totalSoldCount: number
   ) {
     this.id = store.id;
     this.name = store.name;
@@ -116,6 +120,7 @@ export class MyStoreDTO {
     this.favoriteCount = favoriteCount;
     this.productCount = productCount;
     this.monthFavoriteCount = monthFavoriteCount;
+    this.totalSoldCount = totalSoldCount;
   }
 }
 

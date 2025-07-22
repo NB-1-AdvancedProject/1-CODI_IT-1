@@ -26,7 +26,7 @@ import {
 } from "@prisma/client";
 import prisma from "../src/lib/prisma";
 
-describe("POST /api/product/:productId/reviews", () => {
+describe("POST /product/:productId/reviews", () => {
   let buyerWithPurchase: User;
   let buyerWithoutPurchase: User;
   let seller: User;
@@ -62,7 +62,7 @@ describe("POST /api/product/:productId/reviews", () => {
     test("기본동작: 구매한 상품에 대해서 리뷰를 생성할 수 있음", async () => {
       const authReq = getAuthenticatedReq(buyerWithPurchase.id);
       const response = await authReq
-        .post(`/api/product/${product1.id}/reviews`)
+        .post(`/product/${product1.id}/reviews`)
         .send({
           orderItemId: orderItem1.id,
           rating: 5,
@@ -84,7 +84,7 @@ describe("POST /api/product/:productId/reviews", () => {
       test("구매하지 않은 buyer 로 요청 시 UnauthError(401) 발생", async () => {
         const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
         const response = await authReq
-          .post(`/api/product/${product1.id}/reviews`)
+          .post(`/product/${product1.id}/reviews`)
           .send({
             orderItemId: orderItem1.id,
             rating: 5,
@@ -95,7 +95,7 @@ describe("POST /api/product/:productId/reviews", () => {
       test("이미 해당 주문에 대해서 리뷰를 달았을 시 AlreadyExistError(409) 발생", async () => {
         const authReq = getAuthenticatedReq(buyerWithPurchase.id);
         const response = await authReq
-          .post(`/api/product/${product1.id}/reviews`)
+          .post(`/product/${product1.id}/reviews`)
           .send({
             orderItemId: orderItem1.id,
             rating: 5,
@@ -107,7 +107,7 @@ describe("POST /api/product/:productId/reviews", () => {
   });
 });
 
-describe("PATCH /api/review/:reviewId", () => {
+describe("PATCH /review/:reviewId", () => {
   let buyerWithPurchase: User;
   let buyerWithoutPurchase: User;
   let seller: User;
@@ -153,7 +153,7 @@ describe("PATCH /api/review/:reviewId", () => {
   describe("성공", () => {
     test("기본동작: 자신이 작성한 리뷰를 수정할 수 있음", async () => {
       const authReq = getAuthenticatedReq(buyerWithPurchase.id);
-      const response = await authReq.patch(`/api/review/${review.id}`).send({
+      const response = await authReq.patch(`/review/${review.id}`).send({
         rating: 3,
       });
       expect(response.status).toBe(200);
@@ -169,7 +169,7 @@ describe("PATCH /api/review/:reviewId", () => {
   describe("오류", () => {
     test("구매하지 않은 buyer 로 요청 시 UnauthError(401) 발생", async () => {
       const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
-      const response = await authReq.patch(`/api/review/${review.id}`).send({
+      const response = await authReq.patch(`/review/${review.id}`).send({
         rating: 3,
       });
       expect(response.status).toBe(401);
@@ -178,7 +178,7 @@ describe("PATCH /api/review/:reviewId", () => {
       const authReq = getAuthenticatedReq(buyerWithPurchase.id);
       const nonExistentReviewId = "creview0000notfoundid0001";
       const response = await authReq
-        .patch(`/api/review/${nonExistentReviewId}`)
+        .patch(`/review/${nonExistentReviewId}`)
         .send({
           rating: 3,
         });
@@ -186,7 +186,7 @@ describe("PATCH /api/review/:reviewId", () => {
     });
   });
 });
-describe("GET /api/review/:reviewId", () => {
+describe("GET /review/:reviewId", () => {
   let buyerWithPurchase: User;
   let buyerWithoutPurchase: User;
   let seller: User;
@@ -232,7 +232,7 @@ describe("GET /api/review/:reviewId", () => {
   describe("성공", () => {
     test("기본동작: 누구든 리뷰 상세 조회를 할 수 있음", async () => {
       const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
-      const response = await authReq.get(`/api/review/${review.id}`);
+      const response = await authReq.get(`/review/${review.id}`);
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(review.id);
       expect(response.body.rating).toBe(review.rating);
@@ -243,12 +243,12 @@ describe("GET /api/review/:reviewId", () => {
     test("해당 Id 의 review 가 존재하지 않을 시 NotFoundError(404) 발생", async () => {
       const authReq = getAuthenticatedReq(buyerWithoutPurchase.id);
       const nonExistentReviewId = "creview0000notfoundid0001";
-      const response = await authReq.get(`/api/review/${nonExistentReviewId}`);
+      const response = await authReq.get(`/review/${nonExistentReviewId}`);
       expect(response.status).toBe(404);
     });
   });
 });
-describe("DELETE /api/review/:reviewId", () => {
+describe("DELETE /review/:reviewId", () => {
   let buyerWithReview: User;
   let buyerWithoutReview: User;
   let seller: User;
@@ -294,7 +294,7 @@ describe("DELETE /api/review/:reviewId", () => {
   describe("성공", () => {
     test("기본동작: 리뷰를 작성한 사람은 리뷰를 삭제할 수 있음, 다시 조회시 존재하지 않음", async () => {
       const authReq = getAuthenticatedReq(buyerWithReview.id);
-      const response = await authReq.delete(`/api/review/${review.id}`);
+      const response = await authReq.delete(`/review/${review.id}`);
       console.warn(response.body);
       expect(response.status).toBe(200);
       expect(response.body.message).toBe("리뷰를 삭제했습니다.");
@@ -311,20 +311,18 @@ describe("DELETE /api/review/:reviewId", () => {
     test("해당 Id 의 review 가 존재하지 않을 시 NotFoundError(404) 발생", async () => {
       const authReq = getAuthenticatedReq(buyerWithReview.id);
       const nonExistentReviewId = "creview0000notfoundid0001";
-      const response = await authReq.delete(
-        `/api/review/${nonExistentReviewId}`
-      );
+      const response = await authReq.delete(`/review/${nonExistentReviewId}`);
       expect(response.status).toBe(404);
     });
     test("자신이 작성하지 않은 review 를 삭제하려고 하면 UnAuthError(401) 발생", async () => {
       const authReq = getAuthenticatedReq(buyerWithoutReview.id);
-      const response = await authReq.delete(`/api/review/${review.id}`);
+      const response = await authReq.delete(`/review/${review.id}`);
       expect(response.status).toBe(401);
     });
   });
 });
 
-describe("GET /api/product/:productId/reviews", () => {
+describe("GET /product/:productId/reviews", () => {
   let buyer1: User;
   let buyer2: User;
   let seller: User;
@@ -371,7 +369,7 @@ describe("GET /api/product/:productId/reviews", () => {
   describe("성공", () => {
     test("기본동작: 로그인 하지 않아도 확인 가능 ", async () => {
       const response = await request(app).get(
-        `/api/product/${product1.id}/reviews`
+        `/product/${product1.id}/reviews`
       );
       expect(response.status).toBe(200);
       // 정은 : 어차피 Swagger 가 이상한 것 같아서, 일단 여기까지만 테스트
@@ -381,7 +379,7 @@ describe("GET /api/product/:productId/reviews", () => {
     test("존재하지 않는 product에 대해 조회시 NotFoundErr(404) 발생", async () => {
       const nonExistentProductId = "cproduct0000notfoundid0001";
       const response = await request(app).get(
-        `/api/product/${nonExistentProductId}/reviews`
+        `/product/${nonExistentProductId}/reviews`
       );
       expect(response.status).toBe(404);
     });
