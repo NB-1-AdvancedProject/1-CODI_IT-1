@@ -4,6 +4,7 @@ import { environment } from "../lib/constants";
 import EmptyUploadError from "../lib/errors/EmptyUploadError";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import uploadService from "../services/uploadService";
 
 const storage = multer.diskStorage({
   destination: "uploads/",
@@ -29,8 +30,13 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
   }
 
   if (environment === "production") {
-    memoryUpload(req, res, function (err) {
+    memoryUpload(req, res, async function (err) {
       if (err) return next(err);
+      if (!req.file) {
+        return next(new EmptyUploadError());
+      }
+      const { url, key } = await uploadService.uploadImageToS3(req.file);
+      (req as any).uploadedImage = { url, key };
       next();
     });
   }
