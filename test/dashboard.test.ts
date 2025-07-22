@@ -22,7 +22,7 @@ import bcrypt from "bcrypt";
 import { Store } from "../src/types/storeType";
 import { Decimal } from "@prisma/client/runtime/library";
 
-describe("GET /api/dashboard", () => {
+describe("GET /dashboard", () => {
   let buyerUser: User;
   let sellerWithStore: User;
   let store: Store;
@@ -70,6 +70,10 @@ describe("GET /api/dashboard", () => {
   });
   describe("성공", () => {
     test("기본동작: 판매자는 대시보드 데이터를 성공적으로 잘 가져옴", async () => {
+      const fixedDate = new Date("2025-07-25T00:00:00Z");
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] });
+      jest.setSystemTime(fixedDate);
+
       const now = new Date();
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
@@ -140,7 +144,7 @@ describe("GET /api/dashboard", () => {
       });
 
       const authReq = getAuthenticatedReq(sellerWithStore.id);
-      const response = await authReq.get("/api/dashboard");
+      const response = await authReq.get("/dashboard");
       expect(response.status).toBe(200);
       // today
       expect(response.body.today.current.totalOrders).toBe(2);
@@ -196,17 +200,18 @@ describe("GET /api/dashboard", () => {
       expect(response.body.priceRange[3].priceRange).toBe("십만원 초과");
       expect(response.body.priceRange[3].totalSales).toBe(150000);
       expect(response.body.priceRange[3].percentage).toBe(36);
+      jest.useRealTimers();
     });
   });
   describe("오류", () => {
     test("buyer 로 로그인 시 UnauthError(401) 발생", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/dashboard");
+      const response = await authReq.get("/dashboard");
       expect(response.status).toBe(401);
     });
     test("스토어가 없는 seller일 시 NotFound(404) 발생", async () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
-      const response = await authReq.get("/api/dashboard");
+      const response = await authReq.get("/dashboard");
       expect(response.status).toBe(404);
     });
   });
