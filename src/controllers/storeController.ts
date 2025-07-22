@@ -53,16 +53,13 @@ export const getMyStoreInfo: RequestHandler = async (req, res) => {
 export const updateMyStore: RequestHandler = async (req, res) => {
   const { id: userId } = req.user!;
   const { id: storeId } = create(req.params, IdParamsStruct);
-  const protocol = req.protocol;
-  const host = req.get("host");
+  const { url } = (req as any).uploadedImage || {};
   assert(req.body, UpdateStoreBodyStruct);
   const result = await storeService.updateMyStore({
     userId,
     storeId,
     ...req.body,
-    image: req.file
-      ? `${protocol}://${host}/uploads/${req.file.filename}`
-      : undefined,
+    image: url,
   });
   res.status(200).json(result);
 };
