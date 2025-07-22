@@ -19,6 +19,7 @@ export const getUser: RequestHandler = async (req, res) => {
 
 export const patchUser: RequestHandler = async (req, res) => {
   const id = req.user!.id;
+  console.log(req.body);
   const { currentPassword, ...data } = req.body;
 
   const updateData = create(data, UpdateUser);
