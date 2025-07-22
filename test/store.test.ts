@@ -25,7 +25,7 @@ import { User } from "../src/types/user";
 import { Store } from "../src/types/storeType";
 import { Decimal } from "@prisma/client/runtime/library";
 
-describe("POST /api/stores", () => {
+describe("POST /stores", () => {
   let buyerUser: User;
   let sellerUser: User;
   let sellerUser2: User;
@@ -47,7 +47,7 @@ describe("POST /api/stores", () => {
         content: "newStoreForYou",
       };
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.post("/api/stores").send(newStore);
+      const response = await authReq.post("/stores").send(newStore);
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject(newStore);
     });
@@ -61,7 +61,7 @@ describe("POST /api/stores", () => {
         content: "newStoreForYou",
       };
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.post("/api/stores").send(newStore);
+      const response = await authReq.post("/stores").send(newStore);
       expect(response.status).toBe(401);
     });
     test("이미 스토어를 가지고 있을 시 AlreadyExistError(409) 발생", async () => {
@@ -72,7 +72,7 @@ describe("POST /api/stores", () => {
         content: "anotherStoreForYou",
       };
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.post("/api/stores").send(anotherStore);
+      const response = await authReq.post("/stores").send(anotherStore);
       expect(response.status).toBe(409);
     });
     test("입력값이 맞지 않을 시 BadRequestError(400) 발생", async () => {
@@ -80,13 +80,13 @@ describe("POST /api/stores", () => {
         name: "wrongStore",
       };
       const authReq = getAuthenticatedReq(sellerUser2.id);
-      const response = await authReq.post("/api/stores").send(wrongStore);
+      const response = await authReq.post("/stores").send(wrongStore);
       expect(response.status).toBe(400);
     });
   });
 });
 
-describe("GET /api/stores/:id", () => {
+describe("GET /stores/:id", () => {
   let buyerUser: User;
   let sellerUser: User;
   let store: Store;
@@ -102,7 +102,7 @@ describe("GET /api/stores/:id", () => {
   });
   describe("성공", () => {
     test("기본동작: 해당 id의 store 정보와 favoriteCount 를 반환함", async () => {
-      const response = await request(app).get(`/api/stores/${store.id}`);
+      const response = await request(app).get(`/stores/${store.id}`);
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(store.id);
       expect(response.body.favoriteCount).toBe(1);
@@ -110,18 +110,18 @@ describe("GET /api/stores/:id", () => {
   });
   describe("오류", () => {
     test("CUID 형태가 아닌 스토어 아이디로 찾을 시 BadRequestError(400) 발생", async () => {
-      const response = await request(app).get("/api/stores/1234");
+      const response = await request(app).get("/stores/1234");
       expect(response.status).toBe(400);
     });
     test("CUID 형태이나 존재하지 않는 스토어 요청 시 NotFoundError(404) 발생", async () => {
       const nonExistingCUID = "c00000000000000000000000";
-      const response = await request(app).get(`/api/stores/${nonExistingCUID}`);
+      const response = await request(app).get(`/stores/${nonExistingCUID}`);
       expect(response.status).toBe(404);
     });
   });
 });
 
-describe("GET /api/stores/detail/my", () => {
+describe("GET /stores/detail/my", () => {
   let buyerUser: User;
   let buyerUser2: User;
   let sellerUser: User;
@@ -152,7 +152,7 @@ describe("GET /api/stores/detail/my", () => {
   describe("성공", () => {
     test("기본동작: 내 스토어 정보와 favoriteCount, monthFavoriteCount, productCount를 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const response = await authReq.get("/api/stores/detail/my");
+      const response = await authReq.get("/stores/detail/my");
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(store.id);
       expect(response.body.favoriteCount).toBe(2);
@@ -163,17 +163,17 @@ describe("GET /api/stores/detail/my", () => {
   describe("오류", () => {
     test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
-      const response = await authReq.get("/api/stores/detail/my");
+      const response = await authReq.get("/stores/detail/my");
       expect(response.status).toBe(404);
     });
     test("로그인 안했을 시 UnauthorizedError(401) 발생", async () => {
-      const response = await request(app).get("/api/stores/detail/my");
+      const response = await request(app).get("/stores/detail/my");
       expect(response.status).toBe(401);
     });
   });
 });
 
-describe("GET /api/stores/detail/my/product", () => {
+describe("GET /stores/detail/my/product", () => {
   beforeEach(async () => {
     await clearDatabase();
     await createTestCategories(categories);
@@ -191,7 +191,7 @@ describe("GET /api/stores/detail/my/product", () => {
       });
       await createTestStocks(product1StocksQuantity18);
       const authReq = getAuthenticatedReq(sellerWithStore.id);
-      const response = await authReq.get("/api/stores/detail/my/product");
+      const response = await authReq.get("/stores/detail/my/product");
       expect(response.status).toBe(200);
       expect(response.body.list[0].id).toBe(product.id);
       expect(response.body.totalCount).toBe(1);
@@ -211,7 +211,7 @@ describe("GET /api/stores/detail/my/product", () => {
         data: { storeId: store.id, ...productWithDiscount },
       });
       const authReq = getAuthenticatedReq(sellerWithStore.id);
-      const response = await authReq.get("/api/stores/detail/my/product");
+      const response = await authReq.get("/stores/detail/my/product");
       expect(response.status).toBe(200);
       expect(response.body.list[0].id).toBe(product.id);
       expect(response.body.list[0].isDiscount).toBe(true);
@@ -224,7 +224,7 @@ describe("GET /api/stores/detail/my/product", () => {
       });
       await createTestStocks(product2StocksQuantity0);
       const authReq = getAuthenticatedReq(sellerWithStore.id);
-      const response = await authReq.get("/api/stores/detail/my/product");
+      const response = await authReq.get("/stores/detail/my/product");
       expect(response.status).toBe(200);
       expect(response.body.list[0].id).toBe(product.id);
       expect(response.body.list[0].isSoldOut).toBe(true);
@@ -251,7 +251,7 @@ describe("GET /api/stores/detail/my/product", () => {
 
       // page 1, pageSize 3
       const resPage1 = await authReq.get(
-        `/api/stores/detail/my/product?page=1&pageSize=3`
+        `/stores/detail/my/product?page=1&pageSize=3`
       );
       expect(resPage1.status).toBe(200);
       expect(resPage1.body.list).toHaveLength(3);
@@ -259,7 +259,7 @@ describe("GET /api/stores/detail/my/product", () => {
 
       // page 2, pageSize 3 → 2개 남아 있어야 함
       const resPage2 = await authReq.get(
-        `/api/stores/detail/my/product?page=2&pageSize=3`
+        `/stores/detail/my/product?page=2&pageSize=3`
       );
       expect(resPage2.status).toBe(200);
       expect(resPage2.body.list).toHaveLength(2);
@@ -270,13 +270,13 @@ describe("GET /api/stores/detail/my/product", () => {
     test("스토어가 없는 사람이라면 NotFoundError(404) 발생", async () => {
       const sellerWithoutStore = await createTestUser(seller1);
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
-      const response = await authReq.get("/api/stores/detail/my/product");
+      const response = await authReq.get("/stores/detail/my/product");
       expect(response.status).toBe(404);
     });
   });
 });
 
-describe("PATCH /api/stores/:storeId", () => {
+describe("PATCH /stores/:storeId", () => {
   let sellerWithStore: User;
   let sellerWithoutStore: User;
   let store: Store;
@@ -299,7 +299,7 @@ describe("PATCH /api/stores/:storeId", () => {
     test("기본동작: 본인의 스토어이면 수정한 결과를 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerWithStore.id);
       const response = await authReq
-        .patch(`/api/stores/${store.id}`)
+        .patch(`/stores/${store.id}`)
         .send(updatedStore);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject(updatedStore);
@@ -310,13 +310,13 @@ describe("PATCH /api/stores/:storeId", () => {
     test("본인의 스토어가 아닌 경우 Unauthorized(401) 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerWithoutStore.id);
       const response = await authReq
-        .patch(`/api/stores/${store.id}`)
+        .patch(`/stores/${store.id}`)
         .send(updatedStore);
       expect(response.status).toBe(401);
     });
   });
 });
-describe("POST /api/stores/:storeId/favorite", () => {
+describe("POST /stores/:storeId/favorite", () => {
   let sellerWithStore: User;
   let store: Store;
   let buyer: User;
@@ -332,7 +332,7 @@ describe("POST /api/stores/:storeId/favorite", () => {
   describe("성공", () => {
     test("기본동작: favoriteStore 가 생성되고 해당 store 정보가 반환됨", async () => {
       const authReq = getAuthenticatedReq(buyer.id);
-      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      const response = await authReq.post(`/stores/${store.id}/favorite`);
       expect(response.status).toBe(200);
       expect(response.body.store).toMatchObject({
         id: store.id,
@@ -349,12 +349,12 @@ describe("POST /api/stores/:storeId/favorite", () => {
   describe("오류", () => {
     test("이미 favorite 되어 있다면 AlreadyExtErr (409) 발생", async () => {
       const authReq = getAuthenticatedReq(buyer.id);
-      const response = await authReq.post(`/api/stores/${store.id}/favorite`);
+      const response = await authReq.post(`/stores/${store.id}/favorite`);
       expect(response.status).toBe(409);
     });
   });
 });
-describe("DELETE /api/stores/:storeId/favorite", () => {
+describe("DELETE /stores/:storeId/favorite", () => {
   let sellerWithStore: User;
   let store: Store;
   let buyer: User;
@@ -371,7 +371,7 @@ describe("DELETE /api/stores/:storeId/favorite", () => {
   describe("성공", () => {
     test("기본동작: favoriteStore 가 삭제 해당 store 정보가 deleteType과 함께 반환됨", async () => {
       const authReq = getAuthenticatedReq(buyer.id);
-      const response = await authReq.delete(`/api/stores/${store.id}/favorite`);
+      const response = await authReq.delete(`/stores/${store.id}/favorite`);
       expect(response.status).toBe(200);
       expect(response.body.store).toMatchObject({
         id: store.id,
@@ -388,7 +388,7 @@ describe("DELETE /api/stores/:storeId/favorite", () => {
   describe("오류", () => {
     test("찜하지 않은 스토어를 삭제요청 하면 NotFoundError (404) 발생", async () => {
       const authReq = getAuthenticatedReq(buyer.id);
-      const response = await authReq.delete(`/api/stores/${store.id}/favorite`);
+      const response = await authReq.delete(`/stores/${store.id}/favorite`);
       expect(response.status).toBe(404);
     });
   });

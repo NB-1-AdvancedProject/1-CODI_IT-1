@@ -76,7 +76,7 @@ describe("Product API 테스트", () => {
     await disconnectTestDB();
   });
 
-  test("POST /api/products - 상품 추가", async () => {
+  test("POST /products - 상품 추가", async () => {
     const newProduct = {
       name: "가디건",
       image: "https://s3-URL",
@@ -91,7 +91,7 @@ describe("Product API 테스트", () => {
       ],
     };
     const authReq = getAuthenticatedReq(sellerUser1.id);
-    const response = await authReq.post("/api/products").send(newProduct);
+    const response = await authReq.post("/products").send(newProduct);
 
     expect(response.status).toBe(201);
 
@@ -137,8 +137,8 @@ describe("Product API 테스트", () => {
       },
     });
   });
-  test("GET /api/products/:id 상품 상세 조회", async () => {
-    const res = await request(app).get("/api/products/product1-id");
+  test("GET /products/:id 상품 상세 조회", async () => {
+    const res = await request(app).get("/products/product1-id");
     expect(res.body.name).toBe("가디건");
     expect(res.body.image).toBe("https://s3-url");
     expect(res.body.content).toBe("상품 상세 설명");
@@ -154,11 +154,11 @@ describe("Product API 테스트", () => {
     expect(res.body).toHaveProperty("discountEndTime");
     expect(res.body.reviewsCount).toBe(1);
   });
-  describe("GET /api/products - 상품 목록 조회", () => {
+  describe("GET /products - 상품 목록 조회", () => {
     beforeAll(async () => {});
 
     test("상품 기본 조회 - 페이징 기본값", async () => {
-      const res = await request(app).get("/api/products");
+      const res = await request(app).get("/products");
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.list)).toBe(true);
@@ -180,7 +180,7 @@ describe("Product API 테스트", () => {
     });
 
     test("상품이름 기준으로 상품 검색", async () => {
-      const res = await request(app).get("/api/products").query({
+      const res = await request(app).get("/products").query({
         searchBy: "name",
         search: "반팔",
       });
@@ -189,7 +189,7 @@ describe("Product API 테스트", () => {
     });
 
     test("스토어 기준으로 상품 검색", async () => {
-      const res = await request(app).get("/api/products").query({
+      const res = await request(app).get("/products").query({
         searchBy: "store",
         search: "2",
       });
@@ -198,7 +198,7 @@ describe("Product API 테스트", () => {
     });
 
     test("카테고리 필터링", async () => {
-      const res = await request(app).get("/api/products").query({
+      const res = await request(app).get("/products").query({
         categoryName: "생활용품",
       });
       expect(res.status).toBe(200);
@@ -206,7 +206,7 @@ describe("Product API 테스트", () => {
     });
 
     test("가격 필터링 (min, max)", async () => {
-      const res = await request(app).get("/api/products").query({
+      const res = await request(app).get("/products").query({
         priceMin: 40000,
         priceMax: 50001,
       });
@@ -217,31 +217,31 @@ describe("Product API 테스트", () => {
     //사이즈 필터링이 되는지 확인해야하는데, 요구하는 responseBody 에 사이즈 정보가없으므로 보류.
 
     test("정렬 조건별 조회", async () => {
-      const response1 = await request(app).get("/api/products").query({
+      const response1 = await request(app).get("/products").query({
         sort: "mostReviewed",
       });
       expect(response1.status).toBe(200);
       expect(response1.body.list[0].reviewsCount).toBe(25);
 
-      const response2 = await request(app).get("/api/products").query({
+      const response2 = await request(app).get("/products").query({
         sort: "highRating",
       });
       expect(response2.status).toBe(200);
       expect(response2.body.list[0].reviewsRating).toBe(4.9);
 
-      const response3 = await request(app).get("/api/products").query({
+      const response3 = await request(app).get("/products").query({
         sort: "lowPrice",
       });
       expect(response3.status).toBe(200);
       expect(response3.body.list[0].price).toBe("1");
 
-      const response4 = await request(app).get("/api/products").query({
+      const response4 = await request(app).get("/products").query({
         sort: "recent",
       });
       expect(response4.status).toBe(200);
       expect(response4.body.list[0].createdAt).toBe("2999-02-15T00:00:00.000Z");
 
-      const response5 = await request(app).get("/api/products").query({
+      const response5 = await request(app).get("/products").query({
         sort: "salesRanking",
       });
       expect(response5.status).toBe(200);
@@ -251,10 +251,10 @@ describe("Product API 테스트", () => {
     test("페이지네이션 테스트", async () => {
       const pageSize = 2;
       const res1 = await request(app)
-        .get("/api/products")
+        .get("/products")
         .query({ page: 1, pageSize });
       const res2 = await request(app)
-        .get("/api/products")
+        .get("/products")
         .query({ page: 2, pageSize });
 
       expect(res1.status).toBe(200);
@@ -282,7 +282,7 @@ describe("Product API 테스트", () => {
       });
 
       const authReq = getAuthenticatedReq(sellerUser1.id);
-      const response = await authReq.patch("/api/products/product1-id").send({
+      const response = await authReq.patch("/products/product1-id").send({
         name: "Updated Product",
         price: 19900,
         content: "Updated content",
@@ -305,7 +305,7 @@ describe("Product API 테스트", () => {
 
     test("일부 필드만 수정", async () => {
       const authReq = getAuthenticatedReq(sellerUser1.id);
-      const response = await authReq.patch("/api/products/product1-id").send({
+      const response = await authReq.patch("/products/product1-id").send({
         price: 29900,
       });
 
@@ -315,7 +315,7 @@ describe("Product API 테스트", () => {
 
     test("Int 필드에 잘못된타입 삽입 테스트", async () => {
       const authReq = getAuthenticatedReq(sellerUser1.id);
-      const response = await authReq.patch("/api/products/product1-id").send({
+      const response = await authReq.patch("/products/product1-id").send({
         price: "not-a-number",
       });
 
@@ -324,20 +324,18 @@ describe("Product API 테스트", () => {
 
     test("본인의 상품이 아닌 경우 Unauthorized(401) 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerUser1.id);
-      const response = await authReq.patch("/api/products/product2-id").send({
+      const response = await authReq.patch("/products/product2-id").send({
         name: "Some Name",
       });
       expect(response.status).toBe(401);
     });
     test("존재 하지않는 상품ID 를 입력했을경우 Not Found Error 반환함", async () => {
       const authReq = getAuthenticatedReq(sellerUser1.id);
-      const response = await authReq
-        .patch("/api/products/product10-id")
-        .send({});
+      const response = await authReq.patch("/products/product10-id").send({});
       expect(response.status).toBe(404);
     });
   });
-  describe("DELETE /api/products/:id - 상품 삭제", () => {
+  describe("DELETE /products/:id - 상품 삭제", () => {
     test("기본 삭제 테스트", async () => {
       //uploadService.deleteFileFromS3 가 리턴하는 예시값
       (uploadService.deleteFileFromS3 as jest.Mock).mockResolvedValue({
@@ -352,11 +350,11 @@ describe("Product API 테스트", () => {
       });
       const authReq = getAuthenticatedReq(sellerUser1.id);
 
-      const deleteResponse = await authReq.delete("/api/products/product1-id");
+      const deleteResponse = await authReq.delete("/products/product1-id");
       expect(deleteResponse.status).toBe(204);
 
       // 삭제된 상품 한번더 삭제시 404 에러 발생 확인
-      const Response = await authReq.delete("/api/products/product1-id");
+      const Response = await authReq.delete("/products/product1-id");
       expect(Response.status).toBe(404);
     });
   });

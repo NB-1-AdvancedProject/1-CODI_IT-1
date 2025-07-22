@@ -96,7 +96,7 @@ describe("Order API", () => {
     await prisma.$disconnect();
   });
 
-  describe("POST /api/order/", () => {
+  describe("POST /order", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
@@ -123,7 +123,7 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.post("/api/order/").send(order);
+      const response = await authReq.post("/order").send(order);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.payments.status).toBe("CompletedPayment");
@@ -144,7 +144,7 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.post("/api/order").send(order);
+      const response = await authReq.post("/order").send(order);
 
       expect(response.statusCode).toBe(400);
     });
@@ -164,13 +164,13 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.post("/api/order").send(order);
+      const response = await authReq.post("/order").send(order);
 
       expect(response.statusCode).toBe(400);
     });
   });
 
-  describe("GET /api/order/", () => {
+  describe("GET /order/", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
@@ -209,18 +209,18 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const res1 = await authReq.post("/api/order").send(order1);
+      const res1 = await authReq.post("/order").send(order1);
       expect(res1.status).toBe(201);
-      const res2 = await authReq.post("/api/order").send(order2);
+      const res2 = await authReq.post("/order").send(order2);
       expect(res2.status).toBe(201);
-      const response = await authReq.get("/api/order?status=PAID").send();
+      const response = await authReq.get("/order?status=PAID").send();
 
       expect(response.status).toBe(200);
       expect(response.body[1].orderItems[1].product.name).toBe("테스트 상품2");
     });
   });
 
-  describe("GET /api/order/:orderId", () => {
+  describe("GET /order/:orderId", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
@@ -240,9 +240,9 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const res1 = await authReq.post("/api/order").send(order1);
+      const res1 = await authReq.post("/order").send(order1);
       expect(res1.status).toBe(201);
-      const response = await authReq.get(`/api/order/${res1.body.id}`).send();
+      const response = await authReq.get(`/order/${res1.body.id}`).send();
 
       expect(response.status).toBe(200);
       expect(response.body.orderItems[0].product.name).toBe("테스트 상품");
@@ -277,13 +277,13 @@ describe("Order API", () => {
       };
 
       const authReq1 = getAuthenticatedReq(sellerUser.id);
-      const res1 = await authReq1.post("/api/order").send(order1);
+      const res1 = await authReq1.post("/order").send(order1);
       expect(res1.status).toBe(201);
 
       const authReq2 = getAuthenticatedReq(buyerUser.id);
-      const res2 = await authReq2.post("/api/order").send(order2);
+      const res2 = await authReq2.post("/order").send(order2);
       expect(res2.status).toBe(201);
-      const response = await authReq2.get(`/api/order/${res1.body.id}`).send();
+      const response = await authReq2.get(`/order/${res1.body.id}`).send();
 
       expect(response.status).toBe(403);
     });
@@ -303,17 +303,17 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(sellerUser.id);
-      const res1 = await authReq.post("/api/order").send(order1);
+      const res1 = await authReq.post("/order").send(order1);
       expect(res1.status).toBe(201);
       const response = await authReq
-        .get(`/api/order/cmcd0i9l4000pdvfhjo2ax0sn`)
+        .get(`/order/cmcd0i9l4000pdvfhjo2ax0sn`)
         .send();
 
       expect(response.status).toBe(404);
     });
   });
 
-  describe("DELETE /api/order/:id", () => {
+  describe("DELETE /order/:id", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
@@ -349,7 +349,7 @@ describe("Order API", () => {
       });
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.delete(`/api/order/${order.id}`).send();
+      const response = await authReq.delete(`/order/${order.id}`).send();
       expect(response.status).toBe(201);
     });
 
@@ -369,11 +369,9 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const res1 = await authReq.post("/api/order").send(order);
+      const res1 = await authReq.post("/order").send(order);
       expect(res1.status).toBe(201);
-      const response = await authReq
-        .delete(`/api/order/${res1.body.id}`)
-        .send();
+      const response = await authReq.delete(`/order/${res1.body.id}`).send();
       expect(response.status).toBe(400);
     });
 
@@ -394,23 +392,21 @@ describe("Order API", () => {
 
       const authReq = getAuthenticatedReq(buyerUser.id);
       const authReq2 = getAuthenticatedReq(sellerUser.id);
-      const res1 = await authReq.post("/api/order").send(order);
+      const res1 = await authReq.post("/order").send(order);
       expect(res1.status).toBe(201);
-      const response = await authReq2
-        .delete(`/api/order/${res1.body.id}`)
-        .send();
+      const response = await authReq2.delete(`/order/${res1.body.id}`).send();
       expect(response.status).toBe(403);
     });
 
     test("잘못된 id 입력", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .delete("/api/order/cmcd0i9l4000pdvfhjo2ax0sn")
+        .delete("/order/cmcd0i9l4000pdvfhjo2ax0sn")
         .send();
       expect(response.status).toBe(404);
     });
   });
-  describe("PATCH /api/order/:orderId", () => {
+  describe("PATCH /order/:orderId", () => {
     beforeEach(async () => {
       await prisma.order.deleteMany();
     });
@@ -436,11 +432,9 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const res1 = await authReq.post("/api/order").send(order1);
+      const res1 = await authReq.post("/order").send(order1);
       expect(res1.status).toBe(201);
-      const response = await authReq
-        .patch(`/api/order/${res1.body.id}`)
-        .send(data);
+      const response = await authReq.patch(`/order/${res1.body.id}`).send(data);
 
       expect(response.status).toBe(201);
       expect(response.body.name).toBe("강남자");
@@ -486,7 +480,7 @@ describe("Order API", () => {
       };
 
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.patch(`/api/order/${order.id}`).send(data);
+      const response = await authReq.patch(`/order/${order.id}`).send(data);
       expect(response.status).toBe(400);
     });
 
@@ -513,10 +507,10 @@ describe("Order API", () => {
 
       const authReq = getAuthenticatedReq(buyerUser.id);
       const authReq2 = getAuthenticatedReq(sellerUser.id);
-      const res1 = await authReq.post("/api/order").send(order);
+      const res1 = await authReq.post("/order").send(order);
       expect(res1.status).toBe(201);
       const response = await authReq2
-        .patch(`/api/order/${res1.body.id}`)
+        .patch(`/order/${res1.body.id}`)
         .send(data);
       expect(response.status).toBe(403);
     });
@@ -530,7 +524,7 @@ describe("Order API", () => {
 
       const authReq = getAuthenticatedReq(buyerUser.id);
       const response = await authReq
-        .patch("/api/order/cmcd0i9l4000pdvfhjo2ax0sn")
+        .patch("/order/cmcd0i9l4000pdvfhjo2ax0sn")
         .send(data);
       expect(response.status).toBe(404);
     });

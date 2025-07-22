@@ -93,14 +93,14 @@ describe("카트 API 테스트", () => {
     await prisma.$disconnect();
   });
 
-  describe("POST /api/cart", () => {
+  describe("POST /cart", () => {
     beforeEach(async () => {
       await prisma.cart.deleteMany();
     });
     test("카트를 생성할 수 있다.(성공)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
 
-      const response = await authReq.post("/api/cart").send();
+      const response = await authReq.post("/cart").send();
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("id");
@@ -115,12 +115,12 @@ describe("카트 API 테스트", () => {
 
       const authReq = await getAuthenticatedReq(invalidUserId);
 
-      const response = await authReq.post("/api/cart");
+      const response = await authReq.post("/cart");
       expect(response.status).toBe(401);
     });
   });
 
-  describe("GET /api/cart", () => {
+  describe("GET /cart", () => {
     beforeAll(async () => {
       await prisma.cart.deleteMany();
       cart = await prisma.cart.create({
@@ -142,7 +142,7 @@ describe("카트 API 테스트", () => {
     });
     test("카트 아이템을 조회할 수 있다(성공)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/api/cart");
+      const response = await authReq.get("/cart");
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body.items)).toBe(true);
       expect(response.body.items.length).toBeGreaterThan(0);
@@ -153,19 +153,19 @@ describe("카트 API 테스트", () => {
       const invalidUserId = "non-existent-user-id";
 
       const authReq = await getAuthenticatedReq(invalidUserId);
-      const response = await authReq.get("/api/cart");
+      const response = await authReq.get("/cart");
 
       expect(response.status).toBe(401);
     });
 
     test("카트 아이템 조회 실패 (카트 없음)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.get("/api/cart");
+      const response = await authReq.get("/cart");
       expect(response.status).toBe(404);
     });
   });
 
-  describe("PATCH /api/cart", () => {
+  describe("PATCH /cart", () => {
     beforeAll(async () => {
       await prisma.cart.deleteMany();
       cart = await prisma.cart.create({
@@ -176,7 +176,7 @@ describe("카트 API 테스트", () => {
     });
     test("카트 아이템 추가/아이템 수량 수정 (성공)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.patch("/api/cart").send({
+      const response = await authReq.patch("/cart").send({
         productId: product.id,
         sizes: [
           {
@@ -193,7 +193,7 @@ describe("카트 API 테스트", () => {
 
       const authReq = await getAuthenticatedReq(invalidUserId);
 
-      const response = await authReq.patch("/api/cart").send({
+      const response = await authReq.patch("/cart").send({
         productId: product.id,
         sizes: [
           {
@@ -206,7 +206,7 @@ describe("카트 API 테스트", () => {
     });
     test("카트 아이템 추가/아이템 수량 수정 (카트 없음)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.patch("/api/cart").send({
+      const response = await authReq.patch("/cart").send({
         productId: product.id,
         sizes: [
           {
@@ -218,7 +218,7 @@ describe("카트 API 테스트", () => {
       expect(response.status).toBe(404);
     });
   });
-  describe("DELETE /api/cart/:cartItemId", () => {
+  describe("DELETE /cart/:cartItemId", () => {
     let cartItem: CartItem;
     let cartItem1: CartItem;
     let cart1: Cart;
@@ -259,18 +259,18 @@ describe("카트 API 테스트", () => {
 
     test("카트 아이템 삭제(성공)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.delete(`/api/cart/${cartItem.id}`);
+      const response = await authReq.delete(`/cart/${cartItem.id}`);
       expect(response.status).toBe(204);
     });
 
     test("카트 아이템 삭제(실패)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser2.id);
-      const response = await authReq.delete(`/api/cart/${cartItem.id}`);
+      const response = await authReq.delete(`/cart/${cartItem.id}`);
       expect(response.status).toBe(403);
     });
   });
 
-  describe("GET /api/cart/:cartItemId", () => {
+  describe("GET /cart/:cartItemId", () => {
     let cartItem: CartItem;
     let cartItem1: CartItem;
     let cart1: Cart;
@@ -310,7 +310,7 @@ describe("카트 API 테스트", () => {
     });
     test("카트 상세 조회(성공)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      const response = await authReq.get(`/cart/${cartItem.id}`);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("id");
       expect(response.body).toHaveProperty("cartId");
@@ -320,19 +320,19 @@ describe("카트 API 테스트", () => {
     test("카트 상세 조회(없는 userId))", async () => {
       const invalidUserId = "clabcxyz1234567890abcdefg";
       const authReq = await getAuthenticatedReq(invalidUserId);
-      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      const response = await authReq.get(`/cart/${cartItem.id}`);
       expect(response.status).toBe(401);
     });
     test("카트 없음(실패))", async () => {
       await prisma.cart.delete({ where: { id: cart.id } });
       const authReq = await getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      const response = await authReq.get(`/cart/${cartItem.id}`);
       expect(response.status).toBe(404);
     });
     test("cartItem 없음 (404)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser.id);
       const response = await authReq.get(
-        `/api/cart/${"clabcxyz1234567890abcdefg"}`
+        `/cart/${"clabcxyz1234567890abcdefg"}`
       );
 
       expect(response.status).toBe(404);
@@ -340,7 +340,7 @@ describe("카트 API 테스트", () => {
     test("cartId 다름 → ForbiddenError (403)", async () => {
       const authReq = await getAuthenticatedReq(buyerUser2.id);
 
-      const response = await authReq.get(`/api/cart/${cartItem.id}`);
+      const response = await authReq.get(`/cart/${cartItem.id}`);
 
       expect(response.status).toBe(403);
     });

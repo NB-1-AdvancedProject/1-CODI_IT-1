@@ -1,17 +1,8 @@
-import {
-  object,
-  string,
-  coerce,
-  pattern,
-  optional,
-  enums,
-  partial,
-} from "superstruct";
+import { object, string, coerce, pattern, optional, enums } from "superstruct";
 import { emailRegExp } from "./commonStructs";
 
 const nameRegex = /^[a-zA-Z0-9가-힣]+$/;
-const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,15}$/;
+const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
 const UserType = enums(["BUYER", "SELLER"]);
 
