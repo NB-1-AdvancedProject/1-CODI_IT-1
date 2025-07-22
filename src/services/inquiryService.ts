@@ -23,6 +23,7 @@ import {
   InquiryResDTO,
   replyResDTO,
   GetInquiryResDTO,
+  InquiryItem,
 } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
@@ -43,7 +44,9 @@ export async function getList(
     throw new NotFoundError("User", userId);
   }
 
-  const list = await listData(params, userId);
+  const inquiries = await listData(params, userId);
+
+  const list = inquiries.map((inquiry) => new InquiryItem(inquiry));
 
   const totalCount = await countData(userId);
 
