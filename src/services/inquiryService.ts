@@ -261,7 +261,7 @@ export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
   const data = await listQuiries(params);
 
   if (!data || data.length === 0) {
-    throw new NotFoundError("Product", params);
+    return [];
   }
 
   return data.map((inquiry) => {
