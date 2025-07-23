@@ -9,6 +9,7 @@ import {
   GetCartItemData,
   CartList,
   CartItemData,
+  cartItemsData,
 } from "../../types/cartType";
 
 export class cartDTO {
@@ -76,6 +77,7 @@ export class productDTO {
   name: string;
   price: Number;
   image: string;
+  discountPrice: Number | null;
   discountRate: Number | null;
   discountStartTime: string | null;
   discountEndTime: string | null;
@@ -88,6 +90,9 @@ export class productDTO {
     this.name = products.name;
     this.price = products.price.toNumber();
     this.image = products.image;
+    this.discountPrice = products.discountPrice
+      ? products.discountPrice.toNumber()
+      : products.price.toNumber();
     this.discountRate = products.discountRate;
     this.discountStartTime = products.discountStartTime
       ? products.discountStartTime.toISOString()
@@ -141,11 +146,13 @@ export class stockDTO {
 }
 
 export class sizeDTO {
-  id: string;
+  id: number;
+  name: string;
   size: SizeLeanguage;
 
   constructor(sizes: SizeData) {
     this.id = sizes.id;
+    this.name = sizes.size[0];
     this.size = {
       ko: sizes.size[0],
       en: sizes.size,
@@ -170,5 +177,25 @@ export class cartListDTO {
     this.items = carts.cartItems.map(
       (cartItem) => new getCartItemDTO(cartItem)
     );
+  }
+}
+
+export class cartItemsDTO {
+  id: string;
+  cartId: string;
+  productId: string;
+  sizeId: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+
+  constructor(cartItem: cartItemsData) {
+    this.id = cartItem.id;
+    this.cartId = cartItem.cartId;
+    this.productId = cartItem.productId;
+    this.sizeId = cartItem.sizeId;
+    this.quantity = cartItem.quantity;
+    this.createdAt = cartItem.createdAt.toISOString();
+    this.updatedAt = cartItem.updatedAt.toISOString();
   }
 }
