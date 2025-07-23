@@ -6,6 +6,10 @@ import {
 } from "@prisma/client";
 import { UserType } from "./mock";
 import { Decimal } from "@prisma/client/runtime/library";
+import bcrypt from "bcrypt";
+
+const password = "Password1234";
+const passwordHashed = bcrypt.hashSync(password, 10);
 
 export interface GradeMock {
   id: string;
@@ -241,7 +245,7 @@ export const UserMocks: User[] = [
     id: "cum9sqi2o80rpi4lb7utemly4",
     name: "홍길동",
     email: "markpalmer@king-jacobs.biz",
-    password: "password1234",
+    password: passwordHashed,
     type: UserType.SELLER,
     point: 763,
     totalAmount: new Decimal(112100),
@@ -258,7 +262,7 @@ export const UserMocks: User[] = [
     id: "cgd5958bqeac4ctokkomgbe9o",
     email: "derek74@yahoo.com",
     name: "유관순",
-    password: "password1234",
+    password: passwordHashed,
     type: UserType.BUYER,
     point: 601,
     totalAmount: new Decimal(31650),
@@ -275,7 +279,7 @@ export const UserMocks: User[] = [
     id: "ceaiuox6cyg3aprebyid2tdni",
     email: "kim74@gmail.com",
     name: "세종대왕",
-    password: "password1234",
+    password: passwordHashed,
     type: UserType.SELLER,
     point: 674,
     totalAmount: new Decimal(687840),

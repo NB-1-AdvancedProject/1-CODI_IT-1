@@ -270,7 +270,7 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     await productRepository.update({ isSoldOut }, updatedProduct.id);
     const order = await orderRepository.getOrderItem(updatedProduct.id);
     const orderIds = order
-      .filter((o) => o.order.status === "PENDING")
+      .filter((o) => o.order.status === "CompletedPayment")
       .map((o) => o.order.userId);
     const cart = await getItem(updatedProduct.id);
     const cartIds = cart.map((c) => c.cart.userId);
