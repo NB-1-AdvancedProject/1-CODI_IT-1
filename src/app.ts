@@ -47,7 +47,7 @@ app.use("/dashboard", dashboardRouter);
 app.use("/s3", uploadRouter);
 app.use("/notifications", notificationRouter);
 app.use("/metadata", metadataRouter);
-app.use("/order", orderRouter);
+app.use("/orders", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
