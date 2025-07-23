@@ -145,7 +145,7 @@ export class stockDTO {
 }
 
 export class sizeDTO {
-  id: string;
+  id: number;
   name: string;
   size: SizeLeanguage;
 
