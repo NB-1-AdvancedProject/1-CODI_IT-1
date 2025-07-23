@@ -3,6 +3,7 @@ import {
   CreateReviewBody,
   UpdateReviewBody,
 } from "../../structs/reviewStructs";
+import { ReviewWithUser } from "../../types/reviewType";
 
 // Request
 
@@ -25,6 +26,60 @@ export class ReviewDTO {
   }
 }
 
+export class ReviewListDTO {
+  items: ReviewData[];
+  meta: ReviewMetaData;
+
+  constructor(
+    reviews: ReviewWithUser[],
+    params: {
+      total: number;
+      page: number;
+      limit: number;
+      hasNextPage: boolean;
+    }
+  ) {
+    this.items = reviews.map((review) => ({
+      id: review.id,
+      userId: review.userId,
+      productId: review.productId,
+      content: review.content,
+      rating: review.rating,
+      createdAt: review.createdAt.toISOString?.() ?? review.createdAt,
+      updatedAt: review.updatedAt.toISOString?.() ?? review.updatedAt,
+      orderItemId: review.orderItemId,
+      user: {
+        name: review.user?.name ?? "",
+      },
+    }));
+
+    this.meta = {
+      total: params.total,
+      page: params.page,
+      limit: params.limit,
+      hasNextPage: params.hasNextPage,
+    };
+  }
+}
+
+export interface ReviewMetaData {
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+}
+
+export interface ReviewData {
+  id: string;
+  userId: string;
+  productId: string;
+  content: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
+  orderItemId: string;
+  user: { name: string };
+}
 // Input (Service <-> Repo)
 
 export type CreateReviewData = {
