@@ -438,7 +438,7 @@ async function createOrderAndOrderItems(
       name: "주문",
       address: "테스트 주소",
       phone: "010-1234-5678",
-      status: OrderStatus.PAID,
+      status: OrderStatus.CompletedPayment,
       usePoint: 0,
       subtotal: product.price.mul(quantity),
       paidAt,

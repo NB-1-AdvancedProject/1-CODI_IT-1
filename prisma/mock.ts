@@ -204,17 +204,17 @@ export const GradeMocks: GradeMock[] = [
 export const CategoryMocks: CategoryMock[] = [
   {
     id: "cy7ho4p9r0dj2itnpgwkyqg1s",
-    name: "book",
+    name: "TOP",
     description: "Security mission reveal through business.",
   },
   {
     id: "c0fm6puffcuhepnyi73xibhcr",
-    name: "your",
+    name: "BOTTOM",
     description: "Bank increase head nature good center perform.",
   },
   {
     id: "csev4ctimhvcocsts64xd4lym",
-    name: "response",
+    name: "DRESS",
     description: "Identify run guess pattern.",
   },
 ];
