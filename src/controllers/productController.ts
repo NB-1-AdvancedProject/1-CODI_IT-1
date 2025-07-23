@@ -49,7 +49,13 @@ export const postProduct: RequestHandler = async (req, res) => {
     }
   );
   const data = create(
-    { ...req.body, image: url, stocks: newStocks },
+    {
+      ...req.body,
+      discountStartTime: new Date(req.body.discountStartTime),
+      discountEndTime: new Date(req.body.discountEndTime),
+      image: url,
+      stocks: newStocks,
+    },
     CreateProductBodyStruct
   );
   const product = await productService.createProduct(data, req.user!.id);

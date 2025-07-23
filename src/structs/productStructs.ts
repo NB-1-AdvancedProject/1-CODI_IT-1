@@ -16,7 +16,7 @@ export const CreateProductBodyStruct = object({
   price: integerString,
   content: string(),
   image: string(),
-  discountRate: optional(number()),
+  discountRate: optional(integerString),
   discountStartTime: optional(date()),
   discountEndTime: optional(date()),
   categoryName: string(),
