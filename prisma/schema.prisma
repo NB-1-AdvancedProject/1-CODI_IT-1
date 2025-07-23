@@ -19,12 +19,10 @@ enum UserType {
 }
 
 enum OrderStatus {
-  PENDING
-  PAID
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  REFUNDED
+  CompletedPayment
+  Cancelled
+  Processing
+  Shipped
 }
 
 enum PaymentStatus {
@@ -228,8 +226,8 @@ model Inquiry {
 }
 
 enum InquiryStatus {
-  completedAnswer
-  noAnswer
+  CompletedAnswer
+  WaitingAnswer
 }
 
 model Reply {
