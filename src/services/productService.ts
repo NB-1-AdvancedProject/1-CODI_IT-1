@@ -27,7 +27,7 @@ async function createProduct(data: CreateProductBody, userId: string) {
     content: data.content,
     image: data.image,
     discountPrice: data.discountRate
-      ? data.price * (100 - data.discountRate)
+      ? (data.price * (100 - data.discountRate)) / 100
       : null,
     discountRate: data.discountRate || 0,
     discountStartTime: data.discountStartTime || null,
