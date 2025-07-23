@@ -23,7 +23,11 @@ async function findProductById(productId: string) {
     include: {
       category: true,
       store: true,
-      stocks: true,
+      stocks: {
+        include: {
+          size: true,
+        },
+      },
       reviews: true,
       inquiries: true,
     },

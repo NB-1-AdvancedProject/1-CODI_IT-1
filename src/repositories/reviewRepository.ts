@@ -7,6 +7,7 @@ import {
   OrderItemWithOrder,
   UpdateReviewData,
 } from "../lib/dto/reviewDTO";
+import { ReviewWithUser } from "../types/reviewType";
 
 export async function createReview(
   data: CreateReviewData,
@@ -41,13 +42,17 @@ export async function findReviewById(
   return await client.review.findUnique({ where: { id: reviewId } });
 }
 
-export async function findReviewsByProductId(
+export async function findReviewsWithUserByProductId(
   productId: string,
   pageParams: Prisma.ReviewFindManyArgs,
   tx?: Prisma.TransactionClient
-): Promise<Review[]> {
+): Promise<ReviewWithUser[]> {
   const client = tx || prisma;
-  return await client.review.findMany({ where: { productId }, ...pageParams });
+  return await client.review.findMany({
+    where: { productId },
+    ...pageParams,
+    include: { user: true },
+  });
 }
 
 export async function deleteReviewById(
@@ -56,6 +61,11 @@ export async function deleteReviewById(
 ) {
   const client = tx || prisma;
   return await client.review.delete({ where: { id: reviewId } });
+}
+
+export async function countByProductId(productId: string): Promise<number> {
+  const count = await prisma.review.count({ where: { productId } });
+  return count;
 }
 
 // 정은: 다른 도메인 관련 함수
@@ -92,4 +102,12 @@ export async function findProductById(
 ): Promise<Product | null> {
   const client = tx || prisma;
   return await client.product.findUnique({ where: { id: productId } });
+}
+
+export async function findReviewsByProductIdForProduct(
+  productId: string
+): Promise<Review[]> {
+  return await prisma.review.findMany({
+    where: { productId },
+  });
 }
