@@ -106,7 +106,7 @@ export const postQuiryData: RequestHandler = async (req, res) => {
 export const getQuiryList: RequestHandler = async (req, res) => {
   const { id: params } = create(req.params, IdParamsStruct);
 
-  const result: GetInquiryResDTO[] = await quiryList(params);
+  const result = await quiryList(params);
 
   res.status(200).json(result);
 };

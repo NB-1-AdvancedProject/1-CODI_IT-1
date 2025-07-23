@@ -21,7 +21,7 @@ async function orderSave(
       name: order.name,
       phone: order.phone,
       address: order.address,
-      status: "PAID" as OrderStatusType,
+      status: "CompletedPayment" as OrderStatusType,
       subtotal: order.subtotal,
       orderItems: {
         create: order.orderItems.map((item: CreateOrderItemDTO) => ({
@@ -125,7 +125,7 @@ async function getOrder(id: string) {
 
 async function deleteOrder(id: string, userId: string) {
   const result = await prisma.order.deleteMany({
-    where: { id, userId, status: "PENDING" },
+    where: { id, userId, status: "Processing" },
   });
 
   if (result.count === 0) {

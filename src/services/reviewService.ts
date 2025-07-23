@@ -20,9 +20,8 @@ export async function createReview(
 ): Promise<ReviewDTO> {
   const { orderItemId, rating, content } = reviewData;
   const allowedStatus: OrderStatus[] = [
-    OrderStatus.PAID,
-    OrderStatus.DELIVERED,
-    OrderStatus.SHIPPED,
+    OrderStatus.CompletedPayment,
+    OrderStatus.Shipped,
   ];
   const result = await prisma.$transaction(async (tx) => {
     const orderItem = await reviewRepository.findOrderItemById(orderItemId, tx);

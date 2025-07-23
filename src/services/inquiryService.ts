@@ -46,6 +46,10 @@ export async function getList(
 
   const inquiries = await listData(params, userId);
 
+  if (inquiries.length === 0) {
+    return { list: [], totalCount: 0 };
+  }
+
   const list = inquiries.map((inquiry) => new InquiryItem(inquiry));
 
   const totalCount = await countData(userId);
@@ -257,14 +261,16 @@ export async function postQuiry(
   return new InquiryResDTO(quiryData);
 }
 
-export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
-  const data = await listQuiries(params);
+export async function quiryList(
+  productId: string
+): Promise<{ list: GetInquiryResDTO[]; totalCount: number }> {
+  const data = await listQuiries(productId);
 
   if (!data || data.length === 0) {
-    return [];
+    return { list: [], totalCount: 0 };
   }
 
-  return data.map((inquiry) => {
-    return new GetInquiryResDTO(inquiry);
-  });
+  const list = data.map((inquiry) => new GetInquiryResDTO(inquiry));
+
+  return { list, totalCount: list.length };
 }

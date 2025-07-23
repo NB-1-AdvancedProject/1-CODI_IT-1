@@ -140,7 +140,7 @@ export async function inquiryStatus(inquiryId: string) {
   return prisma.inquiry.update({
     where: { id: inquiryId },
     data: {
-      status: InquiryStatus.completedAnswer,
+      status: InquiryStatus.CompletedAnswer,
     },
   });
 }
@@ -153,16 +153,16 @@ export async function postData(
   return prisma.inquiry.create({
     data: {
       ...quiry,
-      status: "noAnswer",
+      status: "WaitingAnswer",
       userId: user,
       productId: params,
     },
   });
 }
 
-export async function listQuiries(params: string) {
+export async function listQuiries(productId: string) {
   return prisma.inquiry.findMany({
-    where: { productId: params, isSecret: false },
+    where: { productId: productId },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true } },
