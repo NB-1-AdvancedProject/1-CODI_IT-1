@@ -176,13 +176,13 @@ describe("GET /dashboard", () => {
       expect(response.body.year.changeRate.totalSales).toBe(8200);
       // topSales
       expect(response.body.topSales[0].totalOrders).toBe(10);
-      expect(response.body.topSales[0].product.id).toBe(product1.id);
+      expect(response.body.topSales[0].products.id).toBe(product1.id);
       expect(response.body.topSales[1].totalOrders).toBe(5);
-      expect(response.body.topSales[1].product.id).toBe(product4.id);
+      expect(response.body.topSales[1].products.id).toBe(product4.id);
       expect(response.body.topSales[2].totalOrders).toBe(3);
-      expect(response.body.topSales[2].product.id).toBe(product3.id);
+      expect(response.body.topSales[2].products.id).toBe(product3.id);
       expect(response.body.topSales[3].totalOrders).toBe(2);
-      expect(response.body.topSales[3].product.id).toBe(product2.id);
+      expect(response.body.topSales[3].products.id).toBe(product2.id);
       // priceRange
       expect(response.body.priceRange[0].priceRange).toBe("만원 미만");
       expect(response.body.priceRange[0].totalSales).toBe(15000);
@@ -287,7 +287,7 @@ export async function createOrderAndOrderItems(
       name: "주문",
       address: "테스트 주소",
       phone: "010-1234-5678",
-      status: OrderStatus.PAID,
+      status: OrderStatus.CompletedPayment,
       usePoint: 0,
       subtotal: product.price.mul(quantity),
       paidAt,

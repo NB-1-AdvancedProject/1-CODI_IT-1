@@ -1,4 +1,4 @@
-import { Prisma, Product, UserType } from "@prisma/client";
+import { OrderStatus, Prisma, Product, UserType } from "@prisma/client";
 import {
   DashboardDTO,
   GetDashboardDTO,
@@ -193,6 +193,11 @@ async function getTotalSalesByPriceRange(
         is: {
           storeId,
           price: { gte: minPrice, lt: maxPrice },
+        },
+      },
+      order: {
+        paidAt: {
+          not: null,
         },
       },
     },
