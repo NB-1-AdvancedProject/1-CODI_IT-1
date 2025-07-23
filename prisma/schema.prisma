@@ -116,7 +116,7 @@ model Product {
 model Stock {
   id        String @id @default(cuid())
   productId String
-  sizeId    String
+  sizeId    Int
   quantity  Int
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -124,7 +124,7 @@ model Stock {
 }
 
 model Size {
-  id   String @id @default(cuid())
+  id   Int    @id @default(autoincrement())
   size String
 
   stocks     Stock[]
@@ -162,7 +162,7 @@ model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
   productId String
-  sizeId    String
+  sizeId    Int
   quantity  Int
   price     Decimal // 이거 어차피 product의 price 라서 있어야하나.. 싶어요
   reviewId  String?
@@ -199,7 +199,7 @@ model CartItem {
   id        String   @id @default(cuid())
   cartId    String
   productId String
-  sizeId    String
+  sizeId    Int
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
