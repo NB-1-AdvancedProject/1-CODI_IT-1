@@ -23,7 +23,9 @@ export const getProducts: RequestHandler = async (req, res) => {
 
 export const postProduct: RequestHandler = async (req, res) => {
   const { url, key } = (req as any).uploadedImage || {};
-  req.body = JSON.parse(req.body);
+  if (typeof req.body.stocks === "string") {
+    req.body.stocks = JSON.parse(req.body.stocks);
+  }
   const newStocks = req.body.stocks.map(
     (stock: { sizeId: number; quantity: number }) => {
       if (stock.sizeId === 1) {
@@ -47,7 +49,13 @@ export const postProduct: RequestHandler = async (req, res) => {
     }
   );
   const data = create(
-    { ...req.body, image: url, stocks: newStocks },
+    {
+      ...req.body,
+      discountStartTime: new Date(req.body.discountStartTime),
+      discountEndTime: new Date(req.body.discountEndTime),
+      image: url,
+      stocks: newStocks,
+    },
     CreateProductBodyStruct
   );
   const product = await productService.createProduct(data, req.user!.id);
