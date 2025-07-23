@@ -23,9 +23,7 @@ export const getProducts: RequestHandler = async (req, res) => {
 
 export const postProduct: RequestHandler = async (req, res) => {
   const { url, key } = (req as any).uploadedImage || {};
-  if (typeof req.body.stocks === "string") {
-    req.body.stocks = JSON.parse(req.body.stocks);
-  }
+  req.body = JSON.parse(req.body);
   const newStocks = req.body.stocks.map(
     (stock: { sizeId: number; quantity: number }) => {
       if (stock.sizeId === 1) {
