@@ -13,7 +13,12 @@ import {
   getFindCart,
 } from "../repositories/cartRepository";
 import { CartData, CartList, CartItemData } from "../types/cartType";
-import { cartDTO, cartListDTO, cartItemDTO } from "../lib/dto/cartDto";
+import {
+  cartDTO,
+  cartListDTO,
+  cartItemDTO,
+  cartItemsDTO,
+} from "../lib/dto/cartDto";
 import { cartBodyType } from "../structs/cartStructs";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 
@@ -64,7 +69,7 @@ export async function cartItemList(user: string): Promise<cartListDTO | null> {
 export async function patchCart(
   user: string,
   cart: cartBodyType
-): Promise<cartItemDTO> {
+): Promise<cartItemsDTO[]> {
   const userData = await userRepository.findById(user);
   if (!userData) {
     throw new NotFoundError("user", user);
@@ -80,23 +85,9 @@ export async function patchCart(
     await patchData(cartData.id, cart.productId, size.sizeId, size.quantity);
   }
 
-  const updatedItem = await CartItemSizes(cartData.id, cart.productId);
+  const updatedItems = await CartItemSizes(cartData.id, cart.productId);
 
-  if (!updatedItem) {
-    throw new NotFoundError("cartItem", user);
-  }
-
-  const quantity = await cartItemCount(cartData.id);
-
-  const result: CartItemData = {
-    ...updatedItem,
-    cart: {
-      ...updatedItem.cart,
-      quantity: quantity,
-    },
-  };
-
-  return new cartItemDTO(result);
+  return updatedItems.map((item) => new cartItemsDTO(item));
 }
 
 export async function deleteCartItem(user: string, params: string) {
