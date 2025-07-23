@@ -13,13 +13,13 @@ export type CreateOrderDTO = {
   name: string;
   phone: string;
   address: string;
-  orderItems: { productId: string; sizeId: string; quantity: number }[];
+  orderItems: { productId: string; sizeId: number; quantity: number }[];
   usePoint: number;
 };
 
 export type CreateOrderItemDTO = {
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   price: Decimal;
 };
@@ -34,7 +34,7 @@ export type CreateOrderData = {
   usePoint: number;
   orderItems: {
     productId: string;
-    sizeId: string;
+    sizeId: number;
     quantity: number;
     price: Decimal;
   }[];
@@ -45,7 +45,7 @@ export type CreateOrderData = {
 
 export type StockDTO = {
   productId: string;
-  sizeId: string;
+  sizeId: number;
 };
 
 type OrderWithRelations = Order & {
@@ -94,13 +94,13 @@ export class OrderResDTO {
         productId: string;
         quantity: number;
         size: {
-          id: string;
+          id: number;
           size: string;
         };
       }[];
     };
     size: {
-      id: string;
+      id: number;
       size: string;
     };
   }[];

@@ -1,5 +1,5 @@
 import app from "./app";
-import { connectRedis } from "./utils/redis";
+import { connectRedis } from "./lib/redis";
 
 (async () => {
   try {

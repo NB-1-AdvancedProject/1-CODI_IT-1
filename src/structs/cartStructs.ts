@@ -1,7 +1,7 @@
 import { object, string, number, array, Infer } from "superstruct";
 
 const sizeStruct = object({
-  sizeId: string(),
+  sizeId: number(),
   quantity: number(),
 });
 

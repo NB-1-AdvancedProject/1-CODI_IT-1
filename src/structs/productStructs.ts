@@ -42,7 +42,7 @@ export const PatchProductBodyStruct = object({
   stocks: optional(
     array(
       object({
-        sizeId: string(),
+        sizeId: number(),
         quantity: integerString,
       })
     )

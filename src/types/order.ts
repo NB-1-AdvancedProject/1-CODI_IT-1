@@ -27,7 +27,7 @@ export interface OrderItemPayment {
 
 // Size 타입
 export interface Size {
-  id: string;
+  id: number;
   size: string;
 }
 

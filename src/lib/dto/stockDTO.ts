@@ -3,7 +3,7 @@ import { SizeDTO } from "./SizeDTO";
 export class StockDTO {
   id: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   size: SizeDTO;
 
@@ -11,7 +11,7 @@ export class StockDTO {
     id: string,
     productId: string,
     quantity: number,
-    sizeId: string,
+    sizeId: number,
     size: SizeDTO
   ) {
     this.id = id;

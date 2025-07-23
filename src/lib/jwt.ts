@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET, JWT_REFRESH_SECRET } from "../lib/constants";
+import { JWT_SECRET, JWT_REFRESH_SECRET } from "./constants";
 
 export interface JwtPayload {
   id: string;

@@ -6,7 +6,7 @@ import { JWT_REFRESH_SECRET, JWT_SECRET } from "../lib/constants";
 import jwt from "jsonwebtoken";
 import UnauthError from "../lib/errors/UnauthError";
 import { Token, TokenType } from "../types/user";
-import { getRedisClient } from "../utils/redis";
+import { getRedisClient } from "../lib/redis";
 
 async function verifyPassword(inputPassword: string, password: string) {
   const isMatch = await bcrypt.compare(inputPassword, password);

@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import userService from "../services/userService";
 import authService from "../services/authService";
 import BadRequestError from "../lib/errors/BadRequestError";
-import { verifyRefreshToken } from "../utils/jwt";
+import { verifyRefreshToken } from "../lib/jwt";
 
 export const login: RequestHandler = async (req, res) => {
   const { email, password } = req.body;
