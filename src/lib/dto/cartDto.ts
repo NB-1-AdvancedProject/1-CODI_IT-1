@@ -14,13 +14,11 @@ import {
 export class cartDTO {
   id: string;
   buyerId: string;
-  quantity: number;
   createdAt: string;
   updatedAt: string;
   constructor(cart: CartData) {
     this.id = cart.id;
     this.buyerId = cart.userId;
-    this.quantity = cart.quantity;
     this.createdAt = cart.createdAt.toISOString();
     this.updatedAt = cart.updatedAt.toISOString();
   }

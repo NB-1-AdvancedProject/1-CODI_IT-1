@@ -22,7 +22,7 @@ export const postCartData: RequestHandler = async (req, res) => {
 export const getCartItemList: RequestHandler = async (req, res) => {
   const user = req.user!.id;
 
-  const result: cartListDTO = await cartItemList(user);
+  const result: cartListDTO | null = await cartItemList(user);
 
   res.status(200).json(result);
 };

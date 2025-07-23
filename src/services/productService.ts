@@ -267,7 +267,16 @@ async function getProduct(productId: string) {
       refreshedProduct?.discountStartTime ?? product.discountStartTime ?? null,
     discountEndTime:
       refreshedProduct?.discountEndTime ?? product.discountEndTime ?? null,
-    stocks: product.stocks,
+    stocks: product.stocks.map((stock) => ({
+      id: stock.id,
+      productId: stock.productId,
+      quantity: stock.quantity,
+      sizeId: stock.size.id,
+      size: {
+        id: stock.size.id,
+        name: stock.size.size,
+      },
+    })),
     category: [{ name: product.category.name, id: product.category.id }],
   };
 }

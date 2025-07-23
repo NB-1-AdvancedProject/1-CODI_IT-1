@@ -10,6 +10,7 @@ import {
   deleteData,
   getIdCartItem,
   cartDataFind,
+  getFindCart,
 } from "../repositories/cartRepository";
 import { CartData, CartList, CartItemData } from "../types/cartType";
 import { cartDTO, cartListDTO, cartItemDTO } from "../lib/dto/cartDto";
@@ -17,24 +18,28 @@ import { cartBodyType } from "../structs/cartStructs";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 
 export async function postCart(user: string): Promise<cartDTO> {
+  let cart;
   const userData = await userRepository.findById(user);
   if (!userData) {
     throw new NotFoundError("user", user);
   }
 
-  const quantity = 0;
+  const beforeCart = await getFindCart(user);
 
-  const cart = await postData(user);
+  if (beforeCart) {
+    return new cartDTO(beforeCart);
+  } else {
+    cart = await postData(user);
+  }
 
   const result: CartData = {
     ...cart,
-    quantity,
   };
 
   return new cartDTO(result);
 }
 
-export async function cartItemList(user: string): Promise<cartListDTO> {
+export async function cartItemList(user: string): Promise<cartListDTO | null> {
   const userData = await userRepository.findById(user);
   if (!userData) {
     throw new NotFoundError("user", user);
@@ -43,7 +48,7 @@ export async function cartItemList(user: string): Promise<cartListDTO> {
   const cartData = await cartList(user);
 
   if (!cartData) {
-    throw new NotFoundError("cart", user);
+    return null;
   }
 
   const quantity = await cartItemCount(cartData.id);
