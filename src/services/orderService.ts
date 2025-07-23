@@ -1,3 +1,4 @@
+
 import {
   CreateOrderDTO,
   OrderResDTO,
@@ -16,8 +17,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import stockRepository from "../repositories/stockRepository";
-import { SizeDTO } from "../lib/dto/SizeDTO";
-import { OrderItemWithOrder } from "../lib/dto/reviewDTO";
+
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -82,6 +82,7 @@ async function updateUserGrade(user: Token, subtotal: Decimal) {
 
   return { totalAmount, newGrade };
 }
+
 
 async function create(user: Token, data: CreateOrderDTO) {
   const orderItemInfo = await findOrderItems(data);
@@ -190,29 +191,18 @@ async function getOrderList(
     status
   );
 
-  const orderResList = orderList.map((order) => {
-    const orderWithRelations: OrderItemWithOrder & { totalQuantity: number} = {
-      ...order,
-      totalQuantity: order.orderItems.reduce(
-        (acc, item) => acc + item.quantity,
-        0
-      ),
-      orderItems: order.orderItems.map((item) => ({
-        ...item,
-        size: item.size,
-        product: {
-          ...item.product,
-          stocks: item.product.stocks.map((stock) => ({
-            ...stock,
-            size: stock.size,
-          })),
-        },
-      })),
-      payment: order.payment,
-    };
-
-    return new OrderResDTO(orderWithRelations);
-  });
+  const orderResList = orderList.map(
+    (order) =>
+      new OrderResDTO({
+        ...order,
+        totalQuantity: order.orderItems.reduce(
+          (acc, item) => acc + item.quantity,
+          0
+        ),
+        orderItems: order.orderItems,
+        payment: order.payment,
+      })
+  );
 
   return orderResList;
 }
