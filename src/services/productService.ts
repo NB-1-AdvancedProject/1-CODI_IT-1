@@ -8,7 +8,8 @@ import {
 import * as storeService from "../services/storeService";
 import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
-import categoryService from "./categoryService";
+import { quiryList } from "./inquiryService";
+
 import prisma from "../lib/prisma";
 import { createAlarmData } from "../repositories/notificationRepository";
 import orderRepository from "../repositories/orderRepository";
@@ -106,14 +107,10 @@ async function getProducts(params: ProductListParams) {
   }
 
   if (params.categoryName) {
-    const category = await categoryService.getCategoryByName(
-      params.categoryName
-    );
-    if (category) {
-      whereCondition.categoryId = category.id;
-    }
+    whereCondition.category = {
+      name: params.categoryName,
+    };
   }
-
   if (params.priceMin || params.priceMax) {
     whereCondition.price = {};
     if (params.priceMin) {
@@ -219,6 +216,7 @@ async function getProduct(productId: string) {
   const product = await productRepository.findProductById(productId);
   if (!product) return null;
   const store = await storeService.getStoreById(product.storeId);
+  const inquiries = await quiryList(productId);
   const refreshedProduct = await checkAndUpdateDiscountState(
     product.discountEndTime,
     product.id
@@ -228,6 +226,7 @@ async function getProduct(productId: string) {
 
   return {
     ...finalProduct,
+    inquiries,
     discountPrice: finalProduct.discountPrice ?? finalProduct.price,
     storeName: store!.name,
   };
