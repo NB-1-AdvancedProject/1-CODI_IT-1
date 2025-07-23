@@ -26,35 +26,13 @@ export const postProduct: RequestHandler = async (req, res) => {
   if (typeof req.body.stocks === "string") {
     req.body.stocks = JSON.parse(req.body.stocks);
   }
-  const newStocks = req.body.stocks.map(
-    (stock: { sizeId: number; quantity: number }) => {
-      if (stock.sizeId === 1) {
-        return { sizeId: "sizeXS_id", quantity: stock.quantity };
-      }
-      if (stock.sizeId === 2) {
-        return { sizeId: "sizeS_id", quantity: stock.quantity };
-      }
-      if (stock.sizeId === 3) {
-        return { sizeId: "sizeM_id", quantity: stock.quantity };
-      }
-      if (stock.sizeId === 4) {
-        return { sizeId: "sizeL_id", quantity: stock.quantity };
-      }
-      if (stock.sizeId === 5) {
-        return { sizeId: "sizeXL_id", quantity: stock.quantity };
-      }
-      if (stock.sizeId === 6) {
-        return { sizeId: "sizefree_id", quantity: stock.quantity };
-      }
-    }
-  );
   const data = create(
     {
       ...req.body,
       discountStartTime: new Date(req.body.discountStartTime),
       discountEndTime: new Date(req.body.discountEndTime),
       image: url,
-      stocks: newStocks,
+      stocks: req.body.stocks,
     },
     CreateProductBodyStruct
   );
