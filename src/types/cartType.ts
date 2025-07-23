@@ -16,7 +16,7 @@ export interface CartQuantityData {
 }
 
 export interface SizeData {
-  id: string;
+  id: number;
   size: string;
 }
 
