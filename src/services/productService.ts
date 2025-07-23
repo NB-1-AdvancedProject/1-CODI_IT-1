@@ -9,7 +9,7 @@ import * as storeService from "../services/storeService";
 import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
 import { quiryList } from "./inquiryService";
-
+import { getReviewListForProduct } from "../services/reviewService";
 import prisma from "../lib/prisma";
 import { createAlarmData } from "../repositories/notificationRepository";
 import orderRepository from "../repositories/orderRepository";
@@ -217,18 +217,58 @@ async function getProduct(productId: string) {
   if (!product) return null;
   const store = await storeService.getStoreById(product.storeId);
   const inquiries = await quiryList(productId);
+  const reviews = await getReviewListForProduct(productId);
   const refreshedProduct = await checkAndUpdateDiscountState(
     product.discountEndTime,
     product.id
   );
-
   const finalProduct = refreshedProduct ?? product;
+
+  const { rate1Length, rate2Length, rate3Length, rate4Length, rate5Length } =
+    reviews.reduce(
+      (acc, review) => {
+        if (review.rating === 1) acc.rate1Length++;
+        else if (review.rating === 2) acc.rate2Length++;
+        else if (review.rating === 3) acc.rate3Length++;
+        else if (review.rating === 4) acc.rate4Length++;
+        else if (review.rating === 5) acc.rate5Length++;
+        return acc;
+      },
+      {
+        rate1Length: 0,
+        rate2Length: 0,
+        rate3Length: 0,
+        rate4Length: 0,
+        rate5Length: 0,
+      }
+    );
+  const reviewsRating =
+    reviews.reduce((acc, review) => acc + review.rating, 0) /
+    (reviews.length || 1);
 
   return {
     ...finalProduct,
-    inquiries,
-    discountPrice: finalProduct.discountPrice ?? finalProduct.price,
+    storeId: product.store.id,
     storeName: store!.name,
+    reviewsCount: product.reviews.length,
+    reviews: {
+      rate1Length,
+      rate2Length,
+      rate3Length,
+      rate4Length,
+      rate5Length,
+      sumScore: reviewsRating,
+    },
+    inquiries,
+    discountPrice:
+      refreshedProduct?.discountPrice ?? product.discountPrice ?? product.price,
+    discountRate: refreshedProduct?.discountRate ?? product.discountRate ?? 0,
+    discountStartTime:
+      refreshedProduct?.discountStartTime ?? product.discountStartTime ?? null,
+    discountEndTime:
+      refreshedProduct?.discountEndTime ?? product.discountEndTime ?? null,
+    stocks: product.stocks,
+    category: [{ name: product.category.name, id: product.category.id }],
   };
 }
 

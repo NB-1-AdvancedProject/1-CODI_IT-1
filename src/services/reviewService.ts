@@ -4,7 +4,6 @@ import prisma from "../lib/prisma";
 import * as reviewRepository from "../repositories/reviewRepository";
 import UnauthError from "../lib/errors/UnauthError";
 import NotFoundError from "../lib/errors/NotFoundError";
-import { create } from "superstruct";
 import AlreadyExstError from "../lib/errors/AlreadyExstError";
 import {
   CreateReviewBody,
@@ -211,4 +210,11 @@ async function updateProductReviewFields(
       }
     }
   }
+}
+
+export async function getReviewListForProduct(productId: string) {
+  const reviewes = await reviewRepository.findReviewsByProductIdForProduct(
+    productId
+  );
+  return reviewes;
 }

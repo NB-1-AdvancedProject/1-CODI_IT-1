@@ -103,3 +103,11 @@ export async function findProductById(
   const client = tx || prisma;
   return await client.product.findUnique({ where: { id: productId } });
 }
+
+export async function findReviewsByProductIdForProduct(
+  productId: string
+): Promise<Review[]> {
+  return await prisma.review.findMany({
+    where: { productId },
+  });
+}

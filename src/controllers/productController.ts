@@ -12,7 +12,6 @@ import NotFoundError from "../lib/errors/NotFoundError";
 export const getProduct: RequestHandler = async (req, res) => {
   const product = await productService.getProduct(req.params.id);
   if (!product) throw new NotFoundError("product", req.params.id);
-  console.log(product);
   res.json(product);
 };
 
