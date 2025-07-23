@@ -9,6 +9,7 @@ import {
   GetCartItemData,
   CartList,
   CartItemData,
+  cartItemsData,
 } from "../../types/cartType";
 
 export class cartDTO {
@@ -176,5 +177,25 @@ export class cartListDTO {
     this.items = carts.cartItems.map(
       (cartItem) => new getCartItemDTO(cartItem)
     );
+  }
+}
+
+export class cartItemsDTO {
+  id: string;
+  cartId: string;
+  productId: string;
+  sizeId: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+
+  constructor(cartItem: cartItemsData) {
+    this.id = cartItem.id;
+    this.cartId = cartItem.cartId;
+    this.productId = cartItem.productId;
+    this.sizeId = cartItem.sizeId;
+    this.quantity = cartItem.quantity;
+    this.createdAt = cartItem.createdAt.toISOString();
+    this.updatedAt = cartItem.updatedAt.toISOString();
   }
 }
