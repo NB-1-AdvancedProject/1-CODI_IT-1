@@ -418,7 +418,7 @@ async function checkAndUpdateDiscountState(
 }
 
 function checkSoldOut(
-  stocks: { id: string; productId: string; quantity: number; sizeId: string }[]
+  stocks: { id: string; productId: string; quantity: number; sizeId: number }[]
 ) {
   const isAllSoldOut = stocks.every((stock) => stock.quantity === 0);
   return isAllSoldOut;

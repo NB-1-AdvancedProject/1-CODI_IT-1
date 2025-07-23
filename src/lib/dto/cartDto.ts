@@ -28,7 +28,7 @@ export class getCartItemDTO {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +50,7 @@ export class cartItemDTO {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: string;
   updatedAt: string;
@@ -131,7 +131,7 @@ export class storeDTO {
 export class stockDTO {
   id: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   size: sizeDTO;
 

@@ -23,7 +23,7 @@ export interface SizeData {
 export interface StockData {
   id: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   size: SizeData;
 }
@@ -58,7 +58,7 @@ export interface CartItemData {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
@@ -70,7 +70,7 @@ export interface GetCartItemData {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;

@@ -34,7 +34,7 @@ export async function cartList(user: string) {
 export async function patchData(
   cartId: string,
   productId: string,
-  sizeId: string,
+  sizeId: number,
   quantity: number
 ) {
   const existingItem = await prisma.cartItem.findFirst({

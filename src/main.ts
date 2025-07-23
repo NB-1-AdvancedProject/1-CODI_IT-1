@@ -1,11 +1,11 @@
 import app from "./app";
-import { connectRedis } from "./utils/redis";
+import { connectRedis } from "./lib/redis";
 
 (async () => {
   try {
     await connectRedis();
     app.listen(3001, () => {
-      console.log(`Server is running on port ${process.env.PORT || 3000}`);
+      console.log(`Server is running on port ${process.env.PORT || 3001}`);
     });
   } catch (error) {
     console.error("Failed to connect Redis:", error);
