@@ -1,5 +1,6 @@
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentStatus, Size } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { SizeDTO } from "../lib/dto/SizeDTO";
 
 export type OrderStatusType = `${OrderStatus}`;
 export interface Order {
@@ -25,18 +26,12 @@ export interface OrderItemPayment {
   orderId: string;
 }
 
-// Size 타입
-export interface Size {
-  id: number;
-  size: string;
-}
-
 // Stock 타입
 export interface Stock {
   id: string;
   productId: string;
   quantity: number;
-  size: Size;
+  size: SizeDTO;
 }
 
 // Store 타입
@@ -71,5 +66,5 @@ export interface OrderItem {
   price: Decimal;
   quantity: number;
   product: Product;
-  size: Size;
+  size: SizeDTO;
 }

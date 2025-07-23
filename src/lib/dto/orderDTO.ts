@@ -1,12 +1,7 @@
 import { PaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import {
-  Order,
-  OrderItem,
-  OrderItemPayment,
-  Product,
-  Size,
-} from "../../types/order";
+import { Order, OrderItem, OrderItemPayment, Product } from "../../types/order";
+import { SizeDTO } from "./SizeDTO";
 
 // Request DTO
 export type CreateOrderDTO = {
@@ -51,7 +46,7 @@ export type StockDTO = {
 type OrderWithRelations = Order & {
   orderItems: (OrderItem & {
     product: Product;
-    size: Size;
+    size: SizeDTO;
   })[];
   payment: OrderItemPayment | null;
 };
@@ -70,39 +65,8 @@ export class OrderResDTO {
     id: string;
     price: Decimal;
     quantity: number;
-    product: {
-      id: string;
-      storeId: string;
-      name: string;
-      price: Decimal;
-      image: string;
-      createdAt: Date;
-      updatedAt: Date;
-      store: {
-        id: string;
-        userId: string;
-        name: string;
-        address: string;
-        phoneNumber: string;
-        content: string;
-        image: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-      };
-      stocks: {
-        id: string;
-        productId: string;
-        quantity: number;
-        size: {
-          id: number;
-          size: string;
-        };
-      }[];
-    };
-    size: {
-      id: number;
-      size: string;
-    };
+    product: Product;
+    size: SizeDTO;
   }[];
   payments: {
     id: string;
@@ -139,13 +103,10 @@ export class OrderResDTO {
           id: stock.id,
           productId: stock.productId,
           quantity: stock.quantity,
-          size: {
-            id: stock.size.id,
-            size: stock.size.size,
-          },
+          size: new SizeDTO(stock.size),
         })),
       },
-      size: item.size,
+      size: new SizeDTO(item.size),
     }));
 
     this.payments = order.payment
