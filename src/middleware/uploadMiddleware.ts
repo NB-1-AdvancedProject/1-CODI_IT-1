@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const diskUpload = multer({ storage }).single("image");
+// const diskUpload = multer({ storage }).single("image");
 const memoryUpload = multer({ storage: multer.memoryStorage() }).single(
   "image"
 );
@@ -33,7 +33,7 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
     memoryUpload(req, res, async function (err) {
       if (err) return next(err);
       if (!req.file) {
-        return next(new EmptyUploadError());
+        return next();
       }
       const { url, key } = await uploadService.uploadImageToS3(req.file);
       (req as any).uploadedImage = { url, key };
