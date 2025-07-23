@@ -238,7 +238,7 @@ async function deleteOrder(user: Token, id: string) {
     throw new ForbiddenError();
   }
 
-  if (order.status !== "PENDING") {
+  if (order.status !== "CompletedPayment") {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
@@ -255,7 +255,7 @@ async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
     throw new ForbiddenError();
   }
 
-  if (["DELIVERED", "SHIPPED", "CANCELLED"].includes(order.status)) {
+  if (["Shipped", "Processing", "Cancelled"].includes(order.status)) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
