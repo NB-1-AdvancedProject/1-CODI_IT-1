@@ -193,6 +193,12 @@ async function getProducts(params: ProductListParams) {
     finalProducts.map(async (product) => {
       const store = await storeService.getStoreById(product.storeId);
       const stocks = await stockService.getStocksByProductId(product.id);
+      if (!product.reviewsCount) {
+        product.reviewsCount = 0;
+      }
+      if (!product.reviewsRating) {
+        product.reviewsRating = 0;
+      }
       return {
         ...product,
         discountPrice: product.discountPrice ?? product.price,
