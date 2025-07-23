@@ -254,7 +254,7 @@ export async function postQuiry(
 
   if (quiryData) {
     const storeData = await getStoreById(product.storeId);
-    const content = "문의가 등록되었습니다.";
+    const content = `${product.name}에 새로운 문의가 등록되었습니다.`;
     await createAlarmData(storeData.userId, content);
   }
 

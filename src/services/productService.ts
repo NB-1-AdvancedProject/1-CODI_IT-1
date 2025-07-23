@@ -327,7 +327,7 @@ async function updateProduct(data: PatchProductBody, productId: string) {
       ...cartIds,
       ...(data.isSoldOut ? [] : [updatedProduct.store.userId]),
     ]);
-    const content = "상품이 품절 되었습니다.";
+    const content = `${updatedProduct.name}의 해당 사이즈가 품절 되었습니다.`;
 
     for (const userId of userIdSet) {
       await createAlarmData(userId, content);

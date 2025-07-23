@@ -76,6 +76,7 @@ export class productDTO {
   name: string;
   price: Number;
   image: string;
+  discountPrice: Number | null;
   discountRate: Number | null;
   discountStartTime: string | null;
   discountEndTime: string | null;
@@ -88,6 +89,9 @@ export class productDTO {
     this.name = products.name;
     this.price = products.price.toNumber();
     this.image = products.image;
+    this.discountPrice = products.discountPrice
+      ? products.discountPrice.toNumber()
+      : products.price.toNumber();
     this.discountRate = products.discountRate;
     this.discountStartTime = products.discountStartTime
       ? products.discountStartTime.toISOString()
@@ -141,11 +145,13 @@ export class stockDTO {
 }
 
 export class sizeDTO {
-  id: string;
+  id: number;
+  name: string;
   size: SizeLeanguage;
 
   constructor(sizes: SizeData) {
     this.id = sizes.id;
+    this.name = sizes.size[0];
     this.size = {
       ko: sizes.size[0],
       en: sizes.size,

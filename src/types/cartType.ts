@@ -16,7 +16,7 @@ export interface CartQuantityData {
 }
 
 export interface SizeData {
-  id: string;
+  id: number;
   size: string;
 }
 
@@ -46,6 +46,7 @@ export interface ProductData {
   name: string;
   price: Decimal;
   image: string;
+  discountPrice: Decimal | null;
   discountRate: number | null;
   discountStartTime: Date | null;
   discountEndTime: Date | null;
