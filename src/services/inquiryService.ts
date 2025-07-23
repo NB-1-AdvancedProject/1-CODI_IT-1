@@ -261,8 +261,10 @@ export async function postQuiry(
   return new InquiryResDTO(quiryData);
 }
 
-export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
-  const data = await listQuiries(params);
+export async function quiryList(
+  productId: string
+): Promise<GetInquiryResDTO[]> {
+  const data = await listQuiries(productId);
 
   if (!data || data.length === 0) {
     return [];
