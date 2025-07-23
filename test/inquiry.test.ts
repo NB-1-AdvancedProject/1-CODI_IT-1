@@ -64,8 +64,8 @@ describe("문의 API 테스트", () => {
           isSecret: false,
           status:
             i % 2 === 0
-              ? InquiryStatus.noAnswer
-              : InquiryStatus.completedAnswer,
+              ? InquiryStatus.WaitingAnswer
+              : InquiryStatus.CompletedAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -96,7 +96,7 @@ describe("문의 API 테스트", () => {
         title: `상품 문의합니다.19`,
         content: `문의 내용입니다.19`,
         isSecret: false,
-        status: "completedAnswer",
+        status: "CompletedAnswer",
       });
     });
 
@@ -108,7 +108,7 @@ describe("문의 API 테스트", () => {
         title: `상품 문의합니다.9`,
         content: `문의 내용입니다.9`,
         isSecret: false,
-        status: "completedAnswer",
+        status: "CompletedAnswer",
       });
     });
 
@@ -120,26 +120,26 @@ describe("문의 API 테스트", () => {
         title: `상품 문의합니다.15`,
         content: `문의 내용입니다.15`,
         isSecret: false,
-        status: "completedAnswer",
+        status: "CompletedAnswer",
       });
       expect(response.body.list[5]).toBeUndefined();
     });
 
     test("내가 작성한 모든 문의를 조회할 수 있다.(status)", async () => {
       const authReq = getAuthenticatedReq(buyerUser.id);
-      const response = await authReq.get("/inquiries?status=completedAnswer");
+      const response = await authReq.get("/inquiries?status=CompletedAnswer");
       expect(response.body.list.length).toBe(10);
       expect(response.body.list[0]).toMatchObject({
         title: `상품 문의합니다.19`,
         content: `문의 내용입니다.19`,
         isSecret: false,
-        status: "completedAnswer",
+        status: "CompletedAnswer",
       });
       expect(response.body.list[9]).toMatchObject({
         title: `상품 문의합니다.1`,
         content: `문의 내용입니다.1`,
         isSecret: false,
-        status: "completedAnswer",
+        status: "CompletedAnswer",
       });
     });
   });
@@ -152,7 +152,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -175,7 +175,7 @@ describe("문의 API 테스트", () => {
         title: `상품 문의합니다.`,
         content: `문의 내용입니다.`,
         isSecret: false,
-        status: InquiryStatus.noAnswer,
+        status: InquiryStatus.WaitingAnswer,
       });
     });
 
@@ -213,7 +213,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -236,7 +236,7 @@ describe("문의 API 테스트", () => {
         title: `상품 문의합니다.`,
         content: `문의 내용입니다.`,
         isSecret: false,
-        status: InquiryStatus.noAnswer,
+        status: InquiryStatus.WaitingAnswer,
       });
     });
 
@@ -266,7 +266,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -327,7 +327,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -399,7 +399,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: true,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -414,7 +414,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -485,7 +485,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: true,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -500,7 +500,7 @@ describe("문의 API 테스트", () => {
           title: `상품 문의합니다.`,
           content: `문의 내용입니다.`,
           isSecret: false,
-          status: InquiryStatus.noAnswer,
+          status: InquiryStatus.WaitingAnswer,
           user: {
             connect: { id: buyerUser.id },
           },
@@ -644,8 +644,8 @@ describe("문의 API 테스트", () => {
             isSecret: i % 2 === 0 ? false : true,
             status:
               i % 2 === 0
-                ? InquiryStatus.noAnswer
-                : InquiryStatus.completedAnswer,
+                ? InquiryStatus.WaitingAnswer
+                : InquiryStatus.CompletedAnswer,
             user: {
               connect: { id: buyerUser.id },
             },

@@ -23,6 +23,7 @@ import {
   InquiryResDTO,
   replyResDTO,
   GetInquiryResDTO,
+  InquiryItem,
 } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
@@ -43,7 +44,13 @@ export async function getList(
     throw new NotFoundError("User", userId);
   }
 
-  const list = await listData(params, userId);
+  const inquiries = await listData(params, userId);
+
+  if (inquiries.length === 0) {
+    return { list: [], totalCount: 0 };
+  }
+
+  const list = inquiries.map((inquiry) => new InquiryItem(inquiry));
 
   const totalCount = await countData(userId);
 
@@ -254,11 +261,13 @@ export async function postQuiry(
   return new InquiryResDTO(quiryData);
 }
 
-export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
-  const data = await listQuiries(params);
+export async function quiryList(
+  productId: string
+): Promise<GetInquiryResDTO[]> {
+  const data = await listQuiries(productId);
 
   if (!data || data.length === 0) {
-    throw new NotFoundError("Product", params);
+    return [];
   }
 
   return data.map((inquiry) => {
