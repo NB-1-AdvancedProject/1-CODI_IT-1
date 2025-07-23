@@ -1,5 +1,5 @@
 import { OrderStatus, Prisma } from "@prisma/client";
-import { ReviewDTO } from "../lib/dto/reviewDTO";
+import { ReviewDTO, ReviewListDTO } from "../lib/dto/reviewDTO";
 import prisma from "../lib/prisma";
 import * as reviewRepository from "../repositories/reviewRepository";
 import UnauthError from "../lib/errors/UnauthError";
@@ -136,17 +136,20 @@ export async function deleteReview(
 export async function getReviewList(
   productId: string,
   params: GetReviewListPageParamsType
-): Promise<ReviewDTO[]> {
+): Promise<ReviewListDTO> {
   const product = await reviewRepository.findProductById(productId);
   if (!product) {
     throw new NotFoundError("Review", productId);
   }
-  const pageParams = { take: params.limit, skip: params.page - 1 };
-  const reviews = await reviewRepository.findReviewsByProductId(
+  const { limit, page } = params;
+  const pageParams = { take: limit, skip: (page - 1) * limit };
+  const reviews = await reviewRepository.findReviewsWithUserByProductId(
     productId,
     pageParams
   );
-  return reviews.map((review) => new ReviewDTO(review));
+  const total = await reviewRepository.countByProductId(productId);
+  const hasNextPage = page * limit < total;
+  return new ReviewListDTO(reviews, { total, page, limit, hasNextPage });
 }
 
 // 헬퍼 함수
@@ -160,7 +163,7 @@ async function updateProductReviewFields(
 
   while (retries < MAX_RETRIES && !success) {
     try {
-      const reviews = await reviewRepository.findReviewsByProductId(
+      const reviews = await reviewRepository.findReviewsWithUserByProductId(
         productId,
         {},
         tx
