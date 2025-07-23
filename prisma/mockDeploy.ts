@@ -3,8 +3,8 @@ import {
   OrderStatus,
   PaymentStatus,
   User,
+  UserType,
 } from "@prisma/client";
-import { UserType } from "./mock";
 import { Decimal } from "@prisma/client/runtime/library";
 import bcrypt from "bcrypt";
 
@@ -25,7 +25,7 @@ export interface CategoryMock {
 }
 
 export interface SizeMock {
-  id: string;
+  id: number;
   size: string;
 }
 
@@ -76,7 +76,7 @@ export interface ProductMock {
 export interface StockMock {
   id: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
 }
 
@@ -97,7 +97,7 @@ export interface OrderItemMock {
   id: string;
   orderId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   price: number;
 }
@@ -120,7 +120,7 @@ export interface CartItemMock {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
 }
 
@@ -215,27 +215,27 @@ export const CategoryMocks: CategoryMock[] = [
 
 export const SizeMocks: SizeMock[] = [
   {
-    id: "sizefree_id",
+    id: 1,
     size: "Free",
   },
   {
-    id: "sizeXS_id",
+    id: 2,
     size: "XS",
   },
   {
-    id: "sizeS_id",
+    id: 3,
     size: "S",
   },
   {
-    id: "sizeM_id",
+    id: 4,
     size: "M",
   },
   {
-    id: "sizeL_id",
+    id: 5,
     size: "L",
   },
   {
-    id: "sizeXL_id",
+    id: 6,
     size: "XL",
   },
 ];
@@ -372,19 +372,19 @@ export const StockMocks: StockMock[] = [
   {
     id: "c7amb4sh35f4yyfc6bnoyo57f",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizeXS_id",
+    sizeId: 2,
     quantity: 42,
   },
   {
     id: "c9gshfl1ndrf0gumtcjqmxz8u",
     productId: "cmwzmdmvlt0ruc3cxv57k9o3j",
-    sizeId: "sizeXL_id",
+    sizeId: 5,
     quantity: 55,
   },
   {
     id: "cuykr7k8pql5ugcdokmo199gy",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizefree_id",
+    sizeId: 1,
     quantity: 70,
   },
 ];
@@ -433,7 +433,7 @@ export const OrderItemMocks: OrderItemMock[] = [
     id: "ctnqd5svtp9gwcscrm3ma115n",
     orderId: "cfnkcrp7iw6kci6f9v1m9rum6",
     productId: "c9od5fczfo8xva5zolk9uu95t",
-    sizeId: "sizeXS_id",
+    sizeId: 2,
     quantity: 5,
     price: 1000,
   },
@@ -441,7 +441,7 @@ export const OrderItemMocks: OrderItemMock[] = [
     id: "caweanurlxn6u6luc1vofi8mi",
     orderId: "cjh46mhbe8zmnmptiq5s92v8p",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizeL_id",
+    sizeId: 5,
     quantity: 2,
     price: 1000,
   },
@@ -449,7 +449,7 @@ export const OrderItemMocks: OrderItemMock[] = [
     id: "cg4dysvho57649bsy895r09r6",
     orderId: "cbcow31a0czhkpzedpeo4tig5",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizeXL_id",
+    sizeId: 6,
     quantity: 5,
     price: 1000,
   },
@@ -502,21 +502,21 @@ export const CartItemMocks: CartItemMock[] = [
     id: "cepj3qgkndjgxlqsegsswng4a",
     cartId: "cjd4vsq81a0cx1a2tkti3ekq5",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizeL_id",
+    sizeId: 5,
     quantity: 2,
   },
   {
     id: "c4ifblg7y09vujxzzqd1i5p0b",
     cartId: "cjd4vsq81a0cx1a2tkti3ekq5",
     productId: "crw2csg78q4tbrb9oieihe8fk",
-    sizeId: "sizeXL_id",
+    sizeId: 6,
     quantity: 6,
   },
   {
     id: "cf8nh623cxrb746jghw62pznu",
     cartId: "c6kmlb08w3wihfs7wv1s6uu84",
     productId: "cmwzmdmvlt0ruc3cxv57k9o3j",
-    sizeId: "sizeM_id",
+    sizeId: 4,
     quantity: 3,
   },
 ];

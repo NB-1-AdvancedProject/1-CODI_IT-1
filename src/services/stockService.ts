@@ -9,13 +9,13 @@ type UpdateStockData = {
 
 type CreateStockData = {
   product: { connect: { id: string } };
-  size: { connect: { id: string } };
+  size: { connect: { id: number } };
   quantity: number;
 };
 
 async function createStocksForProduct(
   tx: Prisma.TransactionClient,
-  stocks: { sizeId: string; quantity: number }[],
+  stocks: { sizeId: number; quantity: number }[],
   productId: string
 ) {
   const stocksCreateInput: CreateStockData[] = stocks.map((stock) => ({
@@ -36,7 +36,7 @@ async function getStocksByProductId(productId: string) {
 }
 
 async function updateStocksForProduct(
-  data: { sizeId: string; quantity: number }[],
+  data: { sizeId: number; quantity: number }[],
   productId: string
 ) {
   const existingStocks = await getStocksByProductId(productId);

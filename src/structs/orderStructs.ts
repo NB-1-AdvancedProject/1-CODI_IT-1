@@ -20,7 +20,7 @@ export const CreateOrder = object({
   phone: phoneNumberRegExp,
   address: string(),
   orderItems: array(
-    object({ productId: string(), sizeId: string(), quantity: number() })
+    object({ productId: string(), sizeId: number(), quantity: number() })
   ),
   usePoint: number(),
 });

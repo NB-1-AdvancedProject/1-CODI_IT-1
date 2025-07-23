@@ -22,7 +22,7 @@ export const CreateProductBodyStruct = object({
   categoryName: string(),
   stocks: array(
     object({
-      sizeId: string(),
+      sizeId: number(),
       quantity: integerString,
     })
   ),
@@ -42,7 +42,7 @@ export const PatchProductBodyStruct = object({
   stocks: optional(
     array(
       object({
-        sizeId: string(),
+        sizeId: number(),
         quantity: integerString,
       })
     )
