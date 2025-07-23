@@ -8,6 +8,7 @@ import {
   string,
   optional,
   partial,
+  coerce,
 } from "superstruct";
 import { phoneNumberRegExp } from "./commonStructs";
 import { OrderStatus } from "@prisma/client";
@@ -26,9 +27,11 @@ export const CreateOrder = object({
 
 export const UpdateOrder = partial(CreateOrder);
 
+const CoercedNumber = coerce(number(), string(), (value) => Number(value));
+
 export const GetOrder = object({
   status: optional(orderStatus),
-  limit: optional(number()),
-  page: optional(number()),
+  limit: optional(CoercedNumber),
+  page: optional(CoercedNumber),
   orderBy: optional(enums(["recent", "oldest"])),
 });

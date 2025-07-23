@@ -3,6 +3,7 @@ import orderService from "../services/orderService";
 import { create } from "superstruct";
 import { CreateOrder, GetOrder, UpdateOrder } from "../structs/orderStructs";
 import { IdParamsStruct } from "../structs/commonStructs";
+import { OrderStatusType } from "../types/order";
 
 export const createOrder: RequestHandler = async (req, res) => {
   const user = req.user!;
@@ -16,10 +17,10 @@ export const createOrder: RequestHandler = async (req, res) => {
 export const getOrderList: RequestHandler = async (req, res) => {
   const user = req.user!;
   const {
-    page = 1,
-    limit = 3,
+    status = "CompletedPayment" as OrderStatusType,
+    limit = 1,
+    page = 3,
     orderBy = "recent",
-    status,
   } = create(req.query, GetOrder);
 
   const orderList = await orderService.getOrderList(
