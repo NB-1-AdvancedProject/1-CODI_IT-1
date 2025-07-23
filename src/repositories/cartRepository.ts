@@ -129,3 +129,7 @@ export async function getItem(productId: string) {
     },
   });
 }
+
+export async function getFindCart(user: string) {
+  return prisma.cart.findUnique({ where: { userId: user } });
+}

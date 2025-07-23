@@ -263,14 +263,14 @@ export async function postQuiry(
 
 export async function quiryList(
   productId: string
-): Promise<GetInquiryResDTO[]> {
+): Promise<{ list: GetInquiryResDTO[]; totalCount: number }> {
   const data = await listQuiries(productId);
 
   if (!data || data.length === 0) {
-    return [];
+    return { list: [], totalCount: 0 };
   }
 
-  return data.map((inquiry) => {
-    return new GetInquiryResDTO(inquiry);
-  });
+  const list = data.map((inquiry) => new GetInquiryResDTO(inquiry));
+
+  return { list, totalCount: list.length };
 }
