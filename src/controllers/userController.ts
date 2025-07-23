@@ -19,10 +19,10 @@ export const getUser: RequestHandler = async (req, res) => {
 
 export const patchUser: RequestHandler = async (req, res) => {
   const id = req.user!.id;
-  console.log(req.body);
+  const { url, key } = (req as any).uploadedImage || {};
   const { currentPassword, ...data } = req.body;
 
-  const updateData = create(data, UpdateUser);
+  const updateData = create({ ...data, image: url }, UpdateUser);
 
   const updatedUser = await userService.updateUser({
     id,
