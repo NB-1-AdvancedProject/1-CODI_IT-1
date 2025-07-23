@@ -3,6 +3,13 @@ import { Decimal } from "@prisma/client/runtime/library";
 export interface CartData {
   id: string;
   userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CartQuantityData {
+  id: string;
+  userId: string;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
@@ -55,7 +62,7 @@ export interface CartItemData {
   createdAt: Date;
   updatedAt: Date;
   product: ProductData;
-  cart: CartData;
+  cart: CartQuantityData;
 }
 
 export interface GetCartItemData {

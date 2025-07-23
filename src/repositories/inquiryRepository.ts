@@ -162,7 +162,7 @@ export async function postData(
 
 export async function listQuiries(productId: string) {
   return prisma.inquiry.findMany({
-    where: { productId: productId, isSecret: false },
+    where: { productId: productId },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true } },
