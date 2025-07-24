@@ -9,7 +9,8 @@
     "test": "npx dotenv-cli -e .env.test -- npx prisma migrate reset --force && npx dotenv-cli -e .env.test -- npx jest -i --coverage",
     "dev": "nodemon --watch src --exec ts-node src/main.ts",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:deploy": "npx prisma migrate deploy && npx prisma db seed"
+    "prisma:deploy": "npx prisma migrate deploy && npm run seed:deploy",
+    "seed:deploy": "node dist/src/lib/seedOnlyEssentials.js"
   },
   "author": "",
   "license": "ISC",

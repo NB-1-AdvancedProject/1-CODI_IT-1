@@ -79,9 +79,7 @@ export async function getMyStoreProductList(
 
 export async function getMyStoreInfo(userId: string): Promise<MyStoreDTO> {
   const store = await storeRepository.findStoreByUserId(userId);
-  console.log(`userId 는 ${userId}`);
   if (!store) {
-    console.error(`아니 왜 여기에서 자꾸 걸리냐고!!!!!---`);
     throw new NotFoundError("store", `userId: ${userId}`);
   }
   const productCount = await storeRepository.countProductByStoreId(store.id);

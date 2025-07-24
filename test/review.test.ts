@@ -295,7 +295,6 @@ describe("DELETE /review/:reviewId", () => {
     test("기본동작: 리뷰를 작성한 사람은 리뷰를 삭제할 수 있음, 다시 조회시 존재하지 않음", async () => {
       const authReq = getAuthenticatedReq(buyerWithReview.id);
       const response = await authReq.delete(`/review/${review.id}`);
-      console.warn(response.body);
       expect(response.status).toBe(200);
       expect(response.body.message).toBe("리뷰를 삭제했습니다.");
       const count = await prisma.review.count({ where: { id: review.id } });

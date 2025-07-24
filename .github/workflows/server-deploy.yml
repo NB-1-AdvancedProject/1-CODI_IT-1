@@ -26,25 +26,47 @@ jobs:
           context: .
           push: true
           tags: junejulypark/codi-it-server:latest
-      # 2. 배포에 필요한 파일만 복사
-      - name: Copy files to EC2
+
+      - name: List project root
+        run: ls -al
+
+      - name: List .github/workflows
+        run: ls -al .github/workflows
+
+      # 2. 배포에 필요한 파일만 복사 (분리된 스텝)
+      - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: 22
-          source: |
-            ./docker-compose.yml
-            ./deploy.sh
-          target: /home/ubuntu/1-CODI_IT-1
+          source: ./docker-compose.yml # 하나만 지정
+          target: /home/ec2-user/backend
+
+      - name: Copy deploy.sh to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          source: ./deploy.sh # 하나만 지정
+          target: /home/ec2-user/backend
 
       # 3. .env 파일 자동 생성
       - name: Create .env locally
         run: |
           echo "SERVER_PORT=3001" >> .env
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DEPLOY_DB }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
+          echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "NODE_ENV=production" >> .env
 
       - name: Copy .env to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -54,7 +76,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: 22
           source: .env
-          target: /home/ubuntu/1-CODI_IT-1
+          target: /home/ec2-user/backend
 
       # 4. EC2 접속 해서 배포 스크립트 실행
       - name: Deploy to EC2
@@ -65,6 +87,6 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /home/ubuntu/1-CODI_IT-1
+            cd /home/ec2-user/backend
             chmod +x deploy.sh
-            deploy.sh
+            ./deploy.sh

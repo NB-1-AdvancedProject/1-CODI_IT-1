@@ -29,15 +29,13 @@ export const uploadMiddleware: RequestHandler = function (req, res, next) {
     return next();
   }
 
-  if (environment === "production") {
-    memoryUpload(req, res, async function (err) {
-      if (err) return next(err);
-      if (!req.file) {
-        return next();
-      }
-      const { url, key } = await uploadService.uploadImageToS3(req.file);
-      (req as any).uploadedImage = { url, key };
-      next();
-    });
-  }
+  memoryUpload(req, res, async function (err) {
+    if (err) return next(err);
+    if (!req.file) {
+      return next();
+    }
+    const { url, key } = await uploadService.uploadImageToS3(req.file);
+    (req as any).uploadedImage = { url, key };
+    next();
+  });
 };

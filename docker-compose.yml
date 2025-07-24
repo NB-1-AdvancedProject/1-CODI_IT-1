@@ -1,0 +1,8 @@
+services:
+  server:
+    image: junejulypark/codi-it-server
+    container_name: backend
+    restart: always
+    ports:
+      - "3002:3002"
+    env_file: .env

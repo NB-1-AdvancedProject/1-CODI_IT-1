@@ -20,6 +20,9 @@ COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/prisma ./prisma
 COPY --from=builder /build/node_modules ./node_modules
 
-EXPOSE 3001
+EXPOSE 3002
+
+# uploads 디렉토리 생성
+RUN mkdir -p /app/uploads
 
 CMD ["npm", "run", "start"]
