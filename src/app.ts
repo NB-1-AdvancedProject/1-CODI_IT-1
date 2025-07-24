@@ -51,9 +51,4 @@ app.use("/orders", orderRouter);
 
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
-// swagger
-if (process.env.NODE_ENV !== "production") {
-  const swaggerDocument = YAML.load("./swagger/swagger.yaml");
-  app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(swaggerDocument));
-}
 export default app;
