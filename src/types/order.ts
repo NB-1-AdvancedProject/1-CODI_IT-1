@@ -66,6 +66,11 @@ export interface OrderItem {
   id: string;
   price: Decimal;
   quantity: number;
-  product: Product;
+  isReviewed: boolean;
+  product: {
+    name: string;
+    image: string | null;
+    reviews: { id: string; rating: number; content: string; createdAt: Date }[];
+  };
   size: Size;
 }
