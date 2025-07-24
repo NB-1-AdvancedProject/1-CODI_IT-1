@@ -17,14 +17,14 @@ describe("유저 생성 기능", () => {
     await disconnectTestDB();
   });
 
-  describe("POST /api/users", () => {
+  describe("POST /users", () => {
     test("회원 가입", async () => {
       const email = "test@test.com";
-      const password = "Password@1234";
+      const password = "Password1234";
       const name = "홍길자";
 
       const response = await request(app)
-        .post("/api/users")
+        .post("/users")
         .send({ email, password, name, type: "BUYER" });
 
       expect(response.status).toBe(201);
@@ -32,7 +32,7 @@ describe("유저 생성 기능", () => {
     });
 
     test("중복 이메일 회원 가입", async () => {
-      const password = "Password@1234";
+      const password = "Password1234";
       const passwordHashed = bcrypt.hashSync(password, 10);
 
       const user1 = await prisma.user.create({
@@ -44,7 +44,7 @@ describe("유저 생성 기능", () => {
         },
       });
 
-      const response = await request(app).post("/api/users").send({
+      const response = await request(app).post("/users").send({
         email: "test1@test.com",
         password: password,
         name: "김강남",
@@ -65,7 +65,7 @@ describe("내 정보 조회", () => {
     await prisma.$disconnect();
   });
 
-  describe("GET /api/users/me", () => {
+  describe("GET /users/me", () => {
     beforeAll(async () => {
       await clearDatabase();
     });
@@ -74,7 +74,7 @@ describe("내 정보 조회", () => {
     });
     describe("성공", () => {
       test("로그인시 내 정보 조회 가능", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -87,7 +87,7 @@ describe("내 정보 조회", () => {
         });
 
         const authReq = getAuthenticatedReq(user.id);
-        const response = await authReq.get("/api/users/me").send(user);
+        const response = await authReq.get("/users/me").send(user);
         expect(response.status).toBe(200);
         expect(response.body.email).toBe("test2@test.com");
       });
@@ -104,7 +104,7 @@ describe("내 정보 수정", () => {
     await prisma.$disconnect();
   });
 
-  describe("PUT /api/users/me", () => {
+  describe("PUT /users/me", () => {
     beforeAll(async () => {
       await clearDatabase();
     });
@@ -113,7 +113,7 @@ describe("내 정보 수정", () => {
     });
     describe("성공", () => {
       test("내 정보 수정", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -127,12 +127,12 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          password: "Password!2345",
+          password: "Password2345",
           currentPassword: password,
         };
 
         const authReq = getAuthenticatedReq(user.id);
-        const response = await authReq.put("/api/users/me").send(data);
+        const response = await authReq.put("/users/me").send(data);
         expect(response.status).toBe(200);
         expect(response.body.name).toBe("김함자");
       });
@@ -140,7 +140,7 @@ describe("내 정보 수정", () => {
 
     describe("실패", () => {
       test("틀린 비밀번호 입력", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -154,12 +154,12 @@ describe("내 정보 수정", () => {
 
         const data = {
           name: "김함자",
-          password: "Password!2345",
-          currentPassword: "password@1234~~",
+          password: "Password2345",
+          currentPassword: "password1234~",
         };
 
         const authReq = getAuthenticatedReq(user.id);
-        const response = await authReq.put("/api/users/me").send(data);
+        const response = await authReq.put("/users/me").send(data);
         expect(response.status).toBe(401);
       });
     });
@@ -175,7 +175,7 @@ describe("회원 탈퇴", () => {
     await prisma.$disconnect();
   });
 
-  describe("DELETE /api/users/delete", () => {
+  describe("DELETE /users/delete", () => {
     beforeAll(async () => {
       await clearDatabase();
     });
@@ -184,7 +184,7 @@ describe("회원 탈퇴", () => {
     });
     describe("성공", () => {
       test("회원 탈퇴", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -197,7 +197,7 @@ describe("회원 탈퇴", () => {
         });
 
         const authReq = getAuthenticatedReq(user.id);
-        const response = await authReq.delete("/api/users/delete").send();
+        const response = await authReq.delete("/users/delete").send();
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: "회원 탈퇴 성공" });
       });
@@ -214,7 +214,7 @@ describe("내 관심 매장 조회", () => {
     await prisma.$disconnect();
   });
 
-  describe("GET /api/users/me/likes", () => {
+  describe("GET /users/me/likes", () => {
     beforeAll(async () => {
       await clearDatabase();
     });
@@ -223,7 +223,7 @@ describe("내 관심 매장 조회", () => {
     });
     describe("성공", () => {
       test("관심 목록 조회", async () => {
-        const password = "Password@1234";
+        const password = "Password1234";
         const passwordHashed = bcrypt.hashSync(password, 10);
 
         const user = await prisma.user.create({
@@ -259,7 +259,7 @@ describe("내 관심 매장 조회", () => {
           data: { userId: user.id, storeId: store.id },
         });
         const authReq = getAuthenticatedReq(user.id);
-        const response = await authReq.get("/api/users/me/likes").send();
+        const response = await authReq.get("/users/me/likes").send();
         expect(response.status).toBe(200);
         expect(response.body[0].store.name).toBe("마티네 마카롱");
       });

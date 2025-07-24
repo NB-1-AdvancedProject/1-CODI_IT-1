@@ -15,10 +15,15 @@ import { IdParamsStruct, PageParamsStruct } from "../structs/commonStructs";
 
 export const createStore: RequestHandler = async (req, res) => {
   assert(req.body, CreateStoreBodyStruct);
+  const protocol = req.protocol;
+  const host = req.get("host");
   const dto: CreateStoreDTO = {
     userId: req.user!.id,
     userType: req.user!.type,
     ...req.body,
+    image: req.file
+      ? `${protocol}://${host}/uploads/${req.file.filename}`
+      : undefined,
   };
   const result: StoreResDTO = await storeService.createStore(dto);
   res.status(201).json(result);
@@ -51,11 +56,16 @@ export const getMyStoreInfo: RequestHandler = async (req, res) => {
 export const updateMyStore: RequestHandler = async (req, res) => {
   const { id: userId } = req.user!;
   const { id: storeId } = create(req.params, IdParamsStruct);
+  const protocol = req.protocol;
+  const host = req.get("host");
   assert(req.body, UpdateStoreBodyStruct);
   const result = await storeService.updateMyStore({
     userId,
     storeId,
     ...req.body,
+    image: req.file
+      ? `${protocol}://${host}/uploads/${req.file.filename}`
+      : undefined,
   });
   res.status(200).json(result);
 };

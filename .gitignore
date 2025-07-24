@@ -5,3 +5,4 @@ dist
 coverage/
 uploads
 .DS_Store
+venv/

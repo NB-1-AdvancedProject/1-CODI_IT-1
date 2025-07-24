@@ -50,6 +50,7 @@ export const sellerUser2 = {
 export const store1 = {
   name: "마티네 마카롱",
   address: "서울특별시 종로구 종로1가 1-1",
+  detailAddress: "어디든",
   phoneNumber: "02-1111-2222",
   content: "프랑스 수제 마카롱 전문점 🥐",
   image: "https://example.com/images/store1.jpg",
