@@ -18,8 +18,7 @@ import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
 import orderRouter from "./routers/orderRouter";
-<<<<<<< HEAD
-import cors from "cors";
+import path from "path";
 
 const app = express();
 app.use(express.json());
@@ -41,21 +40,7 @@ app.use(
     credentials: true,
   })
 );
-=======
-import path from "path";
-
-const app = express();
-app.use(express.json());
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-
 const rootDir = path.resolve();
->>>>>>> 72ed73708177cd0dbb95439bfdb07f79db46d427
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", version: "1.0.0" });
