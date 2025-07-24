@@ -7,7 +7,7 @@ import {
   UpdateStoreInput,
 } from "../lib/dto/storeDTO";
 import { Store } from "../types/storeType";
-import { FavoriteStore, Prisma } from "@prisma/client";
+import { FavoriteStore, Prisma, Product } from "@prisma/client";
 
 export async function createStore(data: CreateStoreInput): Promise<Store> {
   return await prisma.store.create({ data });
@@ -28,6 +28,17 @@ export async function findStoreByUserIdAndStoreId(
 
 export async function getStoreById(id: string): Promise<Store> {
   return await prisma.store.findUniqueOrThrow({ where: { id } });
+}
+
+export async function getStoreByUser(userId: string): Promise<Store> {
+  return await prisma.store.findUniqueOrThrow({ where: { userId: userId } });
+}
+
+export async function getStoreProducts(userId: string) {
+  return (await prisma.store.findUniqueOrThrow({
+    where: { userId: userId },
+    include: { products: true },
+  })) as { products: Product[] };
 }
 
 export async function updateStore(data: UpdateStoreInput): Promise<Store> {

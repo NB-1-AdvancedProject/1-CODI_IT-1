@@ -1,6 +1,6 @@
-
 import {
   CreateOrderDTO,
+  OrderListResDTO,
   OrderResDTO,
   UpdateOrderDTO,
 } from "../lib/dto/orderDTO";
@@ -17,7 +17,6 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import stockRepository from "../repositories/stockRepository";
-
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -82,7 +81,6 @@ async function updateUserGrade(user: Token, subtotal: Decimal) {
 
   return { totalAmount, newGrade };
 }
-
 
 async function create(user: Token, data: CreateOrderDTO) {
   const orderItemInfo = await findOrderItems(data);
@@ -169,7 +167,10 @@ async function create(user: Token, data: CreateOrderDTO) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: order.orderItems,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      isReviewed: false,
+    })),
     payment: order.payment,
   };
 
@@ -183,7 +184,7 @@ async function getOrderList(
   orderBy: string,
   status?: OrderStatusType
 ) {
-  const orderList = await orderRepository.getOrderList(
+  const data = await orderRepository.getOrderList(
     user,
     page,
     limit,
@@ -191,18 +192,38 @@ async function getOrderList(
     status
   );
 
-  const orderResList = orderList.map(
-    (order) =>
-      new OrderResDTO({
+  const orderResList = {
+    data: data.orderList.map((order) => {
+      const totalQuantity = order.orderItems.reduce(
+        (acc, item) => acc + item.quantity,
+        0
+      );
+
+      const orderItems = order.orderItems.map((item) => {
+        const isReviewed = item.product.reviews.some(
+          (review) => review.orderItemId === item.id
+        );
+
+        return {
+          ...item,
+          isReviewed,
+        };
+      });
+
+      return new OrderListResDTO({
         ...order,
-        totalQuantity: order.orderItems.reduce(
-          (acc, item) => acc + item.quantity,
-          0
-        ),
-        orderItems: order.orderItems,
+        totalQuantity,
+        orderItems,
         payment: order.payment,
-      })
-  );
+      });
+    }),
+    meta: {
+      total: data.orderCount,
+      page,
+      limit,
+      totalPages: Math.ceil(data.orderCount / limit),
+    },
+  };
 
   return orderResList;
 }
@@ -223,7 +244,12 @@ async function getOrder(user: Token, id: string) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: order.orderItems,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      isReviewed: item.product.reviews.some(
+        (review) => review.orderItemId === item.id
+      ),
+    })),
     payment: order.payment,
   });
 }
@@ -267,7 +293,12 @@ async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: updatedOrder.orderItems,
+    orderItems: updatedOrder.orderItems.map((item) => ({
+      ...item,
+      isReviewed: item.product.reviews.some(
+        (review) => review.orderItemId === item.id
+      ),
+    })),
     payment: updatedOrder.payment,
   });
 }

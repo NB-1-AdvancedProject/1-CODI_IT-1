@@ -69,7 +69,7 @@ export async function getCart(user: string) {
 }
 
 export async function CartItemSizes(cartId: string, productId: string) {
-  return await prisma.cartItem.findFirst({
+  return await prisma.cartItem.findMany({
     where: {
       cartId,
       productId,

@@ -47,6 +47,7 @@ async function orderSave(
             include: {
               store: true,
               stocks: { include: { size: true } },
+              reviews: true,
             },
           },
           size: true,
@@ -81,7 +82,7 @@ async function getOrderList(
   const order = orderBy === "recent" ? "asc" : "desc";
   const where = status ? { userId: user.id, status } : { userId: user.id };
 
-  return await prisma.order.findMany({
+  const orderList = await prisma.order.findMany({
     where,
     orderBy: { createdAt: order },
     skip: (page - 1) * limit,
@@ -91,8 +92,9 @@ async function getOrderList(
         include: {
           product: {
             include: {
-              store: true,
+              reviews: { where: { userId: user.id } },
               stocks: { include: { size: true } },
+              store: true,
             },
           },
           size: true,
@@ -101,6 +103,12 @@ async function getOrderList(
       payment: true,
     },
   });
+
+  const orderCount = await prisma.order.count({
+    where,
+  });
+
+  return { orderList, orderCount };
 }
 
 async function getOrder(id: string) {
@@ -113,6 +121,7 @@ async function getOrder(id: string) {
             include: {
               store: true,
               stocks: { include: { size: true } },
+              reviews: true,
             },
           },
           size: true,
@@ -172,6 +181,7 @@ async function update(id: string, data: UpdateOrderDTO) {
               include: {
                 store: true,
                 stocks: { include: { size: true } },
+                reviews: true,
               },
             },
             size: true,
