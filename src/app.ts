@@ -22,13 +22,24 @@ import path from "path";
 
 const app = express();
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://54.180.24.230",
+  "https://codeitsprintcodiit.duckdns.org/",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
-
 const rootDir = path.resolve();
 
 app.get("/health", (req, res) => {
