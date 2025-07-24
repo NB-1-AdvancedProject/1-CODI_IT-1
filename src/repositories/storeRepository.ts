@@ -37,6 +37,15 @@ export async function updateStore(data: UpdateStoreInput): Promise<Store> {
     data: storeData,
   });
 }
+
+export async function countSoldCount(storeId: string): Promise<number> {
+  const products = await prisma.product.findMany({ where: { storeId } });
+  const totalSoldCount = products.reduce(
+    (acc, product) => acc + product.sales,
+    0
+  );
+  return totalSoldCount;
+}
 // Product 관련
 export async function countProductByStoreId(storeId: string): Promise<number> {
   return await prisma.product.count({ where: { storeId } });

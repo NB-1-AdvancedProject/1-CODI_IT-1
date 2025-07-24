@@ -50,7 +50,7 @@ describe("파일 업로드 테스트", () => {
     });
 
     const authReq = getAuthenticatedReq(sellerUser1.id);
-    const response = await authReq.post("/api/s3/upload");
+    const response = await authReq.post("/s3/upload");
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("이미지 업로드 성공");
@@ -74,7 +74,7 @@ describe("파일 업로드 테스트", () => {
     );
 
     const authReq = getAuthenticatedReq(sellerUser1.id);
-    const response = await authReq.post("/api/s3/upload");
+    const response = await authReq.post("/s3/upload");
 
     expect(response.status).toBe(400);
     expect(response.text).toBe("No file uploaded.");
