@@ -156,6 +156,7 @@ async function create(user: Token, data: CreateOrderDTO) {
       orderItemInfo.subtotal
     );
 
+
     const finalPoint = currentPoint + point;
     const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
 
