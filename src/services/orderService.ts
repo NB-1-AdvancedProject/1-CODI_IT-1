@@ -17,6 +17,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import stockRepository from "../repositories/stockRepository";
+import productRepository from "../repositories/productRepository";
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -118,6 +119,12 @@ async function create(user: Token, data: CreateOrderDTO) {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
+
+      const productSales = await orderRepository.productSales(
+        tx,
+        item.productId,
+        item.quantity
+      );
     }
 
     const orderItems = {
