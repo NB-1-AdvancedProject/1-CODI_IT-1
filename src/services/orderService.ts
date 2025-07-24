@@ -17,7 +17,6 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import stockRepository from "../repositories/stockRepository";
-import productRepository from "../repositories/productRepository";
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -55,8 +54,13 @@ async function findOrderItems(data: CreateOrderDTO) {
 async function calculateUserGrade(totalAmount: Decimal) {
   const gradeTiers = await orderRepository.getGrade();
 
-  for (const tier of gradeTiers) {
-    if (totalAmount >= new Decimal(tier.minAmount)) {
+  const sortedTiers = gradeTiers.sort(
+    (a, b) =>
+      new Decimal(b.minAmount).toNumber() - new Decimal(a.minAmount).toNumber()
+  );
+
+  for (const tier of sortedTiers) {
+    if (totalAmount.gte(new Decimal(tier.minAmount))) {
       return tier.id;
     }
   }
