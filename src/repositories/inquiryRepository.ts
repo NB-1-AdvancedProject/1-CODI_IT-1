@@ -172,3 +172,41 @@ export async function listQuiries(productId: string) {
     },
   });
 }
+
+export async function sellerIncludeMany(
+  productIds: string[],
+  params: inquiryType
+) {
+  return prisma.inquiry.findMany({
+    where: {
+      productId: {
+        in: productIds,
+      },
+      ...(params.status && { status: params.status as InquiryStatus }),
+    },
+    skip: (params.page - 1) * params.pageSize,
+    take: params.pageSize,
+    orderBy: { createdAt: "desc" },
+    include: {
+      product: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          store: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      Reply: true,
+    },
+  });
+}
