@@ -17,9 +17,28 @@ import notificationRouter from "./routers/notificationRouter";
 import { reviewRouter } from "./routers/reviewRouter";
 import { metadataRouter } from "./routers/metadataRouter";
 import orderRouter from "./routers/orderRouter";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://54.180.24.230",
+  "https://codeitsprintcodiit.duckdns.org/",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
