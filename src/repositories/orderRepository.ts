@@ -202,6 +202,19 @@ async function getByGradeId(id: string) {
   return await prisma.grade.findUnique({ where: { id } });
 }
 
+async function productSales(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  sale: number
+) {
+  return await tx.product.update({
+    where: { id: productId },
+    data: {
+      sales: { increment: sale },
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -213,4 +226,5 @@ export default {
   getGrade,
   getByGradeId,
   getOrderItem,
+  productSales,
 };
