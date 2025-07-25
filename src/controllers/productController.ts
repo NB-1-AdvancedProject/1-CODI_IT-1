@@ -29,8 +29,12 @@ export const postProduct: RequestHandler = async (req, res) => {
   const data = create(
     {
       ...req.body,
-      discountStartTime: req.body.discountStartTime ?? undefined,
-      discountEndTime: req.body.discountEndTime ?? undefined,
+      discountStartTime: req.body.discountStartTime
+        ? new Date(req.body.discountStartTime)
+        : undefined,
+      discountEndTime: req.body.discountEndTime
+        ? new Date(req.body.discountStartTime)
+        : undefined,
       image: url,
       stocks: req.body.stocks,
     },
