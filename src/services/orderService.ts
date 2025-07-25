@@ -151,11 +151,9 @@ async function create(user: Token, data: CreateOrderDTO) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
 
-    const point = await calculateExpectedPoint(
-      currentUser,
-      orderItemInfo.subtotal
-    );
+    const realPay = Decimal.max(orderItemInfo.subtotal.minus(data.usePoint), 0);
 
+    const point = await calculateExpectedPoint(currentUser, realPay);
 
     const finalPoint = currentPoint + point;
     const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
