@@ -54,8 +54,13 @@ async function findOrderItems(data: CreateOrderDTO) {
 async function calculateUserGrade(totalAmount: Decimal) {
   const gradeTiers = await orderRepository.getGrade();
 
-  for (const tier of gradeTiers) {
-    if (totalAmount >= new Decimal(tier.minAmount)) {
+  const sortedTiers = gradeTiers.sort(
+    (a, b) =>
+      new Decimal(b.minAmount).toNumber() - new Decimal(a.minAmount).toNumber()
+  );
+
+  for (const tier of sortedTiers) {
+    if (totalAmount.gte(new Decimal(tier.minAmount))) {
       return tier.id;
     }
   }
@@ -118,6 +123,12 @@ async function create(user: Token, data: CreateOrderDTO) {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
+
+      const productSales = await orderRepository.productSales(
+        tx,
+        item.productId,
+        item.quantity
+      );
     }
 
     const orderItems = {
@@ -144,6 +155,7 @@ async function create(user: Token, data: CreateOrderDTO) {
       currentUser,
       orderItemInfo.subtotal
     );
+
 
     const finalPoint = currentPoint + point;
     const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
