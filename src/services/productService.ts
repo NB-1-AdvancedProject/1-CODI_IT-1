@@ -62,8 +62,11 @@ async function createProduct(data: CreateProductBody, userId: string) {
     inquiries: product.inquiries,
     discountPrice:
       Number(product.discountRate || 0) > 0
-        ? Number(product.price) * (1 - Number(product.discountRate || 0) / 100)
-        : Number(product.price),
+        ? Math.round(
+            Number(product.price) *
+              (1 - Number(product.discountRate || 0) / 100)
+          )
+        : Math.round(Number(product.price)),
     discountRate: product.discountRate || 0,
     discountStartTime: product.discountStartTime
       ? product.discountStartTime.toISOString()
@@ -267,7 +270,11 @@ async function getProduct(productId: string) {
     },
     inquiries,
     discountPrice:
-      refreshedProduct?.discountPrice ?? product.discountPrice ?? product.price,
+      refreshedProduct?.discountPrice != null
+        ? Math.round(Number(refreshedProduct.discountPrice))
+        : product.discountPrice != null
+        ? Math.round(Number(product.discountPrice))
+        : Math.round(Number(product.price)),
     discountRate: refreshedProduct?.discountRate ?? product.discountRate ?? 0,
     discountStartTime:
       refreshedProduct?.discountStartTime ?? product.discountStartTime ?? null,
@@ -356,9 +363,11 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     reviews: updatedProduct.reviews,
     inquiries: updatedProduct.inquiries,
     discountPrice:
-      refreshedProduct?.discountPrice ??
-      updatedProduct.discountPrice ??
-      updatedProduct.price,
+      refreshedProduct?.discountPrice != null
+        ? Math.round(Number(refreshedProduct.discountPrice))
+        : updatedProduct.discountPrice != null
+        ? Math.round(Number(updatedProduct.discountPrice))
+        : Math.round(Number(updatedProduct.price)),
     discountRate:
       refreshedProduct?.discountRate ?? updatedProduct.discountRate ?? 0,
     discountStartTime:
