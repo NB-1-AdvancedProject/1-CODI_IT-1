@@ -1,6 +1,6 @@
-
 import {
   CreateOrderDTO,
+  OrderListResDTO,
   OrderResDTO,
   UpdateOrderDTO,
 } from "../lib/dto/orderDTO";
@@ -17,7 +17,6 @@ import { Decimal } from "@prisma/client/runtime/library";
 import ForbiddenError from "../lib/errors/ForbiddenError";
 import BadRequestError from "../lib/errors/BadRequestError";
 import stockRepository from "../repositories/stockRepository";
-
 
 async function findOrderItems(data: CreateOrderDTO) {
   let subtotal = new Decimal(0);
@@ -55,8 +54,13 @@ async function findOrderItems(data: CreateOrderDTO) {
 async function calculateUserGrade(totalAmount: Decimal) {
   const gradeTiers = await orderRepository.getGrade();
 
-  for (const tier of gradeTiers) {
-    if (totalAmount >= new Decimal(tier.minAmount)) {
+  const sortedTiers = gradeTiers.sort(
+    (a, b) =>
+      new Decimal(b.minAmount).toNumber() - new Decimal(a.minAmount).toNumber()
+  );
+
+  for (const tier of sortedTiers) {
+    if (totalAmount.gte(new Decimal(tier.minAmount))) {
       return tier.id;
     }
   }
@@ -82,7 +86,6 @@ async function updateUserGrade(user: Token, subtotal: Decimal) {
 
   return { totalAmount, newGrade };
 }
-
 
 async function create(user: Token, data: CreateOrderDTO) {
   const orderItemInfo = await findOrderItems(data);
@@ -120,6 +123,12 @@ async function create(user: Token, data: CreateOrderDTO) {
         where: { id: stockToUpdate.id },
         data: { quantity: newStockQuantity },
       });
+
+      const productSales = await orderRepository.productSales(
+        tx,
+        item.productId,
+        item.quantity
+      );
     }
 
     const orderItems = {
@@ -142,10 +151,9 @@ async function create(user: Token, data: CreateOrderDTO) {
       throw new CommonError("포인트가 부족합니다.", 400);
     }
 
-    const point = await calculateExpectedPoint(
-      currentUser,
-      orderItemInfo.subtotal
-    );
+    const realPay = Decimal.max(orderItemInfo.subtotal.minus(data.usePoint), 0);
+
+    const point = await calculateExpectedPoint(currentUser, realPay);
 
     const finalPoint = currentPoint + point;
     const grade = await updateUserGrade(currentUser, orderItemInfo.subtotal);
@@ -169,7 +177,10 @@ async function create(user: Token, data: CreateOrderDTO) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: order.orderItems,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      isReviewed: false,
+    })),
     payment: order.payment,
   };
 
@@ -183,7 +194,7 @@ async function getOrderList(
   orderBy: string,
   status?: OrderStatusType
 ) {
-  const orderList = await orderRepository.getOrderList(
+  const data = await orderRepository.getOrderList(
     user,
     page,
     limit,
@@ -191,18 +202,38 @@ async function getOrderList(
     status
   );
 
-  const orderResList = orderList.map(
-    (order) =>
-      new OrderResDTO({
+  const orderResList = {
+    data: data.orderList.map((order) => {
+      const totalQuantity = order.orderItems.reduce(
+        (acc, item) => acc + item.quantity,
+        0
+      );
+
+      const orderItems = order.orderItems.map((item) => {
+        const isReviewed = item.product.reviews.some(
+          (review) => review.orderItemId === item.id
+        );
+
+        return {
+          ...item,
+          isReviewed,
+        };
+      });
+
+      return new OrderListResDTO({
         ...order,
-        totalQuantity: order.orderItems.reduce(
-          (acc, item) => acc + item.quantity,
-          0
-        ),
-        orderItems: order.orderItems,
+        totalQuantity,
+        orderItems,
         payment: order.payment,
-      })
-  );
+      });
+    }),
+    meta: {
+      total: data.orderCount,
+      page,
+      limit,
+      totalPages: Math.ceil(data.orderCount / limit),
+    },
+  };
 
   return orderResList;
 }
@@ -223,7 +254,12 @@ async function getOrder(user: Token, id: string) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: order.orderItems,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      isReviewed: item.product.reviews.some(
+        (review) => review.orderItemId === item.id
+      ),
+    })),
     payment: order.payment,
   });
 }
@@ -238,7 +274,7 @@ async function deleteOrder(user: Token, id: string) {
     throw new ForbiddenError();
   }
 
-  if (order.status !== "PENDING") {
+  if (order.status !== "CompletedPayment") {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
@@ -255,7 +291,7 @@ async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
     throw new ForbiddenError();
   }
 
-  if (["DELIVERED", "SHIPPED", "CANCELLED"].includes(order.status)) {
+  if (["Shipped", "Processing", "Cancelled"].includes(order.status)) {
     throw new BadRequestError("잘못된 요청입니다.");
   }
 
@@ -267,7 +303,12 @@ async function updateOrder(user: Token, id: string, data: UpdateOrderDTO) {
       (acc, item) => acc + item.quantity,
       0
     ),
-    orderItems: updatedOrder.orderItems,
+    orderItems: updatedOrder.orderItems.map((item) => ({
+      ...item,
+      isReviewed: item.product.reviews.some(
+        (review) => review.orderItemId === item.id
+      ),
+    })),
     payment: updatedOrder.payment,
   });
 }

@@ -16,13 +16,13 @@ export const CreateProductBodyStruct = object({
   price: integerString,
   content: string(),
   image: string(),
-  discountRate: optional(number()),
+  discountRate: optional(integerString),
   discountStartTime: optional(date()),
   discountEndTime: optional(date()),
   categoryName: string(),
   stocks: array(
     object({
-      sizeId: string(),
+      sizeId: number(),
       quantity: integerString,
     })
   ),
@@ -42,7 +42,7 @@ export const PatchProductBodyStruct = object({
   stocks: optional(
     array(
       object({
-        sizeId: string(),
+        sizeId: number(),
         quantity: integerString,
       })
     )

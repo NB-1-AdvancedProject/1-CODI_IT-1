@@ -3,20 +3,27 @@ import { Decimal } from "@prisma/client/runtime/library";
 export interface CartData {
   id: string;
   userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CartQuantityData {
+  id: string;
+  userId: string;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface SizeData {
-  id: string;
+  id: number;
   size: string;
 }
 
 export interface StockData {
   id: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   size: SizeData;
 }
@@ -39,6 +46,7 @@ export interface ProductData {
   name: string;
   price: Decimal;
   image: string;
+  discountPrice: Decimal | null;
   discountRate: number | null;
   discountStartTime: Date | null;
   discountEndTime: Date | null;
@@ -50,19 +58,19 @@ export interface CartItemData {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
   product: ProductData;
-  cart: CartData;
+  cart: CartQuantityData;
 }
 
 export interface GetCartItemData {
   id: string;
   cartId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
@@ -81,4 +89,14 @@ export interface CartList {
 export interface SizeLeanguage {
   ko: string;
   en: string;
+}
+
+export interface cartItemsData {
+  id: string;
+  cartId: string;
+  productId: string;
+  sizeId: number;
+  quantity: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

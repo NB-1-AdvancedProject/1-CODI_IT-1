@@ -22,7 +22,7 @@ export const postCartData: RequestHandler = async (req, res) => {
 export const getCartItemList: RequestHandler = async (req, res) => {
   const user = req.user!.id;
 
-  const result: cartListDTO = await cartItemList(user);
+  const result: cartListDTO | null = await cartItemList(user);
 
   res.status(200).json(result);
 };
@@ -31,7 +31,7 @@ export const patchCartData: RequestHandler = async (req, res) => {
   const user = req.user!.id;
   const cart = create(req.body, addToCartBodyStuct);
 
-  const result: cartItemDTO = await patchCart(user, cart);
+  const result = await patchCart(user, cart);
 
   res.status(200).json(result);
 };

@@ -21,7 +21,7 @@ async function orderSave(
       name: order.name,
       phone: order.phone,
       address: order.address,
-      status: "PAID" as OrderStatusType,
+      status: "CompletedPayment" as OrderStatusType,
       subtotal: order.subtotal,
       orderItems: {
         create: order.orderItems.map((item: CreateOrderItemDTO) => ({
@@ -47,6 +47,7 @@ async function orderSave(
             include: {
               store: true,
               stocks: { include: { size: true } },
+              reviews: true,
             },
           },
           size: true,
@@ -81,7 +82,7 @@ async function getOrderList(
   const order = orderBy === "recent" ? "asc" : "desc";
   const where = status ? { userId: user.id, status } : { userId: user.id };
 
-  return await prisma.order.findMany({
+  const orderList = await prisma.order.findMany({
     where,
     orderBy: { createdAt: order },
     skip: (page - 1) * limit,
@@ -91,8 +92,9 @@ async function getOrderList(
         include: {
           product: {
             include: {
-              store: true,
+              reviews: { where: { userId: user.id } },
               stocks: { include: { size: true } },
+              store: true,
             },
           },
           size: true,
@@ -101,6 +103,12 @@ async function getOrderList(
       payment: true,
     },
   });
+
+  const orderCount = await prisma.order.count({
+    where,
+  });
+
+  return { orderList, orderCount };
 }
 
 async function getOrder(id: string) {
@@ -113,6 +121,7 @@ async function getOrder(id: string) {
             include: {
               store: true,
               stocks: { include: { size: true } },
+              reviews: true,
             },
           },
           size: true,
@@ -125,7 +134,7 @@ async function getOrder(id: string) {
 
 async function deleteOrder(id: string, userId: string) {
   const result = await prisma.order.deleteMany({
-    where: { id, userId, status: "PENDING" },
+    where: { id, userId, status: "Processing" },
   });
 
   if (result.count === 0) {
@@ -172,6 +181,7 @@ async function update(id: string, data: UpdateOrderDTO) {
               include: {
                 store: true,
                 stocks: { include: { size: true } },
+                reviews: true,
               },
             },
             size: true,
@@ -192,6 +202,19 @@ async function getByGradeId(id: string) {
   return await prisma.grade.findUnique({ where: { id } });
 }
 
+async function productSales(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  sale: number
+) {
+  return await tx.product.update({
+    where: { id: productId },
+    data: {
+      sales: { increment: sale },
+    },
+  });
+}
+
 export default {
   orderSave,
   getProductById,
@@ -203,4 +226,5 @@ export default {
   getGrade,
   getByGradeId,
   getOrderItem,
+  productSales,
 };

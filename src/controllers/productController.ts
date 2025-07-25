@@ -22,7 +22,24 @@ export const getProducts: RequestHandler = async (req, res) => {
 };
 
 export const postProduct: RequestHandler = async (req, res) => {
-  const data = create(req.body, CreateProductBodyStruct);
+  const { url, key } = (req as any).uploadedImage || {};
+  if (typeof req.body.stocks === "string") {
+    req.body.stocks = JSON.parse(req.body.stocks);
+  }
+  const data = create(
+    {
+      ...req.body,
+      discountStartTime: req.body.discountStartTime
+        ? new Date(req.body.discountStartTime)
+        : undefined,
+      discountEndTime: req.body.discountEndTime
+        ? new Date(req.body.discountStartTime)
+        : undefined,
+      image: url,
+      stocks: req.body.stocks,
+    },
+    CreateProductBodyStruct
+  );
   const product = await productService.createProduct(data, req.user!.id);
   res.status(201).json(product);
 };
@@ -36,7 +53,6 @@ export const patchProduct: RequestHandler = async (req, res) => {
 
   const data = create(req.body, PatchProductBodyStruct);
   const product = await productService.updateProduct(data, productId);
-  console.log("product", product);
   res.json(product);
 };
 

@@ -158,7 +158,7 @@ export class MyStoreProductDTO {
   image: string;
   name: string;
   price: number;
-  stocks: Stock[]; // 정은 Todo: 스웨거 확정되면 수정 필요
+  stock: number;
   isDiscount: boolean;
   isSoldOut: boolean;
   createdAt: Date;
@@ -168,7 +168,9 @@ export class MyStoreProductDTO {
     this.image = product.image || "";
     this.name = product.name;
     this.price = product.price.toNumber();
-    this.stocks = product.stocks;
+    this.stock = product.stocks
+      .map((stock) => stock.quantity)
+      .reduce((sum, quantity) => sum + quantity, 0);
     this.isDiscount = product.discountEndTime
       ? product.discountEndTime > new Date()
       : false;

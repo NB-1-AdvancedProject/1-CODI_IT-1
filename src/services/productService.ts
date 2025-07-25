@@ -8,7 +8,8 @@ import {
 import * as storeService from "../services/storeService";
 import stockService from "./stockService";
 import BadRequestError from "../lib/errors/BadRequestError";
-import categoryService from "./categoryService";
+import { quiryList } from "./inquiryService";
+import { getReviewListForProduct } from "../services/reviewService";
 import prisma from "../lib/prisma";
 import { createAlarmData } from "../repositories/notificationRepository";
 import orderRepository from "../repositories/orderRepository";
@@ -26,7 +27,7 @@ async function createProduct(data: CreateProductBody, userId: string) {
     content: data.content,
     image: data.image,
     discountPrice: data.discountRate
-      ? data.price * (100 - data.discountRate)
+      ? Math.round((data.price * (100 - data.discountRate)) / 100)
       : null,
     discountRate: data.discountRate || 0,
     discountStartTime: data.discountStartTime || null,
@@ -61,8 +62,11 @@ async function createProduct(data: CreateProductBody, userId: string) {
     inquiries: product.inquiries,
     discountPrice:
       Number(product.discountRate || 0) > 0
-        ? Number(product.price) * (1 - Number(product.discountRate || 0) / 100)
-        : Number(product.price),
+        ? Math.round(
+            Number(product.price) *
+              (1 - Number(product.discountRate || 0) / 100)
+          )
+        : Math.round(Number(product.price)),
     discountRate: product.discountRate || 0,
     discountStartTime: product.discountStartTime
       ? product.discountStartTime.toISOString()
@@ -106,14 +110,10 @@ async function getProducts(params: ProductListParams) {
   }
 
   if (params.categoryName) {
-    const category = await categoryService.getCategoryByName(
-      params.categoryName
-    );
-    if (category) {
-      whereCondition.categoryId = category.id;
-    }
+    whereCondition.category = {
+      name: params.categoryName,
+    };
   }
-
   if (params.priceMin || params.priceMax) {
     whereCondition.price = {};
     if (params.priceMin) {
@@ -196,8 +196,15 @@ async function getProducts(params: ProductListParams) {
     finalProducts.map(async (product) => {
       const store = await storeService.getStoreById(product.storeId);
       const stocks = await stockService.getStocksByProductId(product.id);
+      if (!product.reviewsCount) {
+        product.reviewsCount = 0;
+      }
+      if (!product.reviewsRating) {
+        product.reviewsRating = 0;
+      }
       return {
         ...product,
+        discountPrice: product.discountPrice ?? product.price,
         storeName: store!.name,
         isSoldOut: checkSoldOut(stocks),
       };
@@ -218,16 +225,72 @@ async function getProduct(productId: string) {
   const product = await productRepository.findProductById(productId);
   if (!product) return null;
   const store = await storeService.getStoreById(product.storeId);
+  const inquiries = await quiryList(productId);
+  const reviews = await getReviewListForProduct(productId);
   const refreshedProduct = await checkAndUpdateDiscountState(
     product.discountEndTime,
     product.id
   );
-
   const finalProduct = refreshedProduct ?? product;
+
+  const { rate1Length, rate2Length, rate3Length, rate4Length, rate5Length } =
+    reviews.reduce(
+      (acc, review) => {
+        if (review.rating === 1) acc.rate1Length++;
+        else if (review.rating === 2) acc.rate2Length++;
+        else if (review.rating === 3) acc.rate3Length++;
+        else if (review.rating === 4) acc.rate4Length++;
+        else if (review.rating === 5) acc.rate5Length++;
+        return acc;
+      },
+      {
+        rate1Length: 0,
+        rate2Length: 0,
+        rate3Length: 0,
+        rate4Length: 0,
+        rate5Length: 0,
+      }
+    );
+  const reviewsRating =
+    reviews.reduce((acc, review) => acc + review.rating, 0) /
+    (reviews.length || 1);
 
   return {
     ...finalProduct,
+    storeId: product.store.id,
     storeName: store!.name,
+    reviewsCount: product.reviews.length,
+    reviews: {
+      rate1Length,
+      rate2Length,
+      rate3Length,
+      rate4Length,
+      rate5Length,
+      sumScore: reviewsRating,
+    },
+    inquiries,
+    discountPrice:
+      refreshedProduct?.discountPrice != null
+        ? Math.round(Number(refreshedProduct.discountPrice))
+        : product.discountPrice != null
+        ? Math.round(Number(product.discountPrice))
+        : Math.round(Number(product.price)),
+    discountRate: refreshedProduct?.discountRate ?? product.discountRate ?? 0,
+    discountStartTime:
+      refreshedProduct?.discountStartTime ?? product.discountStartTime ?? null,
+    discountEndTime:
+      refreshedProduct?.discountEndTime ?? product.discountEndTime ?? null,
+    stocks: product.stocks.map((stock) => ({
+      id: stock.id,
+      productId: stock.productId,
+      quantity: stock.quantity,
+      sizeId: stock.size.id,
+      size: {
+        id: stock.size.id,
+        name: stock.size.size,
+      },
+    })),
+    category: [{ name: product.category.name, id: product.category.id }],
   };
 }
 
@@ -268,7 +331,7 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     await productRepository.update({ isSoldOut }, updatedProduct.id);
     const order = await orderRepository.getOrderItem(updatedProduct.id);
     const orderIds = order
-      .filter((o) => o.order.status === "PENDING")
+      .filter((o) => o.order.status === "CompletedPayment")
       .map((o) => o.order.userId);
     const cart = await getItem(updatedProduct.id);
     const cartIds = cart.map((c) => c.cart.userId);
@@ -277,7 +340,7 @@ async function updateProduct(data: PatchProductBody, productId: string) {
       ...cartIds,
       ...(data.isSoldOut ? [] : [updatedProduct.store.userId]),
     ]);
-    const content = "상품이 품절 되었습니다.";
+    const content = `${updatedProduct.name}의 해당 사이즈가 품절 되었습니다.`;
 
     for (const userId of userIdSet) {
       await createAlarmData(userId, content);
@@ -300,9 +363,11 @@ async function updateProduct(data: PatchProductBody, productId: string) {
     reviews: updatedProduct.reviews,
     inquiries: updatedProduct.inquiries,
     discountPrice:
-      refreshedProduct?.discountPrice ??
-      updatedProduct.discountPrice ??
-      updatedProduct.price,
+      refreshedProduct?.discountPrice != null
+        ? Math.round(Number(refreshedProduct.discountPrice))
+        : updatedProduct.discountPrice != null
+        ? Math.round(Number(updatedProduct.discountPrice))
+        : Math.round(Number(updatedProduct.price)),
     discountRate:
       refreshedProduct?.discountRate ?? updatedProduct.discountRate ?? 0,
     discountStartTime:
@@ -368,7 +433,7 @@ async function checkAndUpdateDiscountState(
 }
 
 function checkSoldOut(
-  stocks: { id: string; productId: string; quantity: number; sizeId: string }[]
+  stocks: { id: string; productId: string; quantity: number; sizeId: number }[]
 ) {
   const isAllSoldOut = stocks.every((stock) => stock.quantity === 0);
   return isAllSoldOut;

@@ -3,11 +3,14 @@ import orderService from "../services/orderService";
 import { create } from "superstruct";
 import { CreateOrder, GetOrder, UpdateOrder } from "../structs/orderStructs";
 import { IdParamsStruct } from "../structs/commonStructs";
+import { OrderStatusType } from "../types/order";
+import { formatPhoneNumber } from "../utils/formatPhoneNumber";
 
 export const createOrder: RequestHandler = async (req, res) => {
   const user = req.user!;
+  const phone = req.body.phone ? formatPhoneNumber(req.body.phone) : undefined;
 
-  const data = create(req.body, CreateOrder);
+  const data = create({ ...req.body, phone }, CreateOrder);
   const order = await orderService.create(user, data);
 
   res.status(201).send(order);
@@ -16,10 +19,10 @@ export const createOrder: RequestHandler = async (req, res) => {
 export const getOrderList: RequestHandler = async (req, res) => {
   const user = req.user!;
   const {
-    page = 1,
-    limit = 3,
+    status = "CompletedPayment" as OrderStatusType,
+    limit = 1,
+    page = 3,
     orderBy = "recent",
-    status,
   } = create(req.query, GetOrder);
 
   const orderList = await orderService.getOrderList(

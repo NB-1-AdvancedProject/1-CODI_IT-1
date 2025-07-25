@@ -29,6 +29,11 @@ export async function listData(params: inquiryType, userId: string) {
           },
         },
       },
+      user: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 }
@@ -135,7 +140,7 @@ export async function inquiryStatus(inquiryId: string) {
   return prisma.inquiry.update({
     where: { id: inquiryId },
     data: {
-      status: InquiryStatus.completedAnswer,
+      status: InquiryStatus.CompletedAnswer,
     },
   });
 }
@@ -148,22 +153,60 @@ export async function postData(
   return prisma.inquiry.create({
     data: {
       ...quiry,
-      status: "noAnswer",
+      status: "WaitingAnswer",
       userId: user,
       productId: params,
     },
   });
 }
 
-export async function listQuiries(params: string) {
+export async function listQuiries(productId: string) {
   return prisma.inquiry.findMany({
-    where: { productId: params, isSecret: false },
+    where: { productId: productId },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true } },
       Reply: {
         include: { user: { select: { name: true } } },
       },
+    },
+  });
+}
+
+export async function sellerIncludeMany(
+  productIds: string[],
+  params: inquiryType
+) {
+  return prisma.inquiry.findMany({
+    where: {
+      productId: {
+        in: productIds,
+      },
+      ...(params.status && { status: params.status as InquiryStatus }),
+    },
+    skip: (params.page - 1) * params.pageSize,
+    take: params.pageSize,
+    orderBy: { createdAt: "desc" },
+    include: {
+      product: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          store: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      Reply: true,
     },
   });
 }

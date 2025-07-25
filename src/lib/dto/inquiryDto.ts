@@ -1,26 +1,81 @@
 import { InquiryStatus } from "@prisma/client";
 import { Inquirys, Replys, InReplyType } from "../../types/inquiryType";
 import { ReplyUser, InquiryDetailQueryResult } from "../../types/inquiryType";
+import {
+  StoreInquiryType,
+  ProductInquiryType,
+  InquiryType,
+} from "../../types/inquiryType";
 
 export interface InquiryListResponseDTO {
   list: InquiryItem[];
   totalCount: number;
 }
 
-export interface InquiryItem {
+export class userDataDto {
+  name: string;
+  constructor(user: string) {
+    this.name = user;
+  }
+}
+
+export class productDataDto {
+  id: string;
+  name: string;
+  image: string;
+  store: storeDataDto;
+
+  constructor(product: ProductInquiryType) {
+    this.id = product.id;
+    this.name = product.name;
+    this.image = product.image;
+    this.store = {
+      id: product.store.id,
+      name: product.store.name,
+    };
+  }
+}
+
+export class storeDataDto {
+  id: string;
+  name: string;
+
+  constructor(store: StoreInquiryType) {
+    this.id = store.id;
+    this.name = store.name;
+  }
+}
+
+export class InquiryItem {
   id: string;
   title: string;
   isSecret: boolean;
   status: InquiryStatus;
-  product: {
-    id: string;
-    name: string;
-    image: string;
-    store: {
-      id: string;
-      name: string;
+  product: productDataDto;
+  user: userDataDto;
+  createdAt: string;
+  content: string;
+
+  constructor(inquiry: InquiryType) {
+    this.id = inquiry.id;
+    this.title = inquiry.title;
+    this.isSecret = inquiry.isSecret;
+    this.status = inquiry.status;
+    this.product = {
+      id: inquiry.product.id,
+      name: inquiry.product.name,
+      image: inquiry.product.image,
+      store: {
+        id: inquiry.product.store.id,
+        name: inquiry.product.store.name,
+      },
     };
-  };
+    this.user = {
+      name: inquiry.user.name,
+    };
+    this.createdAt = inquiry.createdAt.toISOString();
+    this.content = inquiry.content;
+  }
 }
 
 export class InquiryResDTO {

@@ -1,7 +1,7 @@
 import { Size } from "@prisma/client";
 
 export class SizeDTO {
-  id: string;
+  id: number;
   name: string;
   size: SizeInfoDTO;
 

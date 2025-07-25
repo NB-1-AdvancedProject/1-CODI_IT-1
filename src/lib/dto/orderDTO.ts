@@ -1,25 +1,20 @@
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus, Size } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import {
-  Order,
-  OrderItem,
-  OrderItemPayment,
-  Product,
-  Size,
-} from "../../types/order";
+import { Order, OrderItem, OrderItemPayment, Product } from "../../types/order";
+import { SizeDTO } from "./SizeDTO";
 
 // Request DTO
 export type CreateOrderDTO = {
   name: string;
   phone: string;
   address: string;
-  orderItems: { productId: string; sizeId: string; quantity: number }[];
+  orderItems: { productId: string; sizeId: number; quantity: number }[];
   usePoint: number;
 };
 
 export type CreateOrderItemDTO = {
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   price: Decimal;
 };
@@ -34,7 +29,7 @@ export type CreateOrderData = {
   usePoint: number;
   orderItems: {
     productId: string;
-    sizeId: string;
+    sizeId: number;
     quantity: number;
     price: Decimal;
   }[];
@@ -45,7 +40,7 @@ export type CreateOrderData = {
 
 export type StockDTO = {
   productId: string;
-  sizeId: string;
+  sizeId: number;
 };
 
 type OrderWithRelations = Order & {
@@ -70,39 +65,8 @@ export class OrderResDTO {
     id: string;
     price: Decimal;
     quantity: number;
-    product: {
-      id: string;
-      storeId: string;
-      name: string;
-      price: Decimal;
-      image: string;
-      createdAt: Date;
-      updatedAt: Date;
-      store: {
-        id: string;
-        userId: string;
-        name: string;
-        address: string;
-        phoneNumber: string;
-        content: string;
-        image: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-      };
-      stocks: {
-        id: string;
-        productId: string;
-        quantity: number;
-        size: {
-          id: string;
-          size: string;
-        };
-      }[];
-    };
-    size: {
-      id: string;
-      size: string;
-    };
+    product: Product;
+    size: SizeDTO;
   }[];
   payments: {
     id: string;
@@ -126,6 +90,7 @@ export class OrderResDTO {
       id: item.id,
       price: item.price,
       quantity: item.quantity,
+      isReviewed: item.isReviewed,
       product: {
         id: item.product.id,
         storeId: item.product.storeId,
@@ -139,13 +104,10 @@ export class OrderResDTO {
           id: stock.id,
           productId: stock.productId,
           quantity: stock.quantity,
-          size: {
-            id: stock.size.id,
-            size: stock.size.size,
-          },
+          size: stock.size,
         })),
       },
-      size: item.size,
+      size: new SizeDTO(item.size),
     }));
 
     this.payments = order.payment
@@ -158,5 +120,87 @@ export class OrderResDTO {
           orderId: order.payment.orderId,
         }
       : null;
+  }
+}
+
+export class OrderListResDTO {
+  id: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+  subtotal: string;
+  totalQuantity: number;
+  usePoint: number;
+  createdAt: Date;
+  payments: {
+    id: string;
+    price: Decimal;
+    status: PaymentStatus;
+    createdAt: Date;
+  } | null;
+  orderItems: {
+    id: string;
+    price: Decimal;
+    quantity: number;
+    isReviewed: boolean;
+    productId: string;
+    product: {
+      name: string;
+      image: string;
+      reviews: {
+        id: string;
+        rating: number;
+        content: string;
+        createdAt: Date;
+      }[];
+    };
+    size: {
+      size: {
+        en: string;
+        ko: string;
+      };
+    };
+  }[];
+
+  constructor(order: OrderWithRelations) {
+    this.id = order.id;
+    this.name = order.name;
+    this.address = order.address;
+    this.phoneNumber = order.phone;
+    this.subtotal = order.subtotal.toString();
+    this.totalQuantity = order.totalQuantity;
+    this.usePoint = order.usePoint;
+    this.createdAt = order.createdAt;
+    this.payments = order.payment
+      ? {
+          id: order.payment.id,
+          price: order.payment.totalPrice,
+          status: order.payment.status,
+          createdAt: order.payment.createdAt,
+        }
+      : null;
+    this.orderItems = order.orderItems.map((item) => ({
+      id: item.id,
+      price: item.price,
+      quantity: item.quantity,
+      isReviewed: item.isReviewed,
+      productId: item.product.id,
+      product: {
+        name: item.product.name,
+        image: item.product.image,
+        reviews: item.product.reviews.map((re) => ({
+          id: re.id,
+          rating: re.rating,
+          content: re.content,
+          createdAt: re.createdAt,
+        })),
+      },
+      size: {
+        size: {
+          en: item.size.size,
+          ko: item.size.size,
+        },
+      },
+    }));
   }
 }

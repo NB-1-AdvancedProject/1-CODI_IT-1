@@ -12,6 +12,7 @@ import {
   postData,
   countData,
   listQuiries,
+  sellerIncludeMany,
 } from "../repositories/inquiryRepository";
 import {
   updateInquiryType,
@@ -23,27 +24,54 @@ import {
   InquiryResDTO,
   replyResDTO,
   GetInquiryResDTO,
+  InquiryItem,
 } from "../lib/dto/inquiryDto";
 import NotFoundError from "../lib/errors/NotFoundError";
 import UnauthError from "../lib/errors/UnauthError";
 import userRepository from "../repositories/userRepository";
-import { getStoreById } from "../repositories/storeRepository";
+import {
+  getStoreByUser,
+  getStoreById,
+  getStoreProducts,
+} from "../repositories/storeRepository";
 import { Store } from "../types/storeType";
 import { User } from "@prisma/client";
 import productRepository from "../repositories/productRepository";
 import { createAlarmData } from "../repositories/notificationRepository";
+import ForbiddenError from "../lib/errors/ForbiddenError";
 
 export async function getList(
   params: inquiryType,
   userId: string
 ): Promise<InquiryListResponseDTO> {
+  let inquiries;
   const userData = await userRepository.findById(userId);
 
   if (!userData) {
     throw new NotFoundError("User", userId);
   }
 
-  const list = await listData(params, userId);
+  if (userData.type === "BUYER") {
+    inquiries = await listData(params, userId);
+  } else if (userData.type === "SELLER") {
+    const store = await getStoreProducts(userId);
+
+    if (!store) {
+      throw new NotFoundError("Store", userId);
+    }
+
+    const productIds = store.products.map((product) => product.id);
+
+    inquiries = await sellerIncludeMany(productIds, params);
+  } else {
+    throw new Error("Invalid user type");
+  }
+
+  if (inquiries.length === 0) {
+    return { list: [], totalCount: 0 };
+  }
+
+  const list = inquiries.map((inquiry) => new InquiryItem(inquiry));
 
   const totalCount = await countData(userId);
 
@@ -154,9 +182,8 @@ export async function getDetail(params: string, user?: string) {
     if (!userData) {
       throw new NotFoundError("User", user);
     }
-
-    if (userData.storeId) {
-      storeUser = await getStoreById(userData.storeId);
+    if (userData.type === "SELLER") {
+      storeUser = await getStoreByUser(userData.id);
     }
   }
 
@@ -171,7 +198,7 @@ export async function getDetail(params: string, user?: string) {
     user !== undefined &&
     !(inquiry.userId === user || storeUser?.userId === user)
   ) {
-    throw new UnauthError();
+    throw new ForbiddenError();
   }
 
   return new GetInquiryResDTO(inquiry);
@@ -188,8 +215,8 @@ export async function getReply(params: string, user?: string) {
       throw new NotFoundError("User", user);
     }
 
-    if (userData.storeId) {
-      storeUser = await getStoreById(userData.storeId);
+    if (userData.type === "SELLER") {
+      storeUser = await getStoreByUser(userData.id);
     }
   }
 
@@ -236,10 +263,10 @@ export async function postQuiry(
     throw new NotFoundError("Product", params);
   }
 
-  if (userData.storeId) {
-    const storeId = await getStoreById(userData.storeId);
+  if (userData.type === "SELLER") {
+    const storeId = await getStoreByUser(userData.id);
     if (userData.type === "SELLER" && product.storeId === storeId.id) {
-      throw new UnauthError();
+      throw new ForbiddenError();
     }
   }
 
@@ -247,21 +274,23 @@ export async function postQuiry(
 
   if (quiryData) {
     const storeData = await getStoreById(product.storeId);
-    const content = "문의가 등록되었습니다.";
+    const content = `${product.name}에 새로운 문의가 등록되었습니다.`;
     await createAlarmData(storeData.userId, content);
   }
 
   return new InquiryResDTO(quiryData);
 }
 
-export async function quiryList(params: string): Promise<GetInquiryResDTO[]> {
-  const data = await listQuiries(params);
+export async function quiryList(
+  productId: string
+): Promise<{ list: GetInquiryResDTO[]; totalCount: number }> {
+  const data = await listQuiries(productId);
 
   if (!data || data.length === 0) {
-    throw new NotFoundError("Product", params);
+    return { list: [], totalCount: 0 };
   }
 
-  return data.map((inquiry) => {
-    return new GetInquiryResDTO(inquiry);
-  });
+  const list = data.map((inquiry) => new GetInquiryResDTO(inquiry));
+
+  return { list, totalCount: list.length };
 }

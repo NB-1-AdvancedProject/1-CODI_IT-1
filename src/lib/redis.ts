@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from "redis";
-import { REDIS_URL } from "../lib/constants";
+import { REDIS_URL } from "./constants";
 
 let clientInstance: RedisClientType | null = null;
 

@@ -34,7 +34,7 @@ export async function cartList(user: string) {
 export async function patchData(
   cartId: string,
   productId: string,
-  sizeId: string,
+  sizeId: number,
   quantity: number
 ) {
   const existingItem = await prisma.cartItem.findFirst({
@@ -69,7 +69,7 @@ export async function getCart(user: string) {
 }
 
 export async function CartItemSizes(cartId: string, productId: string) {
-  return await prisma.cartItem.findFirst({
+  return await prisma.cartItem.findMany({
     where: {
       cartId,
       productId,
@@ -128,4 +128,8 @@ export async function getItem(productId: string) {
       cart: true,
     },
   });
+}
+
+export async function getFindCart(user: string) {
+  return prisma.cart.findUnique({ where: { userId: user } });
 }

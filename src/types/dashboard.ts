@@ -8,7 +8,7 @@ export interface OrderItem {
   id: string;
   orderId: string;
   productId: string;
-  sizeId: string;
+  sizeId: number;
   quantity: number;
   price: Decimal;
 }
