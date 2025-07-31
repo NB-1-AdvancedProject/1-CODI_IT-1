@@ -25,7 +25,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:3000",
   "http://54.180.24.230",
-  "https://codeitsprintcodiit.duckdns.org/",
+  "https://codeitsprintcodiit.duckdns.org",
 ];
 
 app.use(
