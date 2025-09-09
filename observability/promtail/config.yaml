@@ -24,6 +24,13 @@ scrape_configs:
           # 실제로 수집할 로그 파일 경로
           # 도커 호스트의 디렉토리가 도커 컨테이너 안에서 logs로 마운트 된다고 가정\
           # 즉 c:logs/test.log => /logs/test.log => promtail이 수집
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            msg: message
+      - labels:
+          level:
 # 요약
 # 1. /logs/*.log 경로의 로그 파일을 읽고
 # 2. job=windowslogs 라벨을 붙여서

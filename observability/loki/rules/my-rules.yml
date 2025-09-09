@@ -1,0 +1,11 @@
+groups:
+  - name: error-logs
+    rules:
+      - alert: ErrorLogsDetected
+        expr: sum(count_over_time({job="windowslogs", level="error"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "에러 로그 발생"
+          description: "최근 5분 동안 error 로그가 감지되었습니다."

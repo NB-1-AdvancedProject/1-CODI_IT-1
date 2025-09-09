@@ -44,3 +44,11 @@ query_range: # 쿼리 동작 설정
 
 frontend: # 쿼리 프론트엔드 제한 설정
   max_outstanding_per_tenant: 1000 # 한 테넌트당 동시에 처리 가능한 쿼리 수 제한
+
+ruler:
+  alertmanager_url: http://alertmanager:9093
+  rule_path: /etc/loki/rules
+  enable_api: true
+  ring:
+    kvstore:
+      store: inmemory
